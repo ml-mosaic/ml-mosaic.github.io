@@ -1,0 +1,32 @@
+{
+ "hardhat-cat": {
+  "name": "hardhat-cat",
+  "w": 24,
+  "h": 19,
+  "eyes": [
+   {
+    "x": 6,
+    "y": 7,
+    "w": 4,
+    "h": 2
+   },
+   {
+    "x": 13,
+    "y": 7,
+    "w": 4,
+    "h": 2
+   }
+  ],
+  "pupil": [
+   2,
+   1
+  ],
+  "lid": "#e8913a",
+  "words": [
+   "*yawn*",
+   "we're on it...",
+   "five more minutes",
+   "it's fine. probably."
+  ]
+ }
+}

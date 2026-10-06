@@ -1,0 +1,450 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mosaic Studio</title>
+<link rel="icon" type="image/svg+xml" sizes="any" href="../assets/favicon.svg?v=2">
+<link rel="icon" type="image/png" sizes="64x64" href="../assets/favicon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tiny5&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/kit.css">
+<script src="../config.js"></script>
+<script src="../assets/session.js"></script>
+<script src="../assets/kit.js" data-root="../"></script>
+<style>
+  body { padding-bottom: 210px; }
+
+  /* ---------------------------------------------------------------- banner: a strip of the day's scene */
+  .banner { position: relative; height: 210px; overflow: hidden; background: #1f1830 no-repeat center 62% / cover; image-rendering: pixelated; }
+  .banner::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(0,0,0,.72) 0 34%, rgba(0,0,0,0) 70%); }
+  .banner .wrap { position: relative; z-index: 3; height: 100%; display: flex; flex-direction: column; justify-content: center; }
+  .banner h1 { font-weight: normal; font-size: clamp(34px, 5vw, 54px); margin: 0 0 8px; text-shadow: 4px 4px 0 rgba(0,0,0,.4); }
+  .banner p { margin: 0; color: #f0e8dc; font-size: 17px; text-shadow: 2px 2px 0 rgba(0,0,0,.5); }
+  .banner .critter { z-index: 4; }
+  .sample { display: inline-block; margin-top: 12px; font-size: 12px; letter-spacing: 1px; color: #000; background: var(--yellow); padding: 3px 8px; align-self: flex-start; }
+
+  /* ---------------------------------------------------------------- tabs + grid */
+  .bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 26px 0 22px; flex-wrap: wrap; }
+  .tabs { display: flex; gap: 6px; }
+  .tab { background: none; border: 0; cursor: pointer; color: var(--dim); font-size: 18px; padding: 8px 4px; margin-right: 14px; position: relative; }
+  .tab[aria-selected="true"] { color: var(--fg); }
+  .tab[aria-selected="true"]::after { content: ""; position: absolute; left: 0; right: 0; bottom: -2px; height: 4px; background: var(--pink); }
+  .tab .count { color: var(--dim); font-size: 13px; margin-left: 4px; }
+  .sorts { display: flex; gap: 4px; }
+  .sorts button { background: var(--field); border: 0; color: var(--dim); padding: 6px 12px; cursor: pointer; font-size: 13px; }
+  .sorts button[aria-pressed="true"] { background: var(--fg); color: #000; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; }
+  .tile { position: relative; aspect-ratio: 1; background: var(--tile); border: 0; padding: 0; cursor: zoom-in; overflow: hidden;
+          animation: pop .3s steps(3) both; }
+  @keyframes pop { from { transform: scale(.9); opacity: 0; } }
+  .tile img { width: 100%; height: 100%; display: block; image-rendering: pixelated; transition: transform .15s steps(2); }
+  .tile:hover img { transform: scale(1.06); }
+  .tile .info { position: absolute; left: 0; right: 0; bottom: 0; display: flex; align-items: center; gap: 6px; padding: 18px 8px 7px;
+                font-size: 12px; background: linear-gradient(transparent, rgba(0,0,0,.85)); opacity: 0; transition: opacity .12s steps(2); }
+  .tile:hover .info, .tile:focus-visible .info { opacity: 1; }
+  .tile .info .avatar { width: 16px; height: 16px; }
+  .tile .info .n { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; }
+  .tile .info .h { color: var(--pink); }
+  .tile .badge { position: absolute; top: 7px; left: 7px; font-size: 11px; padding: 2px 6px; background: rgba(0,0,0,.7); color: var(--dim); }
+  .tile .badge.new { background: var(--green); color: #000; }
+  .tile.pending { cursor: default; }
+  .tile.pending canvas { width: 100%; height: 100%; image-rendering: pixelated; display: block; }
+  .tile.pending .info { opacity: 1; background: rgba(0,0,0,.55); inset: auto 0 0 0; }
+  .empty { grid-column: 1 / -1; text-align: center; color: var(--dim); padding: 60px 20px; position: relative; }
+  .empty b { display: block; color: var(--fg); font-weight: normal; font-size: 22px; margin-bottom: 8px; }
+  .more { display: block; margin: 26px auto 0; }
+
+  /* ---------------------------------------------------------------- composer, pinned to the bottom */
+  .composer { position: fixed; left: 0; right: 0; bottom: 0; z-index: 25; padding: 14px 0 18px;
+              background: linear-gradient(transparent, rgba(0,0,0,.92) 22%); }
+  .box { background: #120f17; margin: var(--u); padding: 12px 12px 10px; --c: #2e2838; }
+  .box:focus-within { --c: var(--pink); }
+  .box textarea { width: 100%; resize: none; background: none; border: 0; outline: none; font-size: 17px; line-height: 1.4; height: 50px; padding: 4px 6px; }
+  .box textarea::placeholder { color: #57506a; }
+  .controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .controls .spacer { flex: 1; }
+  .seg { display: flex; gap: 4px; }
+  .seg button { background: #1d1826; border: 0; color: #a69fb5; padding: 8px 12px; cursor: pointer; font-size: 13px; }
+  .seg button:hover { color: #fff; }
+  .seg button[aria-pressed="true"] { background: var(--yellow); color: #000; }
+  .lbl { color: #6f6880; font-size: 12px; letter-spacing: 1px; }
+  .left { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: #a69fb5; }
+  .left .pips { display: inline-flex; gap: 2px; }
+  .left .pips i { width: 5px; height: 12px; background: var(--pink); }
+  .left .pips i.used { background: #2e2838; }
+  .left.out { color: var(--bad); }
+  .signin-cta { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; color: #b9b0c8; }
+
+  /* the model menu: a custom dropdown; hovering an option fades autumn leaves in from the right (a nameplate) */
+  .model { position: relative; }
+  .model > button { display: flex; align-items: center; gap: 10px; background: #1d1826; border: 0; padding: 7px 12px; cursor: pointer; font-size: 14px; color: #fff; }
+  .model > button .chev { color: #8f86a0; font-size: 11px; transition: transform .12s steps(2); }
+  .model[open] > button .chev { transform: rotate(180deg); }
+  .model .menu { position: absolute; bottom: calc(100% + 10px); left: 0; width: 300px; background: #120f17; padding: 6px; --c: #2e2838;
+                 margin: var(--u); display: none; }
+  .model[open] .menu { display: block; animation: rise .16s steps(3); }
+  @keyframes rise { from { transform: translateY(8px); opacity: 0; } }
+  .mopt { position: relative; display: flex; align-items: center; gap: 12px; width: 100%; background: none; border: 0; padding: 12px; cursor: pointer;
+         text-align: left; overflow: hidden; color: #fff; }
+  .mopt + .mopt { margin-top: 4px; }
+  .mopt .mk { width: 34px; height: 34px; flex: none; display: grid; place-items: center; background: #2a1f3a; color: var(--orange); font-size: 15px; position: relative; z-index: 1; }
+  .mopt .tx { position: relative; z-index: 1; }
+  .mopt .tx b { display: block; font-weight: normal; font-size: 15px; }
+  .mopt .tx span { color: #8f86a0; font-size: 12px; }
+  .mopt .tick { margin-left: auto; color: var(--green); position: relative; z-index: 1; }
+  .mopt::before, .mopt::after { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity .25s steps(4); }
+  .mopt::before { background: linear-gradient(270deg, rgba(232,145,58,.35), rgba(232,145,58,0) 70%); }
+  .mopt.autumn::after { background: url(../assets/scenes/nameplate-autumn.png) right center / auto 100% no-repeat; image-rendering: pixelated;
+                       -webkit-mask-image: linear-gradient(270deg, #000 25%, transparent 85%); mask-image: linear-gradient(270deg, #000 25%, transparent 85%); }
+  .mopt:hover::before, .mopt:hover::after, .mopt:focus-visible::before, .mopt:focus-visible::after { opacity: 1; }
+  .mopt .fall { position: absolute; top: -8px; width: 9px; height: 9px; background: url(../assets/scenes/p-leaf.png) 0 0 / 100% 100%; image-rendering: pixelated;
+               opacity: 0; pointer-events: none; }
+  .mopt:hover .fall { animation: fall 1.6s steps(8) infinite; }
+  @keyframes fall { 0% { opacity: 0; transform: translateY(0); } 20% { opacity: 1; } 100% { opacity: 0; transform: translate(-14px, 62px) rotate(90deg); } }
+  .mopt[disabled] { cursor: default; opacity: .45; }
+
+  /* ---------------------------------------------------------------- modals */
+  .modal { position: fixed; inset: 0; z-index: 60; background: rgba(0,0,0,.84); display: none; place-items: center; padding: 20px; overflow-y: auto; }
+  .modal.open { display: grid; animation: rise .16s steps(3); }
+  .sheet { background: #0e0c12; width: min(920px, 100%); padding: 22px; margin: var(--u); --c: #2e2838; position: relative; }
+  .close { position: absolute; top: 10px; right: 12px; background: none; border: 0; color: var(--dim); font-size: 22px; cursor: pointer; }
+  .close:hover { color: #fff; }
+  .post { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 26px; }
+  .post .big { width: 100%; aspect-ratio: 1; background: var(--tile); image-rendering: pixelated; display: block; }
+  .post .prompt { font-size: 22px; line-height: 1.3; margin: 4px 0 16px; }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 20px; }
+  .chip { font-size: 12px; padding: 4px 8px; background: #1d1826; color: #b9b0c8; }
+  .chip.m1 { background: linear-gradient(270deg, #6b3a1c, #1d1826 80%); color: #fff; }
+  .person { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-top: 2px solid #1d1826; border-bottom: 2px solid #1d1826; margin-bottom: 18px; }
+  .person .avatar { width: 40px; height: 40px; }
+  .person .who-b { flex: 1; min-width: 0; text-align: left; background: none; border: 0; cursor: pointer; padding: 0; }
+  .person .who-b b { display: block; font-weight: normal; font-size: 16px; }
+  .person .who-b span { color: var(--dim); font-size: 12px; }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .like { display: inline-flex; align-items: center; gap: 8px; }
+  .like .ht { display: inline-block; width: 14px; height: 12px; background: url(../assets/scenes/p-heart.png) 0 0 / 100% 100%; image-rendering: pixelated;
+              filter: grayscale(1) brightness(.6); }
+  .like[aria-pressed="true"] .ht { filter: none; }
+  .like[aria-pressed="true"] { --c: var(--pink) !important; }
+  .meta { color: var(--dim); font-size: 12px; margin-top: 16px; }
+  .pf-banner { height: 110px; margin: -22px -22px 0; background: #1f1830 no-repeat 0 62% / 200% auto; image-rendering: pixelated; }
+  .profile-head { display: flex; gap: 18px; align-items: flex-end; margin: -34px 0 18px; flex-wrap: wrap; position: relative; }
+  .profile-head .avatar { box-shadow: 0 0 0 4px #0e0e12; background: #0e0e12; }
+  .profile-head .handle { color: var(--dim); font-size: 13px; margin: 0 0 6px; }
+  .profile-head .handle a { color: var(--blue); text-decoration: none; }
+  .profile-head .avatar { width: 84px; height: 84px; }
+  .profile-head h2 { font-weight: normal; font-size: 30px; margin: 0 0 4px; }
+  .profile-head p { margin: 0; color: #b9b0c8; }
+  .stats { display: flex; gap: 22px; color: var(--dim); font-size: 13px; margin: 6px 0 0; }
+  .stats b { color: #fff; font-weight: normal; font-size: 16px; margin-right: 4px; }
+  .profile-head .btn { margin-left: auto; }
+  .sheet .grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; max-height: 52vh; overflow-y: auto; padding: 4px; }
+
+  @media (max-width: 760px) {
+    .post { grid-template-columns: 1fr; }
+    .banner { height: 170px; }
+    .banner .critter { display: none; }
+    .grid { grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 8px; }
+    .seg button { padding: 8px 9px; }
+    .model .menu { width: 260px; }
+  }
+</style>
+</head>
+<body>
+<nav class="topbar" style="--c:var(--pink)"></nav>
+
+<header class="banner" id="banner">
+  <div class="wrap">
+    <h1>Mosaic Studio</h1>
+    <p id="greet">What are we drawing today?</p>
+    <span class="sample" title="The community gallery is sample data for now">PREVIEW &middot; SAMPLE GALLERY</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="bar">
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" id="tab-explore" aria-selected="true">Explore</button>
+      <button class="tab" role="tab" id="tab-mine" aria-selected="false">Your stuff<span class="count" id="mine-count"></span></button>
+    </div>
+    <div class="sorts" id="sorts"><button type="button" data-sort="new" aria-pressed="true">New</button><button type="button" data-sort="top" aria-pressed="false">Top</button></div>
+  </div>
+  <div class="grid" id="grid"></div>
+  <button class="btn ghost more" id="more" type="button" hidden>Load more</button>
+</main>
+
+<div class="composer">
+  <div class="wrap">
+    <div class="box notch" id="box">
+      <div id="compose">
+        <textarea id="prompt" maxlength="300" placeholder="Describe a sprite... a sleepy fox curled up in leaves" aria-label="Prompt"></textarea>
+        <div class="controls">
+          <div class="model" id="model">
+            <button type="button" id="model-btn" aria-haspopup="listbox" aria-expanded="false"><span id="model-name">m1</span><span class="chev">&#9650;</span></button>
+            <div class="menu notch" role="listbox" id="model-menu"></div>
+          </div>
+          <span class="lbl">CREATIVITY</span>
+          <div class="seg" id="creativity" role="group" aria-label="Creativity">
+            <button type="button" data-v="strict" aria-pressed="false">Strict</button>
+            <button type="button" data-v="classic" aria-pressed="true">Classic</button>
+            <button type="button" data-v="wild" aria-pressed="false">Wild</button>
+          </div>
+          <span class="spacer"></span>
+          <span class="left" id="left" title="Generations left today (resets at 00:00 UTC)"></span>
+          <button class="btn" id="create" type="button" style="--c:var(--pink)">Create</button>
+        </div>
+      </div>
+      <div class="signin-cta" id="signin-cta" hidden><span>Sign in to make your own sprites, like, and follow people.</span>
+        <a class="btn" href="../login/?next=studio" style="--c:var(--pink)">Sign in</a></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="post-modal" role="dialog" aria-modal="true" aria-label="Sprite"><div class="sheet notch" id="post-sheet"></div></div>
+<div class="modal" id="profile-modal" role="dialog" aria-modal="true" aria-label="Profile"><div class="sheet notch" id="profile-sheet"></div></div>
+
+<script>
+(() => {
+  const $ = s => document.querySelector(s), { esc, pfp, toast, ago, burst } = Kit;
+  const me = Session.current();
+  Kit.nav("Studio");
+  const api = (path, opts) => Session.api(path, opts);
+  const img = src => MOSAIC.backend + src;
+  const needSignIn = () => { location.href = "../login/?next=studio"; };
+
+  // ---------------------------------------------------------------- banner: a random scene + its animal
+  Kit.json("../assets/scenes/scenes.json").then(list => {
+    const s = Kit.pick(list);
+    $("#banner").style.backgroundImage = `url(../assets/scenes/${s.name}.png)`;
+    $("#banner").style.backgroundSize = `${s.frames * 100}% auto`;     // first animation frame only
+    $("#banner").style.backgroundPosition = "0 62%";
+    const a = s.animal, P = 5;
+    Kit.critter(a, $("#banner"), { right: "8%", bottom: `-${Math.round(a.h * P * .12)}px`, P });
+  });
+  $("#greet").textContent = me ? `Hi ${me.username}! What are we drawing today?` : "Peek at what people are making with m1.";
+
+  // ---------------------------------------------------------------- tabs
+  let tab = location.hash === "#mine" && me ? "mine" : "explore", sort = "new", offset = 0;
+  const myPosts = [];
+  function setTab(t) {
+    if (t === "mine" && !me) return needSignIn();
+    tab = t; history.replaceState(null, "", t === "mine" ? "#mine" : location.pathname);
+    $("#tab-explore").setAttribute("aria-selected", t === "explore"); $("#tab-mine").setAttribute("aria-selected", t === "mine");
+    $("#sorts").hidden = t !== "explore";
+    t === "explore" ? loadFeed(true) : loadMine();
+  }
+  $("#tab-explore").onclick = () => setTab("explore"); $("#tab-mine").onclick = () => setTab("mine");
+  document.querySelectorAll("#sorts button").forEach(b => b.onclick = () => {
+    sort = b.dataset.sort; document.querySelectorAll("#sorts button").forEach(x => x.setAttribute("aria-pressed", x === b)); loadFeed(true);
+  });
+
+  function tileEl(p, { fresh = false } = {}) {
+    const b = document.createElement("button"); b.type = "button"; b.className = "tile"; b.setAttribute("aria-label", p.prompt);
+    b.innerHTML = `<img src="${img(p.image)}" alt="" loading="lazy">
+      ${fresh ? '<span class="badge new">new!</span>' : (tab === "mine" && !p.shared ? '<span class="badge">private</span>' : "")}
+      <span class="info"><img class="avatar" src="${pfp(p.author)}" alt=""><span class="n">${esc(p.author.display_name || p.author.username)}</span>
+      <span class="h">&hearts; ${p.likes}</span></span>`;
+    b.onclick = () => openPost(p);
+    return b;
+  }
+  async function loadFeed(reset) {
+    if (reset) { offset = 0; $("#grid").innerHTML = ""; }
+    const r = await api(`/api/studio/feed?sort=${sort}&offset=${offset}&limit=48`, { auth: !!me });
+    if (!r.ok) return $("#grid").innerHTML = `<div class="empty"><b>Can't reach the studio.</b>${esc(Session.detail(r.data || {}))} &middot; <a href="../status/">check the status page</a></div>`;
+    r.data.posts.forEach((p, i) => { const t = tileEl(p); t.style.animationDelay = (i % 12) * 30 + "ms"; $("#grid").appendChild(t); });
+    offset = r.data.next ?? offset; $("#more").hidden = r.data.next == null;
+  }
+  $("#more").onclick = () => loadFeed(false);
+  async function loadMine() {
+    $("#grid").innerHTML = ""; $("#more").hidden = true;
+    const r = await api("/api/studio/mine");
+    if (r.status === 401) return needSignIn();
+    myPosts.length = 0; myPosts.push(...(r.data?.posts || []));
+    $("#mine-count").textContent = myPosts.length ? ` ${myPosts.length}` : "";
+    if (!myPosts.length) {
+      $("#grid").innerHTML = `<div class="empty"><b>Nothing here yet.</b>Type something in the box below and press Create.</div>`;
+      return;
+    }
+    myPosts.forEach(p => $("#grid").appendChild(tileEl(p)));
+  }
+
+  // ---------------------------------------------------------------- post modal
+  const postModal = $("#post-modal"), profileModal = $("#profile-modal");
+  [postModal, profileModal].forEach(m => m.addEventListener("click", e => { if (e.target === m) m.classList.remove("open"); }));
+  addEventListener("keydown", e => { if (e.key === "Escape") { postModal.classList.remove("open"); profileModal.classList.remove("open"); closeMenu(); } });
+
+  function openPost(p) {
+    const mine = p.author.is_me;
+    $("#post-sheet").innerHTML = `<button class="close" aria-label="Close">&times;</button>
+      <div class="post">
+        <img class="big" src="${img(p.image)}" alt="${esc(p.prompt)}">
+        <div>
+          <p class="prompt">&ldquo;${esc(p.prompt)}&rdquo;</p>
+          <div class="chips"><span class="chip m1">model ${esc(p.model)}</span><span class="chip">${p.creativity}</span><span class="chip">seed ${p.seed}</span>
+            <span class="chip">${ago(p.created)}</span>${mine ? `<span class="chip">${p.shared ? "in the gallery" : "private"}</span>` : ""}</div>
+          <div class="person"><img class="avatar" src="${pfp(p.author)}" alt="">
+            <button class="who-b" type="button" id="to-profile"><b>${esc(p.author.display_name || p.author.username)}${mine ? " (you)" : ""}</b><span>@${esc(p.author.username)} &middot; ${p.author.followers} followers</span></button>
+            ${mine ? "" : `<button class="btn small ${p.author.following ? "ghost" : ""}" id="follow" type="button" style="--c:var(--blue)">${p.author.following ? "Following" : "Follow"}</button>`}</div>
+          <div class="actions">
+            <button class="btn small ghost like" id="like" type="button" aria-pressed="${p.liked}"><span class="ht"></span><span id="like-n">${p.likes}</span></button>
+            <button class="btn small ghost" id="reuse" type="button">Use this prompt</button>
+            <a class="btn small ghost" href="${img(p.image)}" download="mosaic-${p.id}.png">Download</a>
+            ${mine ? `<button class="btn small" id="share" type="button" style="--c:var(--green)">${p.shared ? "Take out of gallery" : "Share to gallery"}</button>
+                      <button class="btn small ghost" id="delete" type="button">Delete</button>` : ""}
+          </div>
+          <p class="meta">Made with m1 &middot; 64&times;64, crisp-pixel upscale</p>
+        </div>
+      </div>`;
+    const sheet = $("#post-sheet");
+    sheet.querySelector(".close").onclick = () => postModal.classList.remove("open");
+    sheet.querySelector("#to-profile").onclick = () => openProfile(p.author.username);
+    sheet.querySelector("#reuse").onclick = () => { $("#prompt").value = p.prompt; postModal.classList.remove("open"); $("#prompt").focus(); toast("Prompt copied into the box below"); };
+    sheet.querySelector("#like").onclick = async e => {
+      if (!me) return needSignIn();
+      const btn = e.currentTarget;                     // gone from the event once we await
+      const r = await api(`/api/studio/posts/${p.id}/like`, { json: { like: !p.liked } });
+      if (!r.ok) return toast(Session.detail(r.data));
+      Object.assign(p, r.data);
+      btn.setAttribute("aria-pressed", p.liked); sheet.querySelector("#like-n").textContent = p.likes;
+      if (p.liked) { const b = btn.getBoundingClientRect(); burst(b.left + b.width / 2, b.top, "heart", 6); }
+      refreshTile(p);
+    };
+    sheet.querySelector("#follow")?.addEventListener("click", async e => {
+      if (!me) return needSignIn();
+      const r = await api(`/api/studio/users/${encodeURIComponent(p.author.username)}/follow`, { json: { follow: !p.author.following } });
+      if (!r.ok) return toast(Session.detail(r.data));
+      p.author = { ...p.author, ...r.data };
+      e.target.textContent = p.author.following ? "Following" : "Follow"; e.target.classList.toggle("ghost", p.author.following);
+      sheet.querySelector(".who-b span").textContent = `@${p.author.username} · ${p.author.followers} followers`;
+      if (p.author.following) toast(`You're following ${p.author.username}`);
+    });
+    sheet.querySelector("#share")?.addEventListener("click", async () => {
+      const r = await api(`/api/studio/posts/${p.id}/share`, { json: { shared: !p.shared } });
+      if (!r.ok) return toast(Session.detail(r.data));
+      Object.assign(p, r.data); toast(p.shared ? "Shared! It's in the gallery now." : "Back to private."); openPost(p); if (tab === "mine") loadMine();
+    });
+    sheet.querySelector("#delete")?.addEventListener("click", async () => {
+      if (!await Kit.confirm("It'll be gone for good, likes and all.", { title: "Delete this sprite?", ok: "Delete", danger: true })) return;
+      const r = await api(`/api/studio/posts/${p.id}/delete`, { method: "POST" });
+      if (!r.ok) return toast(Session.detail(r.data));
+      postModal.classList.remove("open"); toast("Deleted."); tab === "mine" ? loadMine() : loadFeed(true);
+    });
+    postModal.classList.add("open");
+  }
+  function refreshTile(p) {
+    document.querySelectorAll("#grid .tile").forEach(t => { if (t.getAttribute("aria-label") === p.prompt && t.querySelector("img").src.endsWith(p.image))
+      t.querySelector(".h").innerHTML = `&hearts; ${p.likes}`; });
+  }
+
+  // ---------------------------------------------------------------- profile modal
+  async function openProfile(name) {
+    const r = await api(`/api/studio/users/${encodeURIComponent(name)}`, { auth: !!me });
+    if (!r.ok) return toast(Session.detail(r.data));
+    const u = r.data;
+    $("#profile-sheet").innerHTML = `<button class="close" aria-label="Close">&times;</button>
+      <div class="pf-banner" style="background-image:url(../assets/scenes/${esc(u.banner || "autumn")}.png)"></div>
+      <div class="profile-head"><img class="avatar" src="${pfp(u, 12)}" alt="">
+        <div><h2>${esc(u.display_name || u.username)}${u.is_me ? " (you)" : ""}</h2>
+          <p class="handle">@${esc(u.username)}${u.website ? ` &middot; <a href="${esc(u.website)}" target="_blank" rel="noopener nofollow">${esc(u.website.replace(/^https?:\/\//, ""))}</a>` : ""}</p>
+          <p>${esc(u.bio || "No bio yet.")}</p>
+          <div class="stats"><span><b id="pf-followers">${u.followers}</b>followers</span><span><b>${u.following_count}</b>following</span>
+            <span><b>${u.posts.length}</b>sprites</span><span><b>${u.likes_received}</b>likes</span></div></div>
+        ${u.is_me ? `<a class="btn ghost" href="../settings/">Edit profile</a>` : `<button class="btn ${u.following ? "ghost" : ""}" id="pf-follow" type="button" style="--c:var(--blue)">${u.following ? "Following" : "Follow"}</button>`}</div>
+      <div class="grid" id="pf-grid">${u.posts.length ? "" : '<div class="empty"><b>No sprites yet.</b></div>'}</div>`;
+    const sheet = $("#profile-sheet");
+    sheet.querySelector(".close").onclick = () => profileModal.classList.remove("open");
+    u.posts.forEach(p => { const t = tileEl(p); t.onclick = () => { profileModal.classList.remove("open"); openPost(p); }; sheet.querySelector("#pf-grid").appendChild(t); });
+    sheet.querySelector("#pf-follow")?.addEventListener("click", async e => {
+      if (!me) return needSignIn();
+      const r2 = await api(`/api/studio/users/${encodeURIComponent(name)}/follow`, { json: { follow: !u.following } });
+      if (!r2.ok) return toast(Session.detail(r2.data));
+      Object.assign(u, r2.data);
+      e.target.textContent = u.following ? "Following" : "Follow"; e.target.classList.toggle("ghost", u.following);
+      sheet.querySelector("#pf-followers").textContent = u.followers;
+      if (u.following) { const b = e.target.getBoundingClientRect(); burst(b.left + b.width / 2, b.top, "heart", 4); }
+    });
+    postModal.classList.remove("open"); profileModal.classList.add("open");
+  }
+
+  // ---------------------------------------------------------------- composer: model menu
+  const modelBox = $("#model"), menu = $("#model-menu");
+  let model = "m1", creativity = "classic";
+  function closeMenu() { modelBox.removeAttribute("open"); $("#model-btn").setAttribute("aria-expanded", "false"); }
+  $("#model-btn").onclick = e => { e.stopPropagation(); const o = !modelBox.hasAttribute("open"); o ? modelBox.setAttribute("open", "") : closeMenu();
+                                   $("#model-btn").setAttribute("aria-expanded", o); };
+  addEventListener("click", e => { if (!modelBox.contains(e.target)) closeMenu(); });
+  api("/api/models", { auth: false }).then(r => {
+    const list = r.ok ? r.data : [{ id: "m1", name: "m1", tagline: "64×64 sprites", status: "preview", nameplate: "autumn" }];
+    menu.innerHTML = list.map(m => `<button class="mopt ${m.nameplate || ""}" type="button" role="option" data-id="${m.id}" aria-selected="${m.id === model}">
+        <span class="mk">${esc(m.name)}</span><span class="tx"><b>${esc(m.name)}</b><span>${esc(m.tagline)}</span></span>
+        <span class="tick">${m.id === model ? "&#10003;" : ""}</span>
+        ${[0, 1, 2, 3, 4].map(i => `<i class="fall" style="right:${8 + i * 16}%;animation-delay:${i * .32}s"></i>`).join("")}</button>`).join("")
+      + `<button class="mopt" type="button" disabled><span class="mk" style="color:#57506a">?</span><span class="tx"><b>more soon</b><span>new models land here</span></span></button>`;
+    menu.querySelectorAll(".mopt[data-id]").forEach(o => o.onclick = () => { model = o.dataset.id; $("#model-name").textContent = o.querySelector("b").textContent; closeMenu(); });
+  });
+  document.querySelectorAll("#creativity button").forEach(b => b.onclick = () => {
+    creativity = b.dataset.v; document.querySelectorAll("#creativity button").forEach(x => x.setAttribute("aria-pressed", x === b));
+  });
+
+  // ---------------------------------------------------------------- composer: today's allowance
+  let quota = null;
+  function showQuota(q) {
+    if (!q) return; quota = q;
+    const el = $("#left");
+    el.classList.toggle("out", q.remaining === 0);
+    el.innerHTML = `<span class="pips">${Array.from({ length: q.limit }, (_, i) => `<i class="${i < q.used ? "used" : ""}"></i>`).join("")}</span>${q.remaining} / ${q.limit} left today`;
+  }
+  if (me) Kit.whoami().then(u => u && showQuota(u.quota));
+
+  // ---------------------------------------------------------------- composer: create
+  if (!me) { $("#compose").hidden = true; $("#signin-cta").hidden = false; }
+  $("#prompt").addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); create(); } });
+  $("#create").onclick = create;
+  let busy = false;
+  async function create() {
+    const prompt = $("#prompt").value.trim();
+    if (!prompt) { $("#prompt").focus(); return toast("Describe a sprite first"); }
+    if (busy) return;
+    if (quota && quota.remaining === 0) return outOfSprites();
+    busy = true; $("#create").disabled = true;
+    if (tab !== "mine") setTab("mine");
+    await new Promise(r => setTimeout(r, 30));
+    $("#grid").querySelector(".empty")?.remove();
+    const pend = pendingTile(prompt); $("#grid").prepend(pend.el);
+    const r = await api("/api/studio/create", { json: { prompt, model, creativity } });
+    pend.stop(); busy = false; $("#create").disabled = false;
+    if (r.status === 401) return needSignIn();
+    if (r.status === 429 && r.data?.detail?.quota) { pend.el.remove(); showQuota(r.data.detail.quota); return outOfSprites(); }
+    if (!r.ok) { pend.el.remove(); return toast(Session.detail(r.data || {})); }
+    showQuota(r.data.quota);
+    const t = tileEl(r.data, { fresh: true }); pend.el.replaceWith(t);
+    const b = t.getBoundingClientRect(); burst(b.left + b.width / 2, b.top + b.height / 2, "heart", 5);
+    myPosts.unshift(r.data); $("#mine-count").textContent = ` ${myPosts.length}`;
+    $("#prompt").value = "";
+    toast("Done! It's private: open it to share it to the gallery.", 3200);
+  }
+  function outOfSprites() {
+    const back = new Date(quota.resets_at * 1000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    Kit.alert(`You've made all ${quota.limit} sprites for today. m1 needs a nap too!\nYour allowance refills at ${back} (midnight UTC).`,
+              { title: "That's today's batch", ok: "Okay!" });
+  }
+  // while m1 "thinks": a tile of animated static
+  function pendingTile(prompt) {
+    const el = document.createElement("div"); el.className = "tile pending";
+    el.innerHTML = `<canvas width="32" height="32"></canvas><span class="info"><span class="n">${esc(prompt)}</span><span>drawing...</span></span>`;
+    const g = el.querySelector("canvas").getContext("2d"), d = g.createImageData(32, 32);
+    let on = true;
+    (function noise() {
+      for (let i = 0; i < d.data.length; i += 4) { const v = Math.random() * 255; d.data[i] = v * Math.random(); d.data[i + 1] = v * Math.random(); d.data[i + 2] = v; d.data[i + 3] = 255; }
+      g.putImageData(d, 0, 0); if (on) setTimeout(noise, 70);
+    })();
+    return { el, stop: () => on = false };
+  }
+
+  setTab(tab);
+})();
+</script>
+</body>
+</html>

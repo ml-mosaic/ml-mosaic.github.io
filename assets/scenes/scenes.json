@@ -1,0 +1,235 @@
+[
+ {
+  "name": "autumn",
+  "frames": 1,
+  "frame_ms": 0,
+  "w": 96,
+  "h": 112,
+  "animal": {
+   "name": "cat",
+   "x": 44,
+   "y": 52,
+   "w": 22,
+   "h": 22,
+   "eyes": [
+    {
+     "x": 4,
+     "y": 7,
+     "w": 4,
+     "h": 4
+    },
+    {
+     "x": 12,
+     "y": 7,
+     "w": 4,
+     "h": 4
+    }
+   ],
+   "pupil": [
+    2,
+    2
+   ],
+   "lid": "#e8913a",
+   "words": [
+    "meow!",
+    "mrrp?",
+    "purr~",
+    "mew!",
+    "nya!"
+   ]
+  },
+  "ambient": {
+   "sprite": "leaf",
+   "kind": "fall",
+   "from": [
+    0,
+    46,
+    30,
+    64
+   ],
+   "every": [
+    450,
+    1100
+   ],
+   "ground": [
+    74,
+    108
+   ]
+  },
+  "burst": "leaf"
+ },
+ {
+  "name": "beach",
+  "frames": 2,
+  "frame_ms": 520,
+  "w": 96,
+  "h": 112,
+  "animal": {
+   "name": "crab",
+   "x": 40,
+   "y": 86,
+   "w": 23,
+   "h": 17,
+   "eyes": [
+    {
+     "x": 2,
+     "y": 1,
+     "w": 6,
+     "h": 4
+    },
+    {
+     "x": 15,
+     "y": 1,
+     "w": 6,
+     "h": 4
+    }
+   ],
+   "pupil": [
+    2,
+    2
+   ],
+   "lid": "#e83a2c",
+   "words": [
+    "snip snip!",
+    "click clack!",
+    "pinch?",
+    "sidestep!"
+   ]
+  },
+  "ambient": {
+   "sprite": "gull",
+   "kind": "glide",
+   "from": [
+    0,
+    4,
+    0,
+    30
+   ],
+   "every": [
+    2500,
+    6000
+   ],
+   "ground": [
+    80,
+    110
+   ]
+  },
+  "burst": "sand"
+ },
+ {
+  "name": "sunset",
+  "frames": 2,
+  "frame_ms": 700,
+  "w": 96,
+  "h": 112,
+  "animal": {
+   "name": "seal",
+   "x": 32,
+   "y": 80,
+   "w": 23,
+   "h": 18,
+   "eyes": [
+    {
+     "x": 4,
+     "y": 3,
+     "w": 4,
+     "h": 4
+    },
+    {
+     "x": 9,
+     "y": 3,
+     "w": 4,
+     "h": 4
+    }
+   ],
+   "pupil": [
+    2,
+    2
+   ],
+   "lid": "#8a8fa6",
+   "words": [
+    "arf!",
+    "ork ork!",
+    "*clap clap*",
+    "splash!"
+   ]
+  },
+  "ambient": {
+   "sprite": "bird",
+   "kind": "glide",
+   "from": [
+    0,
+    6,
+    0,
+    34
+   ],
+   "every": [
+    2500,
+    6500
+   ],
+   "ground": [
+    62,
+    110
+   ]
+  },
+  "burst": "drop"
+ },
+ {
+  "name": "snow",
+  "frames": 2,
+  "frame_ms": 900,
+  "w": 96,
+  "h": 112,
+  "animal": {
+   "name": "penguin",
+   "x": 40,
+   "y": 70,
+   "w": 18,
+   "h": 20,
+   "eyes": [
+    {
+     "x": 5,
+     "y": 4,
+     "w": 4,
+     "h": 4
+    },
+    {
+     "x": 10,
+     "y": 4,
+     "w": 4,
+     "h": 4
+    }
+   ],
+   "pupil": [
+    2,
+    2
+   ],
+   "lid": "#262a3a",
+   "words": [
+    "noot!",
+    "brr!",
+    "waddle waddle",
+    "*flap*"
+   ]
+  },
+  "ambient": {
+   "sprite": "snow",
+   "kind": "fall",
+   "from": [
+    0,
+    96,
+    -4,
+    0
+   ],
+   "every": [
+    120,
+    320
+   ],
+   "ground": [
+    78,
+    110
+   ]
+  },
+  "burst": "snow"
+ }
+]

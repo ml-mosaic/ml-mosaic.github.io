@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mosaic · Dev portal</title>
+<link rel="icon" type="image/svg+xml" sizes="any" href="../assets/favicon.svg?v=2">
+<link rel="icon" type="image/png" sizes="64x64" href="../assets/favicon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tiny5&display=swap" rel="stylesheet">
+<script src="../config.js"></script>
+<script src="../assets/session.js"></script>
+<link rel="stylesheet" href="../assets/kit.css">
+<script src="../assets/kit.js" data-root="../"></script>
+<script>if (!Session.current()) location.replace("../login/?next=portal");</script>
+<style>
+  :root { --bg: #000; --fg: #fff; --dim: #8a867b; --line: #2a2925; --panel: #0d0d0c; --field: #141413; --tile: #111;
+          --accent: #6ee07a; --warm: #e8913a; --bad: #ff5a4e; --u: 4px; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--fg); }
+  body { font-family: "Tiny5", ui-monospace, monospace; -webkit-font-smoothing: none; overflow-x: hidden; }
+  button, input, select { font: inherit; color: inherit; }
+  a { color: inherit; }
+  .px { image-rendering: pixelated; }
+  .wrap { max-width: 1160px; margin: 0 auto; padding: 0 24px; }
+  .notch { box-shadow: 0 calc(-1 * var(--u)) 0 0 var(--c, var(--line)), 0 var(--u) 0 0 var(--c, var(--line)),
+                       calc(-1 * var(--u)) 0 0 0 var(--c, var(--line)), var(--u) 0 0 0 var(--c, var(--line)); }
+
+
+  .btn { display: inline-block; white-space: nowrap; text-decoration: none; border: 0; cursor: pointer; padding: 11px 18px;
+         font-size: 15px; letter-spacing: 1px; background: var(--c); color: #000; margin: var(--u); --c: var(--accent);
+         box-shadow: 0 calc(-1 * var(--u)) 0 0 var(--c), 0 var(--u) 0 0 var(--c), calc(-1 * var(--u)) 0 0 0 var(--c),
+                     var(--u) 0 0 0 var(--c), inset 0 calc(-1 * var(--u)) 0 0 rgba(0,0,0,.28); }
+  .btn:hover { filter: brightness(1.1); }
+  .btn:active { transform: translateY(var(--u)); }
+  .btn.ghost { background: transparent; color: var(--fg); --c: #4a4740; box-shadow: 0 calc(-1 * var(--u)) 0 0 var(--c),
+               0 var(--u) 0 0 var(--c), calc(-1 * var(--u)) 0 0 0 var(--c), var(--u) 0 0 0 var(--c); }
+  .btn.small { padding: 6px 12px; font-size: 13px; }
+  .btn[disabled] { filter: saturate(.3) brightness(.8); cursor: wait; }
+  .btn:focus-visible, a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px dashed var(--fg); outline-offset: 4px; }
+
+  .banner { position: relative; overflow: hidden; background: #1f1830 no-repeat 0 70% / 100% auto; image-rendering: pixelated; margin-bottom: 28px; }
+  .banner::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(0,0,0,.8) 0 40%, rgba(0,0,0,.1) 80%); }
+  header.top { position: relative; z-index: 2; padding: 44px 0 30px; display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+  .kicker { color: var(--accent); letter-spacing: 3px; font-size: 13px; margin: 0 0 10px; }
+  h1 { font-weight: normal; font-size: clamp(34px, 5vw, 52px); margin: 0; line-height: 1; }
+  .status { display: inline-flex; gap: 10px; align-items: center; color: var(--dim); font-size: 13px; letter-spacing: 1px;
+            background: var(--panel); padding: 8px 12px; margin: var(--u); }
+  .status i { width: 8px; height: 8px; background: #555; }
+  .status.on i { background: var(--accent); animation: pulse 1.2s steps(2) infinite; }
+  .status.off i { background: var(--bad); }
+  @keyframes pulse { 50% { opacity: .25; } }
+
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; padding-bottom: 80px; }
+  .grid > * { min-width: 0; }
+  .card { background: var(--panel); padding: 24px; margin: var(--u); }
+  .card.wide { grid-column: 1 / -1; }
+  .card h2 { font-weight: normal; font-size: 22px; margin: 0 0 6px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  .card .hint { color: var(--dim); font-size: 14px; line-height: 1.5; margin: 0 0 18px; }
+  dl { display: grid; grid-template-columns: auto 1fr; gap: 10px 18px; margin: 0 0 18px; font-size: 15px; }
+  dt { color: var(--dim); } dd { margin: 0; overflow-wrap: anywhere; }
+  .tokenbox { display: flex; margin: var(--u) var(--u) 12px; background: var(--field); --c: var(--warm); }
+  .tokenbox code { flex: 1; min-width: 0; padding: 12px; font-family: ui-monospace, Menlo, monospace; font-size: 13px; overflow-wrap: anywhere; }
+  .tokenbox button { background: var(--warm); color: #000; border: 0; padding: 0 14px; cursor: pointer; font-size: 14px; }
+  .warn { color: var(--warm); font-size: 13px; margin: 0 0 12px; }
+
+  /* playground */
+  .play { display: grid; grid-template-columns: 1fr 340px; gap: 28px; }
+  .play > * { min-width: 0; }
+  label.l { display: flex; justify-content: space-between; color: var(--dim); font-size: 13px; letter-spacing: 1px; margin: 0 0 8px; }
+  .field { background: var(--field); margin: var(--u) var(--u) 18px; display: flex; align-items: center; }
+  .field:focus-within { --c: var(--fg); }
+  .field input, .field select { flex: 1; min-width: 0; background: none; border: 0; outline: none; padding: 11px 12px; font-size: 16px; }
+  .field select option { background: #111; }
+  .field .side { background: none; border: 0; color: var(--dim); padding: 0 12px; cursor: pointer; font-size: 13px; }
+  .field .side:hover { color: var(--fg); }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  input[type=range] { -webkit-appearance: none; appearance: none; width: calc(100% - 8px); margin: 6px 4px 6px; height: 10px; background: var(--line); }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 22px; background: var(--fg); border: 0; cursor: pointer; }
+  input[type=range]::-moz-range-thumb { width: 18px; height: 22px; background: var(--fg); border: 0; border-radius: 0; cursor: pointer; }
+  .ends { display: flex; justify-content: space-between; color: var(--dim); font-size: 12px; margin: 0 4px 18px; }
+  .ideas { display: flex; flex-wrap: wrap; gap: 6px; margin: -6px 0 18px; }
+  .ideas button { background: var(--field); border: 0; color: var(--dim); font-size: 12px; padding: 5px 8px; cursor: pointer; }
+  .ideas button:hover { color: var(--fg); }
+  .out { aspect-ratio: 1; background: var(--tile); position: relative; display: grid; place-items: center; overflow: hidden; }
+  .out img { width: 100%; height: 100%; image-rendering: pixelated; display: block; }
+  .out .empty { color: #4a4740; font-size: 14px; text-align: center; padding: 20px; }
+  .out .busy { position: absolute; inset: 0; display: none; place-items: center; background: rgba(0,0,0,.55); font-size: 15px; }
+  .out.loading .busy { display: grid; }
+  .busy span::after { content: ""; animation: dots 1s steps(4) infinite; }
+  @keyframes dots { 0% { content: ""; } 25% { content: "."; } 50% { content: ".."; } 75% { content: "..."; } }
+  .meta { display: flex; justify-content: space-between; gap: 10px; color: var(--dim); font-size: 12px; margin-top: 12px; flex-wrap: wrap; }
+  .history { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; margin-top: 14px; }
+  .history button { aspect-ratio: 1; padding: 0; border: 0; background: var(--tile); cursor: pointer; }
+  .history img { width: 100%; height: 100%; image-rendering: pixelated; display: block; }
+  .history button[aria-current="true"] { outline: 3px solid var(--accent); }
+
+  /* reference */
+  pre { margin: 0; background: #000; padding: 16px; font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; line-height: 1.6;
+        color: #cfcac0; overflow-x: auto; position: relative; }
+  pre .s { color: var(--warm); } pre .c { color: #5d5a52; }
+  .tabs { display: flex; gap: 4px; margin-bottom: 0; }
+  .tabs button { background: var(--field); border: 0; color: var(--dim); padding: 8px 14px; cursor: pointer; font-size: 13px; }
+  .tabs button[aria-selected="true"] { background: #000; color: var(--fg); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 18px; }
+  th { text-align: left; font-weight: normal; color: var(--dim); font-size: 12px; letter-spacing: 1px; padding: 0 12px 8px 0; }
+  td { padding: 9px 12px 9px 0; border-top: 2px solid var(--line); vertical-align: top; color: #cfcac0; }
+  td code { font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; color: var(--fg); }
+
+  .toast { position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 20px); background: var(--fg); color: #000;
+           padding: 10px 16px; font-size: 14px; opacity: 0; pointer-events: none; transition: all .2s steps(3); z-index: 9; }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+  [hidden] { display: none !important; }
+
+  /* the portal's mascot: a penguin peeking over the header, watching the cursor */
+  .mascot { position: relative; width: 108px; height: 120px; flex: none; cursor: pointer; border: 0; padding: 0;
+            background: url(../assets/scenes/penguin.png) 0 0 / 100% 100% no-repeat; image-rendering: pixelated; }
+  .mascot .eye { position: absolute; top: calc(100% * 4 / 20); width: calc(100% * 4 / 18); height: calc(100% * 4 / 20); overflow: hidden; }
+  .mascot .pupil { position: absolute; width: 50%; height: 50%; background: #14121a; }
+  .mascot .say { position: absolute; left: 50%; bottom: 100%; transform: translate(-50%, -6px); background: #fff; color: #000;
+                 font-size: 14px; padding: 4px 10px; white-space: nowrap; opacity: 0; transition: opacity .12s steps(2); }
+  .mascot .say.show { opacity: 1; }
+
+  @media (max-width: 900px) {
+    .grid, .play { grid-template-columns: 1fr; }
+    .mascot { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) { *, *::after { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<nav class="topbar" style="--c:var(--accent)"></nav>
+
+<div class="banner" id="banner"><div class="wrap">
+  <header class="top">
+    <div>
+      <p class="kicker">DEV PORTAL</p>
+      <h1 id="hello">Hi!</h1>
+      <span class="status notch" id="status"><i></i><span>checking m1...</span></span>
+    </div>
+    <button class="mascot" id="mascot" type="button" aria-label="Poke the penguin">
+      <span class="eye" style="left:calc(100% * 5 / 18)"><span class="pupil"></span></span>
+      <span class="eye" style="left:calc(100% * 10 / 18)"><span class="pupil"></span></span>
+      <span class="say" id="say">noot!</span>
+    </button>
+  </header>
+</div></div>
+<div class="wrap">
+
+  <div class="grid">
+    <section class="card wide notch" aria-labelledby="pg">
+      <h2 id="pg">Playground</h2>
+      <p class="hint">Runs m1 for real, signed in as you. Same request as the API: copy it from the reference below.</p>
+      <div class="play">
+        <form id="gen" autocomplete="off">
+          <label class="l" for="prompt"><span>PROMPT</span><span id="count">0 / 300</span></label>
+          <div class="field notch"><input id="prompt" maxlength="300" placeholder="a little green frog wearing a crown" required></div>
+          <div class="ideas" id="ideas"></div>
+          <label class="l" for="cr"><span>CREATIVITY</span><span id="cr-v">0.50</span></label>
+          <input type="range" id="cr" min="0" max="1" step="0.05" value="0.5">
+          <div class="ends"><span>strict</span><span>wild</span></div>
+          <div class="row2">
+            <div>
+              <label class="l" for="seed"><span>SEED</span><span>blank = random</span></label>
+              <div class="field notch"><input id="seed" inputmode="numeric" placeholder="random"><button type="button" class="side" id="dice" title="random seed">roll</button></div>
+            </div>
+            <div>
+              <label class="l" for="scale"><span>DOWNLOAD SIZE</span></label>
+              <div class="field notch"><select id="scale"><option value="1">64 px</option><option value="4">256 px</option><option value="8" selected>512 px</option><option value="16">1024 px</option></select></div>
+            </div>
+          </div>
+          <button class="btn" id="go" type="submit">Generate</button>
+        </form>
+        <div>
+          <div class="out notch" id="out"><div class="empty" id="empty">your sprite shows up here</div><img id="img" alt="" hidden><div class="busy"><span>drawing</span></div></div>
+          <div class="meta"><span id="m-left"></span><a id="dl" href="#" download hidden>download png</a></div>
+          <div class="history" id="history"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card notch" aria-labelledby="acc">
+      <h2 id="acc">Account</h2>
+      <dl><dt>Username</dt><dd id="a-user">...</dd><dt>Email</dt><dd id="a-email">...</dd>
+          <dt>Member since</dt><dd id="a-since">...</dd><dt>Signed in until</dt><dd id="a-exp">...</dd></dl>
+      <button class="btn ghost small" id="signout2" type="button">Sign out</button>
+    </section>
+
+    <section class="card notch" aria-labelledby="tok">
+      <h2 id="tok">API keys &amp; allowance</h2>
+      <p class="hint">Scripts sign in with an API key, or with your email and password. Every account gets 15 generations a
+        day, shared across keys, the Studio and the playground.</p>
+      <dl><dt>Active keys</dt><dd id="k-count">...</dd><dt>Today</dt><dd id="k-quota">...</dd></dl>
+      <a class="btn small" href="keys/" style="--c:var(--warm)">Manage keys</a>
+    </section>
+
+    <section class="card wide notch" aria-labelledby="ref">
+      <h2 id="ref">API reference</h2>
+      <p class="hint">One endpoint makes sprites: <code>POST <span class="base"></span>/api/generate</code>, which returns a PNG. Sign in with an API key (below), or put <code>"email"</code> + <code>"password"</code> in the body instead.</p>
+      <div class="tabs" role="tablist"><button role="tab" aria-selected="true" data-tab="curl">curl</button><button role="tab" aria-selected="false" data-tab="py">python</button><button role="tab" aria-selected="false" data-tab="js">javascript</button></div>
+      <pre id="code"></pre>
+      <table>
+        <tr><th>FIELD</th><th>TYPE</th><th>WHAT IT DOES</th></tr>
+        <tr><td><code>prompt</code></td><td>text, 1-300</td><td>What to draw. Creatures, items, plants, buildings and tiles work best.</td></tr>
+        <tr><td><code>creativity</code></td><td>0-1, default 0.5</td><td>0 sticks closest to the prompt, 1 is loosest.</td></tr>
+        <tr><td><code>seed</code></td><td>whole number, optional</td><td>Same seed + prompt + creativity = the same sprite. Leave out for a random one.</td></tr>
+        <tr><td><code>scale</code></td><td>1-16, default 1</td><td>Upscales the 64&times;64 result with crisp pixels.</td></tr>
+        <tr><td><code>Authorization: Bearer MOSAIC_...</code> or <code>api_token</code></td><td>header / text</td><td>Sign in with an API key (make them on the <a href="keys/">keys page</a>)...</td></tr>
+        <tr><td><code>email</code> (or <code>username</code>) + <code>password</code></td><td>text</td><td>...or with your account, instead of a key.</td></tr>
+      </table>
+      <table>
+        <tr><th>RESPONSE</th><th></th><th></th></tr>
+        <tr><td><code>200</code></td><td>image/png</td><td>Header <code>X-Seed</code> is the seed it used (send it back to get the same sprite); <code>X-Quota-Remaining</code> is how many you have left today.</td></tr>
+        <tr><td><code>401</code></td><td>json</td><td>The key is wrong or revoked, or the email/password don't match.</td></tr>
+        <tr><td><code>422</code></td><td>json</td><td>A field is missing or out of range.</td></tr>
+        <tr><td><code>429</code></td><td>json</td><td>All 15 of today's generations used (refills at 00:00 UTC), or 10 failed sign-ins from one address in 5 minutes.</td></tr>
+      </table>
+    </section>
+  </div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const toast = (m, ms = 2400) => { const t = $("#toast"); t.textContent = m; t.classList.add("show");
+                                    clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove("show"), ms); };
+  const S = Session.current();
+  if (!S) return;
+  const when = t => new Date(t * 1000).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
+  Kit.nav("Dev portal");
+  Kit.json("../assets/scenes/scenes.json").then(list => {
+    const sc = Kit.pick(list);
+    $("#banner").style.backgroundImage = `url(../assets/scenes/${sc.name}.png)`;
+    $("#banner").style.backgroundSize = `${sc.frames * 100}% auto`;
+  });
+  $("#hello").textContent = `Hi, ${S.username}!`;
+  document.querySelectorAll(".base").forEach(e => e.textContent = MOSAIC.backend);
+
+  const signout = async () => { await Session.signOut(); location.href = "../"; };
+  $("#signout2").onclick = signout;
+
+  // ---- account
+  Session.api("/api/me").then(r => {
+    if (r.status === 401) return location.replace("../login/?next=portal");
+    if (!r.ok) return toast(Session.detail(r.data));
+    $("#a-user").textContent = r.data.username; $("#a-email").textContent = r.data.email || "(none)";
+    $("#a-since").textContent = r.data.created ? when(r.data.created) : "before we kept track";
+    $("#a-exp").textContent = when(S.expires);
+  });
+
+  // ---- server status
+  Session.api("/api/health", { auth: false }).then(r => {
+    const st = $("#status"), t = st.querySelector("span");
+    if (r.ok) { st.classList.add("on"); t.textContent = r.data.model_loaded ? "m1 online" : "m1 starting up"; }
+    else { st.classList.add("off"); t.textContent = "m1 server unreachable"; }
+  });
+
+  // ---- token
+  // ---- keys + allowance summary
+  function showQuota(q) { $("#k-quota").textContent = `${q.remaining} of ${q.limit} generations left`; }
+  Session.api("/api/keys").then(r => { if (r.ok) $("#k-count").textContent = `${r.data.keys.length} of ${r.data.max}`; });
+  Kit.whoami().then(u => u && showQuota(u.quota));
+
+  // ---- playground
+  const IDEAS = ["a little green frog wearing a crown", "a red potion bottle with a cork", "a cozy cottage with a red roof",
+                 "a crimson dragon with golden wings", "a cute penguin", "a treasure chest", "a lava texture tile"];
+  IDEAS.forEach(t => { const b = document.createElement("button"); b.type = "button"; b.textContent = t;
+                       b.onclick = () => { $("#prompt").value = t; $("#prompt").dispatchEvent(new Event("input")); }; $("#ideas").appendChild(b); });
+  $("#prompt").addEventListener("input", e => { $("#count").textContent = `${e.target.value.length} / 300`; refreshCode(); });
+  $("#cr").addEventListener("input", e => { $("#cr-v").textContent = (+e.target.value).toFixed(2); refreshCode(); });
+  $("#seed").addEventListener("input", e => { e.target.value = e.target.value.replace(/\D/g, "").slice(0, 10); refreshCode(); });
+  $("#scale").addEventListener("change", refreshCode);
+  $("#dice").onclick = () => { $("#seed").value = Math.floor(Math.random() * 1e6); refreshCode(); };
+
+  const history = [];
+  function showResult(h) {
+    $("#empty").hidden = true; $("#img").hidden = false; $("#img").src = h.url; $("#img").alt = h.prompt;
+    $("#m-left").textContent = `seed ${h.seed} · creativity ${h.cr} · ${(h.ms / 1000).toFixed(1)} s`;
+    const dl = $("#dl"); dl.hidden = false; dl.href = h.url; dl.download = `${h.prompt.slice(0, 40).replace(/[^\w]+/g, "-")}-${h.seed}.png`;
+    [...$("#history").children].forEach(b => b.setAttribute("aria-current", b.dataset.url === h.url));
+  }
+  $("#gen").addEventListener("submit", async e => {
+    e.preventDefault();
+    const prompt = $("#prompt").value.trim();
+    if (!prompt) { $("#prompt").focus(); return toast("type a prompt first"); }
+    const body = { prompt, creativity: +$("#cr").value, scale: +$("#scale").value };
+    if ($("#seed").value) body.seed = +$("#seed").value;
+    $("#go").disabled = true; $("#out").classList.add("loading");
+    const t0 = performance.now();
+    const r = await Session.api("/api/generate", { json: body });
+    $("#go").disabled = false; $("#out").classList.remove("loading");
+    if (r.status === 401) return location.replace("../login/?next=portal");
+    if (r.status === 429 && r.data?.detail?.quota) { showQuota(r.data.detail.quota);
+      return Kit.alert("You've used all of today's generations. They refill at midnight UTC.", { title: "Out of sprites for today" }); }
+    const left = r.res && r.res.headers.get("X-Quota-Remaining");
+    if (left != null) $("#k-quota").textContent = `${left} of 15 generations left`;
+    if (!r.ok) return toast(Session.detail(r.data || {}));
+    const url = URL.createObjectURL(await r.res.blob());
+    const h = { url, prompt, seed: r.res.headers.get("X-Seed"), cr: body.creativity.toFixed(2),
+                ms: Math.round(performance.now() - t0) };
+    history.unshift(h); if (history.length > 8) URL.revokeObjectURL(history.pop().url);
+    $("#history").innerHTML = "";
+    history.forEach(x => { const b = document.createElement("button"); b.type = "button"; b.dataset.url = x.url;
+                           b.title = `${x.prompt} (seed ${x.seed})`; b.innerHTML = `<img src="${x.url}" alt="">`;
+                           b.onclick = () => showResult(x); $("#history").appendChild(b); });
+    showResult(h); say(["ooh!", "nice!", "noot noot!", "pretty!"][Math.floor(Math.random() * 4)]);
+  });
+
+  // ---- reference code, kept in sync with the playground
+  let tab = "curl";
+  document.querySelectorAll(".tabs button").forEach(b => b.onclick = () => {
+    tab = b.dataset.tab; document.querySelectorAll(".tabs button").forEach(x => x.setAttribute("aria-selected", x === b)); refreshCode();
+  });
+  const esc = s => s.replace(/[&<>]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+  function refreshCode() {
+    const p = esc(($("#prompt").value.trim() || "a little green frog wearing a crown").replace(/["'\\]/g, ""));
+    const cr = (+$("#cr").value).toFixed(2), seed = $("#seed").value, scale = $("#scale").value, B = MOSAIC.backend;
+    const tokenShown = "MOSAIC_...";
+    const q = v => `<span class="s">${v}</span>`;
+    const seedLine = (k, sep) => seed ? `\n    ${k}${sep}${q(seed)},` : "";
+    const code = {
+      curl: `curl ${B}/api/generate \\\n  -H ${q(`'Authorization: Bearer ${tokenShown}'`)} \\\n  -H 'content-type: application/json' \\\n  -d '{\n    "prompt":     ${q(`"${p}"`)},\n    "creativity": ${q(cr)},${seed ? `\n    "seed":       ${q(seed)},` : ""}\n    "scale":      ${q(scale)}\n  }' -o sprite.png`,
+      py: `<span class="c"># pip install requests</span>\nimport requests\n\nr = requests.post(\n    "${B}/api/generate",\n    headers={"Authorization": ${q(`"Bearer ${tokenShown}"`)}},\n    json={"prompt": ${q(`"${p}"`)}, "creativity": ${q(cr)},${seed ? ` "seed": ${q(seed)},` : ""} "scale": ${q(scale)}},\n)\nr.raise_for_status()\nopen("sprite.png", "wb").write(r.content)\nprint("seed", r.headers["X-Seed"], "| left today", r.headers["X-Quota-Remaining"])`,
+      js: `const r = await fetch("${B}/api/generate", {\n  method: "POST",\n  headers: { "content-type": "application/json", Authorization: ${q(`"Bearer ${tokenShown}"`)} },\n  body: JSON.stringify({ prompt: ${q(`"${p}"`)}, creativity: ${q(cr)},${seed ? ` seed: ${q(seed)},` : ""} scale: ${q(scale)} }),\n});\nconst png = await r.blob();   <span class="c">// image/png</span>`,
+    };
+    $("#code").innerHTML = code[tab];
+  }
+  refreshCode();
+
+  // ---- penguin: eyes follow the cursor (4x4 eyes, 2x2 pupils: whole pixels), says things when poked
+  const m = $("#mascot"), pupils = m.querySelectorAll(".pupil");
+  addEventListener("pointermove", e => pupils.forEach(p => {
+    const r = p.parentElement.getBoundingClientRect();
+    const ox = Math.round(1 + Math.max(-1, Math.min(1, (e.clientX - r.left - r.width / 2) / 200))),
+          oy = Math.round(1 + Math.max(-1, Math.min(1, (e.clientY - r.top - r.height / 2) / 200)));
+    p.style.left = ox * 25 + "%"; p.style.top = oy * 25 + "%";
+  }));
+  function say(t) { const s = $("#say"); s.textContent = t; s.classList.add("show"); clearTimeout(say.t); say.t = setTimeout(() => s.classList.remove("show"), 1300);
+                    if (!reduce) m.animate([{ transform: "none" }, { transform: "translateY(-12px)" }, { transform: "none" }], { duration: 240, easing: "steps(3)" }); }
+  m.onclick = () => say(["noot!", "brr!", "hi " + S.username + "!", "make something!"][Math.floor(Math.random() * 4)]);
+})();
+</script>
+</body>
+</html>

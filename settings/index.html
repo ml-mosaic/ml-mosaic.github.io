@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mosaic · Your profile</title>
+<link rel="icon" type="image/svg+xml" sizes="any" href="../assets/favicon.svg?v=2">
+<link rel="icon" type="image/png" sizes="64x64" href="../assets/favicon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tiny5&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/kit.css">
+<script src="../config.js"></script>
+<script src="../assets/session.js"></script>
+<script>if (!Session.current()) location.replace("../login/?next=studio");</script>
+<script src="../assets/kit.js" data-root="../"></script>
+<style>
+  main { padding: 40px 0 90px; }
+  .kicker { color: var(--blue); letter-spacing: 3px; font-size: 13px; margin: 0 0 10px; }
+  h1 { font-weight: normal; font-size: clamp(32px, 5vw, 48px); margin: 0 0 30px; }
+  .layout { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 40px; align-items: start; }
+  .card { background: var(--panel); padding: 22px; margin: var(--u) var(--u) 26px; }
+  .card h2 { font-weight: normal; font-size: 20px; margin: 0 0 4px; }
+  .card .hint { color: var(--dim); font-size: 13px; margin: 0 0 18px; line-height: 1.5; }
+
+  /* picture */
+  .pic { display: flex; gap: 22px; align-items: center; flex-wrap: wrap; }
+  .pic .big { width: 128px; height: 128px; image-rendering: pixelated; background: #000; box-shadow: 0 0 0 4px #000, 0 0 0 8px #2a2925; flex: none; }
+  .pic .opts { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 220px; }
+  .pic .src { color: var(--dim); font-size: 12px; margin-top: 6px; }
+  .gen { display: flex; margin: 14px var(--u) 0; background: var(--field); }
+  .gen input { flex: 1; min-width: 0; background: none; border: 0; outline: none; padding: 11px 12px; font-size: 15px; }
+  .gen .btn { margin: 0; }
+  .cost { color: #6f6880; font-size: 12px; margin: 10px 4px 0; }
+  .pic.busy .big { animation: wobble .5s steps(2) infinite; }
+  @keyframes wobble { 50% { transform: rotate(3deg) scale(.96); } }
+
+  /* fields */
+  label.l { display: flex; justify-content: space-between; color: var(--dim); font-size: 13px; letter-spacing: 1px; margin: 0 0 8px; }
+  .field { background: var(--field); margin: var(--u) var(--u) 18px; display: flex; }
+  .field:focus-within { --c: var(--fg); }
+  .field input, .field textarea { flex: 1; min-width: 0; background: none; border: 0; outline: none; padding: 11px 12px; font-size: 16px; resize: none; }
+  .field textarea { height: 84px; line-height: 1.4; }
+  .field .pre { color: var(--dim); padding: 11px 0 11px 12px; font-size: 16px; }
+  .banners { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 22px; }
+  .banners button { aspect-ratio: 1.4; border: 0; padding: 0; cursor: pointer; background: #1f1830 no-repeat 0 62% / 200% auto; image-rendering: pixelated;
+                    position: relative; box-shadow: 0 0 0 3px #2a2925; }
+  .banners button span { position: absolute; left: 6px; bottom: 5px; font-size: 12px; background: rgba(0,0,0,.65); padding: 2px 6px; }
+  .banners button[aria-pressed="true"] { box-shadow: 0 0 0 4px var(--yellow); }
+  .savebar { display: flex; align-items: center; gap: 14px; }
+  .savebar .dirty { color: var(--yellow); font-size: 13px; }
+
+  /* live preview of the public card */
+  .preview { position: sticky; top: 90px; }
+  .preview .lbl { color: var(--dim); font-size: 12px; letter-spacing: 2px; margin: 0 0 10px 4px; }
+  .pcard { background: #0e0c12; margin: var(--u); --c: #2e2838; overflow: hidden; }
+  .pcard .ban { position: relative; height: 140px; background: #1f1830 no-repeat 0 62% / 200% auto; image-rendering: pixelated; overflow: hidden; }
+  .pcard .body { padding: 0 18px 20px; }
+  .pcard .av { width: 80px; height: 80px; image-rendering: pixelated; margin-top: -40px; position: relative; box-shadow: 0 0 0 4px #0e0c12; background: #0e0c12; }
+  .pcard h3 { font-weight: normal; font-size: 24px; margin: 10px 0 2px; overflow-wrap: anywhere; }
+  .pcard .handle { color: var(--dim); font-size: 13px; margin: 0 0 10px; overflow-wrap: anywhere; }
+  .pcard .handle a { color: var(--blue); text-decoration: none; }
+  .pcard p { color: #c8c2d4; margin: 0; line-height: 1.45; font-size: 14px; overflow-wrap: anywhere; min-height: 20px; }
+  .danger h2 { color: var(--bad); }
+  .account dl { display: grid; grid-template-columns: auto 1fr; gap: 10px 18px; margin: 0; font-size: 15px; }
+  .account dt { color: var(--dim); } .account dd { margin: 0; overflow-wrap: anywhere; }
+
+  @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } .preview { position: static; order: -1; } }
+</style>
+</head>
+<body>
+<nav class="topbar" style="--c:var(--blue)"></nav>
+<main class="wrap">
+  <p class="kicker">SETTINGS</p>
+  <h1>Your profile</h1>
+  <div class="layout">
+    <div>
+      <section class="card notch">
+        <h2>Profile picture</h2>
+        <p class="hint">Upload any image (it becomes 64&times;64 pixel art), have m1 draw one, or keep the pattern made from your name.</p>
+        <div class="pic" id="pic">
+          <img class="big" id="pic-img" alt="Your profile picture">
+          <div class="opts">
+            <label class="btn ghost small" style="text-align:center">Upload an image<input type="file" id="upload" accept="image/png,image/jpeg,image/gif,image/webp" hidden></label>
+            <button class="btn ghost small" id="pattern" type="button">Use my pixel pattern</button>
+            <span class="src" id="pic-src"></span>
+          </div>
+        </div>
+        <form class="gen notch" id="gen"><input id="gen-prompt" maxlength="300" placeholder="or have m1 draw it: a sleepy fox face"><button class="btn small" type="submit" style="--c:var(--pink)">Draw it</button></form>
+        <p class="cost" id="cost">Costs 1 of today's generations.</p>
+      </section>
+
+      <form class="card notch" id="form" autocomplete="off">
+        <h2>About you</h2>
+        <p class="hint">Shown on your profile in the Studio.</p>
+        <label class="l" for="dn"><span>DISPLAY NAME</span><span id="dn-c">0 / 32</span></label>
+        <div class="field notch"><input id="dn" maxlength="32"></div>
+        <label class="l" for="bio"><span>BIO</span><span id="bio-c">0 / 160</span></label>
+        <div class="field notch"><textarea id="bio" maxlength="160" placeholder="say hi, list your favourite sprite, anything"></textarea></div>
+        <label class="l" for="web"><span>WEBSITE</span></label>
+        <div class="field notch"><input id="web" maxlength="120" placeholder="your-game.itch.io"></div>
+        <label class="l"><span>BANNER</span></label>
+        <div class="banners" id="banners"></div>
+        <div class="savebar"><button class="btn" type="submit" style="--c:var(--yellow)">Save profile</button><span class="dirty" id="dirty" hidden>unsaved changes</span></div>
+      </form>
+
+      <section class="card notch account">
+        <h2>Account</h2>
+        <p class="hint">Your username is permanent. Manage API keys on the <a href="../portal/keys/">keys page</a>.</p>
+        <dl><dt>Username</dt><dd id="a-user"></dd><dt>Email</dt><dd id="a-email"></dd><dt>Today</dt><dd id="a-quota"></dd></dl>
+      </section>
+
+      <form class="card notch danger" id="del" autocomplete="off" style="--c:#4a1c1a">
+        <h2>Danger zone</h2>
+        <p class="hint">Deleting your account removes your profile, picture, sprites, likes and follows, and every API key stops
+          working right away. There's no undo.</p>
+        <label class="l" for="del-pw"><span>TYPE YOUR PASSWORD TO CONFIRM</span></label>
+        <div class="field notch"><input id="del-pw" type="password" autocomplete="current-password" placeholder="********"></div>
+        <button class="btn" type="submit" style="--c:var(--bad)">Delete my account</button>
+      </form>
+    </div>
+
+    <aside class="preview">
+      <p class="lbl">PREVIEW: HOW OTHERS SEE YOU</p>
+      <div class="pcard notch"><div class="ban" id="p-ban"></div>
+        <div class="body"><img class="av" id="p-av" alt=""><h3 id="p-dn"></h3><p class="handle" id="p-handle"></p><p id="p-bio"></p></div></div>
+    </aside>
+  </div>
+</main>
+
+<script>
+(() => {
+  const $ = s => document.querySelector(s), { esc, toast } = Kit;
+  Kit.nav("");
+  let me = null, saved = null, banner = "autumn", scenes = [];
+  const BANNERS = ["autumn", "beach", "sunset", "snow"];
+
+  function fill(u) {
+    me = u;
+    const p = u.profile;
+    saved = { display_name: p.display_name, bio: p.bio, website: p.website, banner: p.banner };
+    $("#dn").value = p.display_name; $("#bio").value = p.bio; $("#web").value = p.website.replace(/^https?:\/\//, "");
+    banner = p.banner;
+    $("#a-user").textContent = "@" + u.username; $("#a-email").textContent = u.email || "(none)";
+    showQuota(u.quota); showPic(p); preview(); counts(); dirty();
+  }
+  function showQuota(q) {
+    $("#a-quota").textContent = `${q.remaining} of ${q.limit} generations left`;
+    $("#cost").textContent = q.remaining ? `Costs 1 of today's generations (${q.remaining} left).` : "No generations left today: try again after midnight UTC.";
+  }
+  function showPic(p) {
+    me.profile = { ...me.profile, ...p };
+    const src = Kit.pfp({ username: me.username, avatar: p.avatar }, 16);
+    $("#pic-img").src = src; $("#p-av").src = src;
+    $("#pic-src").textContent = { upload: "your upload", m1: "drawn by m1", pattern: "your pixel pattern" }[p.avatar_source] || "";
+    $("#pattern").disabled = !p.avatar;
+    const nav = document.querySelector("#kit-avatar"); if (nav) nav.src = Kit.pfp({ username: me.username, avatar: p.avatar });
+  }
+
+  // ---- live preview
+  let critterEl = null;
+  function preview() {
+    $("#p-dn").textContent = $("#dn").value.trim() || me.username;
+    const w = $("#web").value.trim();
+    $("#p-handle").innerHTML = `@${esc(me.username)}${w ? ` &middot; <a>${esc(w.replace(/^https?:\/\//, ""))}</a>` : ""}`;
+    $("#p-bio").textContent = $("#bio").value.trim() || "No bio yet.";
+    $("#p-ban").style.backgroundImage = `url(../assets/scenes/${banner}.png)`;
+    document.querySelectorAll("#banners button").forEach(b => b.setAttribute("aria-pressed", b.dataset.b === banner));
+    const sc = scenes.find(s => s.name === banner);
+    if (sc && critterEl?.dataset.b !== banner) {
+      critterEl?.remove();
+      const c = Kit.critter(sc.animal, $("#p-ban"), { right: "18px", bottom: "-6px", P: 3 });
+      critterEl = c.el; critterEl.dataset.b = banner;
+    }
+  }
+  const counts = () => { $("#dn-c").textContent = `${$("#dn").value.length} / 32`; $("#bio-c").textContent = `${$("#bio").value.length} / 160`; };
+  const current = () => ({ display_name: $("#dn").value.trim(), bio: $("#bio").value.trim(), website: $("#web").value.trim(), banner });
+  const norm = v => ({ ...v, website: v.website.replace(/^https?:\/\//, "") });
+  function dirty() { $("#dirty").hidden = JSON.stringify(norm(current())) === JSON.stringify(norm(saved)); }
+  ["#dn", "#bio", "#web"].forEach(id => $(id).addEventListener("input", () => { counts(); preview(); dirty(); }));
+  $("#banners").innerHTML = BANNERS.map(b => `<button type="button" data-b="${b}" style="background-image:url(../assets/scenes/${b}.png)" aria-label="${b} banner"><span>${b}</span></button>`).join("");
+  document.querySelectorAll("#banners button").forEach(b => b.onclick = () => { banner = b.dataset.b; preview(); dirty(); });
+  addEventListener("beforeunload", e => { if (!$("#dirty").hidden) { e.preventDefault(); e.returnValue = ""; } });
+
+  // ---- save
+  $("#form").addEventListener("submit", async e => {
+    e.preventDefault();
+    const btn = e.submitter || $("#form .btn"); btn.disabled = true;
+    const r = await Session.api("/api/profile", { json: current() });
+    btn.disabled = false;
+    if (!r.ok) return toast(Session.detail(r.data || {}));
+    saved = { display_name: r.data.display_name, bio: r.data.bio, website: r.data.website, banner: r.data.banner };
+    $("#web").value = r.data.website.replace(/^https?:\/\//, ""); dirty(); preview();
+    const nn = document.querySelector("#kit-name"); if (nn) nn.textContent = r.data.display_name;
+    toast("Saved! Looking good.");
+    if (critterEl) { Kit.hop(critterEl); Kit.talk(critterEl, "ooh, fancy!"); }
+  });
+
+  // ---- picture: upload / draw / pattern
+  $("#upload").addEventListener("change", async e => {
+    const f = e.target.files[0]; e.target.value = "";
+    if (!f) return;
+    if (f.size > 3 * 1024 * 1024) return Kit.alert("That image is over 3 MB. Try a smaller one?", { title: "A bit too big" });
+    const data = await new Promise(res => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.readAsDataURL(f); });
+    $("#pic").classList.add("busy");
+    const r = await Session.api("/api/profile/avatar", { json: { image: data } });
+    $("#pic").classList.remove("busy");
+    if (!r.ok) return Kit.alert(Session.detail(r.data || {}), { title: "Couldn't use that image" });
+    showPic(r.data); toast("New picture, who dis?");
+  });
+  $("#gen").addEventListener("submit", async e => {
+    e.preventDefault();
+    const prompt = $("#gen-prompt").value.trim();
+    if (!prompt) { $("#gen-prompt").focus(); return toast("Describe your picture first"); }
+    $("#pic").classList.add("busy");
+    const r = await Session.api("/api/profile/avatar/generate", { json: { prompt } });
+    $("#pic").classList.remove("busy");
+    if (r.status === 429) { showQuota(r.data.detail.quota); return Kit.alert("You've used all of today's generations. They refill at midnight UTC.", { title: "Out of sprites for today" }); }
+    if (!r.ok) return toast(Session.detail(r.data || {}));
+    showPic(r.data); showQuota(r.data.quota); toast("m1 drew you a picture!");
+    const b = $("#pic-img").getBoundingClientRect(); Kit.burst(b.left + b.width / 2, b.top + 20, "heart", 5);
+  });
+  $("#pattern").onclick = async () => {
+    if (!await Kit.confirm("Your current picture will be replaced by the pixel pattern made from your name.", { title: "Go back to your pattern?", ok: "Use the pattern" })) return;
+    const r = await Session.api("/api/profile/avatar/clear", { method: "POST" });
+    if (!r.ok) return toast(Session.detail(r.data || {}));
+    showPic(r.data);
+  };
+
+  // ---- delete the account
+  $("#del").addEventListener("submit", async e => {
+    e.preventDefault();
+    const password = $("#del-pw").value;
+    if (!password) { $("#del-pw").focus(); return toast("Type your password first"); }
+    if (!await Kit.confirm(`@${me.username}, your sprites, your keys: all gone, for good. Sure?`,
+                           { title: "Delete your account?", ok: "Delete it forever", cancel: "Keep my account", danger: true })) return;
+    const r = await Session.api("/api/account/delete", { json: { password } });
+    if (!r.ok) { $("#del-pw").value = ""; return Kit.alert(Session.detail(r.data || {}), { title: "Not deleted" }); }
+    Session.clear();
+    try { localStorage.removeItem("mosaic-user"); } catch (_) {}
+    await Kit.alert("Your account is gone. Thanks for drawing with us; the animals will miss you.", { title: "Bye for now!", ok: "Bye!" });
+    location.href = "../";
+  });
+
+  Promise.all([Kit.whoami(), Kit.json("../assets/scenes/scenes.json")]).then(([u, sc]) => {
+    scenes = sc;
+    if (!u) return location.replace("../login/?next=studio");
+    fill(u);
+  });
+})();
+</script>
+</body>
+</html>

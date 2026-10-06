@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Introducing m1 · Mosaic</title>
+<meta name="description" content="m1 turns a sentence into a 64x64 pixel-art sprite. How it draws, how it was trained, what it's good at, and how to try it.">
+<link rel="icon" type="image/svg+xml" sizes="any" href="../../assets/favicon.svg?v=2">
+<link rel="icon" type="image/png" sizes="64x64" href="../../assets/favicon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tiny5&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/kit.css">
+<script src="../../config.js"></script>
+<script src="../../assets/session.js"></script>
+<script src="../../assets/kit.js" data-root="../../"></script>
+<style>
+  .progress { position: fixed; left: 0; top: 0; height: 4px; background: var(--orange); z-index: 40; width: 0; }
+
+  /* ---------------------------------------------------------------- hero */
+  .hero { padding: 64px 0 0; text-align: center; }
+  .hero .meta { display: inline-flex; gap: 12px; align-items: center; font-size: 13px; letter-spacing: 2px; color: var(--dim); }
+  .hero .meta .t { background: var(--orange); color: #000; padding: 3px 9px; }
+  .hero h1 { font-weight: normal; font-size: clamp(60px, 12vw, 150px); line-height: .9; margin: 26px 0 22px; }
+  .hero .dek { font-size: clamp(18px, 2.2vw, 22px); line-height: 1.5; color: #d8d2c4; max-width: 720px; margin: 0 auto 30px; }
+  .hero .cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .parade { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin: 56px auto 0; max-width: 980px; padding: 0 24px; }
+  .parade div { aspect-ratio: 1; background: #111 no-repeat 0 0 / 2100% 100%; image-rendering: pixelated; box-shadow: 0 0 0 4px #000, 0 0 0 8px #2a2925; }
+  .parade-l { text-align: center; color: #6f6b62; font-size: 13px; margin: 18px 0 0; }
+
+  /* ---------------------------------------------------------------- article + toc */
+  .doc { display: grid; grid-template-columns: 220px minmax(0, 720px); gap: 64px; justify-content: center; padding: 80px 24px 60px; }
+  .toc { position: sticky; top: 92px; align-self: start; font-size: 14px; }
+  .toc p { color: var(--dim); font-size: 12px; letter-spacing: 2px; margin: 0 0 14px; }
+  .toc ol { list-style: none; margin: 0; padding: 0; counter-reset: t; }
+  .toc li { counter-increment: t; margin: 0 0 4px; }
+  .toc a { display: flex; gap: 10px; padding: 7px 10px; text-decoration: none; color: var(--dim); }
+  .toc a::before { content: counter(t, decimal-leading-zero); color: #4a4740; }
+  .toc a:hover { color: var(--fg); }
+  .toc a.on { color: #000; background: var(--orange); }
+  .toc a.on::before { color: #000; }
+  article { font-size: 18px; line-height: 1.7; color: #d8d2c4; min-width: 0; }
+  article h2 { font-weight: normal; font-size: clamp(32px, 4vw, 42px); color: #fff; margin: 84px 0 18px; line-height: 1.1; scroll-margin-top: 90px; }
+  article h2:first-child { margin-top: 0; }
+  article h2 .n { color: var(--orange); font-size: .55em; vertical-align: .45em; margin-right: 10px; }
+  article h3 { font-weight: normal; font-size: 23px; color: #fff; margin: 44px 0 10px; }
+  article p { margin: 0 0 20px; }
+  article b { color: #fff; font-weight: normal; }
+  article a { color: var(--orange); }
+  article sup a { text-decoration: none; font-size: 12px; margin-left: 2px; }
+  .pull { font-size: clamp(24px, 3vw, 30px); line-height: 1.35; color: #fff; margin: 40px 0; padding-left: 22px; box-shadow: inset 6px 0 0 var(--orange); }
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin: 34px 0; }
+  .stats div { background: var(--panel); padding: 16px; margin: var(--u); }
+  .stats b { display: block; font-size: 28px; color: #fff; }
+  .stats span { color: var(--dim); font-size: 13px; line-height: 1.3; display: block; margin-top: 4px; }
+  figure { margin: 34px 0; }
+  figcaption { color: #8a867b; font-size: 14px; line-height: 1.5; margin-top: 12px; }
+  .panel { background: var(--panel); padding: 20px; margin: var(--u); }
+
+  /* the denoising scrubber */
+  .scrub { display: grid; grid-template-columns: 220px 1fr; gap: 24px; align-items: center; }
+  .scrub .img { aspect-ratio: 1; background: #111 no-repeat 0 0 / 2100% 100%; image-rendering: pixelated; }
+  .scrub label { display: flex; justify-content: space-between; color: var(--dim); font-size: 13px; margin-bottom: 10px; letter-spacing: 1px; }
+  .scrub .prompts { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 16px; }
+  .scrub .prompts button { background: var(--field); border: 0; color: var(--dim); font-size: 12px; padding: 5px 9px; cursor: pointer; }
+  .scrub .prompts button[aria-pressed="true"] { background: var(--fg); color: #000; }
+  input[type=range] { -webkit-appearance: none; appearance: none; width: calc(100% - 8px); margin: 6px 4px; height: 10px; background: var(--line); }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 22px; background: var(--orange); border: 0; cursor: pointer; }
+  input[type=range]::-moz-range-thumb { width: 18px; height: 22px; background: var(--orange); border: 0; border-radius: 0; cursor: pointer; }
+  .phase { font-size: 15px; color: #fff; margin-top: 12px; min-height: 26px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 15px; margin: 8px 0 0; }
+  th { text-align: left; font-weight: normal; color: var(--dim); font-size: 12px; letter-spacing: 1px; padding: 0 14px 10px 0; }
+  td { padding: 11px 14px 11px 0; border-top: 2px solid var(--line); vertical-align: middle; color: #d8d2c4; }
+  td.num { font-family: ui-monospace, Menlo, monospace; font-size: 14px; color: #fff; }
+  td .good { color: var(--green); } td .meh { color: var(--yellow); } td .weak { color: var(--pink); }
+  .sprites { display: flex; gap: 6px; }
+  .sprites i { width: 40px; height: 40px; background: #111 no-repeat; image-rendering: pixelated; flex: none; }
+  .callout { background: #0b1a12; padding: 20px 22px; margin: 30px var(--u); --c: var(--green); font-size: 16px; line-height: 1.6; }
+  .callout b { color: var(--green); }
+  .price { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin: 26px 0; }
+  .price .tier { background: var(--panel); padding: 22px; margin: var(--u); }
+  .price .tier.on { --c: var(--orange); }
+  .price .tier h4 { font-weight: normal; font-size: 13px; letter-spacing: 2px; color: var(--dim); margin: 0 0 8px; }
+  .price .tier .big { font-size: 40px; color: #fff; line-height: 1; }
+  .price .tier .big small { font-size: 16px; color: var(--dim); }
+  .price .tier ul { margin: 16px 0 0; padding: 0; list-style: none; font-size: 15px; }
+  .price .tier li { padding: 5px 0 5px 22px; position: relative; }
+  .price .tier li::before { content: ""; position: absolute; left: 0; top: 13px; width: 10px; height: 10px; background: var(--orange); }
+  .quotes { display: flex; gap: 18px; overflow-x: auto; padding: 10px 4px 16px; scroll-snap-type: x mandatory; margin: 26px 0; }
+  .quote { flex: 0 0 280px; scroll-snap-align: start; background: var(--panel); padding: 20px; margin: var(--u); --c: #2a2925; position: relative; padding-top: 92px; }
+  .quote .slot { position: absolute; left: 20px; top: 14px; width: 88px; height: 72px; }
+  .quote p { font-size: 17px; color: #fff; margin: 0 0 10px; line-height: 1.4; }
+  .quote small { color: var(--dim); font-size: 13px; }
+  .foot { border-top: 2px solid var(--line); margin-top: 70px; padding-top: 20px; font-size: 14px; color: #8a867b; line-height: 1.6; }
+  .foot ol { padding-left: 22px; }
+  .foot li { margin-bottom: 8px; }
+  .share { display: flex; gap: 10px; margin-top: 40px; flex-wrap: wrap; }
+
+  @media (max-width: 980px) {
+    .doc { grid-template-columns: minmax(0, 1fr); gap: 0; padding-top: 50px; }
+    .toc { display: none; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .parade { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 600px) { .scrub, .price { grid-template-columns: 1fr; } .scrub .img { max-width: 260px; } }
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+<nav class="topbar" style="--c:var(--orange)"></nav>
+
+<header class="hero">
+  <div class="wrap">
+    <span class="meta"><span class="t">ANNOUNCEMENT</span><span>OCTOBER 6, 2026</span></span>
+    <h1>Introducing m1</h1>
+    <p class="dek">m1 is our first model: type a sentence, get a 64&times;64 pixel-art sprite with crisp edges and a tidy palette,
+      ready to drop into a game. It's in preview today, in the Studio and through the API.</p>
+    <div class="cta"><a class="btn" href="../../studio/">Try it in the Studio</a><a class="btn ghost" href="../../portal/">Read the API docs</a></div>
+  </div>
+  <div class="parade" id="parade"></div>
+  <p class="parade-l">m1 drawing four prompts, live from its 40 denoising steps. Real output.</p>
+</header>
+
+<div class="doc">
+  <aside class="toc"><p>CONTENTS</p><ol id="toc">
+    <li><a href="#meet">Meet m1</a></li><li><a href="#draw">How it draws</a></li><li><a href="#care">Made with care</a></li>
+    <li><a href="#good">Good at, not yet</a></li><li><a href="#try">Try it</a></li><li><a href="#animals">Field notes</a></li></ol></aside>
+
+  <article>
+    <h2 id="meet"><span class="n">01</span>Meet m1</h2>
+    <p>Making game art is slow, and pixel art is slower: every sprite is hundreds of hand-placed squares. We built m1 to do the
+      first draft. Describe a <b>creature, an item, a plant, a building or a tile</b> and it draws one, at the size pixel
+      artists actually use, with hard edges and a limited palette instead of the blurry, almost-pixel look most image models give you.</p>
+    <div class="stats">
+      <div class="notch"><b>64&times;64</b><span>native canvas, crisp pixels</span></div>
+      <div class="notch"><b>see-through</b><span>transparent background, ready to drop in</span></div>
+      <div class="notch"><b>a few sec</b><span>per sprite<sup><a href="#fn1">1</a></sup></span></div>
+      <div class="notch"><b>15 / day</b><span>free during the preview</span></div>
+    </div>
+    <p>m1 is a <b>preview</b>. It's still learning, and it has clear gaps, which we list below. We'd rather show you an honest
+      early version than a polished demo.</p>
+
+    <h2 id="draw"><span class="n">02</span>How it draws</h2>
+    <p>m1 starts every sprite as pure static and sharpens it, bit by bit, until it matches your words. Drag the slider to watch
+      it happen, on real frames from m1:</p>
+    <figure class="panel notch">
+      <div class="scrub">
+        <div class="img" id="scrub-img"></div>
+        <div>
+          <label for="scrub"><span>DRAWING</span><span id="scrub-v">0%</span></label>
+          <input type="range" id="scrub" min="0" max="100" value="0">
+          <div class="phase" id="phase"></div>
+          <div class="prompts" id="scrub-prompts"></div>
+        </div>
+      </div>
+      <figcaption>Real frames from m1 for the selected prompt.</figcaption>
+    </figure>
+    <h3>You're in charge of how loosely it listens</h3>
+    <p><b>Creativity</b> has three settings. <i>Strict</i> sticks closely to your words, <i>classic</i> is the everyday middle,
+      and <i>wild</i> takes liberties, which is great for ideas you haven't pinned down yet. Every sprite also has a <b>seed</b>:
+      send the same prompt, creativity and seed and you get the same sprite back, so you can find one you like and keep it.</p>
+    <p>When it's done, m1 tidies up like a pixel artist would: every pixel fully solid or fully see-through, a small palette, and
+      everything lined up on the grid. No blur, no smudge.</p>
+
+    <h2 id="care"><span class="n">03</span>Made with care</h2>
+    <p>m1 learned from our own dataset, made by our own artists. <b>No scraped artwork.</b></p>
+    <p>We also check every version of m1 to make sure it draws new sprites, not copies of what it learned from. A model that
+      memorises can look impressive while doing nothing new; that's not what we want to hand you.</p>
+    <p class="pull">Every sprite m1 gives you is a fresh drawing.</p>
+
+    <h2 id="good"><span class="n">04</span>Good at, not yet</h2>
+    <p>From our own spot checks across about 200 prompts. These aren't a formal benchmark; they're what you'll notice first.</p>
+    <table id="strengths"><tr><th>SUBJECT</th><th>HOW IT DOES</th><th>EXAMPLES (FIRST TRY)</th></tr></table>
+    <div class="callout notch"><b>Known gaps.</b> People are the weak spot: ask for "a girl in a red dress" or "a chef" and m1 often
+      draws an object instead. Faces, hands and held items are smudgy at this size, and extras in a prompt (sunglasses, a crown)
+      are often left out. All three are at the top of our list.</div>
+
+    <h2 id="try"><span class="n">05</span>Try it</h2>
+    <p>m1 is available today in preview. Make sprites in the <a href="../../studio/">Studio</a>, or call it from your own code with an
+      API key from the <a href="../../portal/keys/">dev portal</a>. The preview is free, with a daily allowance per account.</p>
+    <div class="price">
+      <div class="tier notch on"><h4>PREVIEW</h4><div class="big">Free <small>for now</small></div>
+        <ul><li>15 sprites a day</li><li>Studio + API + playground</li><li>Download every sprite you make</li><li>Up to 10 API keys</li></ul></div>
+      <div class="tier notch"><h4>LATER</h4><div class="big">Soon<small>-ish</small></div>
+        <ul><li>Bigger allowances</li><li>More models in the menu</li><li>Animated sprites (we hope)</li><li>Your feedback decides</li></ul></div>
+    </div>
+    <div class="share"><a class="btn" href="../../studio/">Open the Studio</a><a class="btn ghost" href="../../status/">Check server status</a></div>
+
+    <h2 id="animals"><span class="n">06</span>Field notes from the team</h2>
+    <p>Our mascots helped test m1. Their reviews are, for legal reasons, entirely made up.</p>
+    <div class="quotes" id="quotes"></div>
+
+    <div class="foot" id="footnotes"><ol>
+      <li id="fn1">Measured in our playground: about 5 seconds from pressing Generate to a finished sprite.</li>
+    </ol></div>
+  </article>
+</div>
+
+<script>
+(() => {
+  const $ = s => document.querySelector(s), { esc } = Kit;
+  Kit.nav("Blog");
+  const R = "../../";
+
+  // reading progress + table of contents that follows you
+  addEventListener("scroll", () => {
+    const h = document.documentElement, p = h.scrollTop / Math.max(1, h.scrollHeight - h.clientHeight);
+    $("#progress").style.width = p * 100 + "%";
+  }, { passive: true });
+  const links = [...document.querySelectorAll("#toc a")];
+  const spy = new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting) links.forEach(a => a.classList.toggle("on", a.getAttribute("href") === "#" + e.target.id));
+  }), { rootMargin: "-15% 0px -75% 0px" });
+  document.querySelectorAll("article h2").forEach(h => spy.observe(h));
+
+  Promise.all([Kit.json(`${R}assets/m1/showcase.json`), Kit.json(`${R}assets/scenes/scenes.json`)])
+    .then(([M, scenes]) => { parade(M); scrubber(M); strengths(M); quotes(scenes); });
+
+  const frame = (el, h, f) => { el.style.backgroundImage = `url(${R}assets/m1/${h.file})`; el.style.backgroundPosition = `${f * 100 / (h.frames - 1)}% 0`; };
+
+  // ---- hero: four prompts drawing themselves, slightly out of step
+  function parade(M) {
+    M.hero.forEach((h, i) => {
+      const el = document.createElement("div"); $("#parade").appendChild(el);
+      let f = 0; frame(el, h, h.frames - 1);
+      setTimeout(function tick() { frame(el, h, f); f = f >= h.frames - 1 ? 0 : f + 1; setTimeout(tick, f === 0 ? 2400 : 140); }, i * 700);
+    });
+  }
+
+  // ---- the denoising scrubber
+  function scrubber(M) {
+    let h = M.hero[0];
+    const phase = p => p === 0 ? "pure static: nothing yet" : p < 20 ? "a blob appears where the subject will be"
+      : p < 50 ? "the silhouette settles" : p < 85 ? "colours and shading come in" : p < 100 ? "the last details" : "done: cleaned up into pixel art";
+    const show = () => { const p = +$("#scrub").value; frame($("#scrub-img"), h, Math.round(p / 100 * (h.frames - 1))); $("#scrub-v").textContent = `${p}%`; $("#phase").textContent = phase(p); };
+    M.hero.forEach((x, i) => {
+      const b = document.createElement("button"); b.type = "button"; b.textContent = x.prompt; b.setAttribute("aria-pressed", i === 0);
+      b.onclick = () => { h = x; document.querySelectorAll("#scrub-prompts button").forEach(y => y.setAttribute("aria-pressed", y === b)); show(); };
+      $("#scrub-prompts").appendChild(b);
+    });
+    $("#scrub").addEventListener("input", show); show();
+    // play it once when it scrolls into view
+    new IntersectionObserver((es, o) => es.forEach(e => {
+      if (!e.isIntersecting || Kit.reduce) return; o.disconnect();
+      let p = 0; (function play() { $("#scrub").value = p; show(); if ((p += 5) <= 100) setTimeout(play, 110); })();
+    }), { threshold: .6 }).observe($("#scrub-img"));
+  }
+
+  function strengths(M) {
+    const G = M.gallery, rows = Math.ceil(G.prompts.length / G.cols);
+    const idx = t => G.prompts.indexOf(t);
+    const ex = list => `<span class="sprites">${list.map(t => idx(t)).filter(k => k >= 0).map(k => {
+      const x = (k % G.cols) * 100 / (G.cols - 1), y = Math.floor(k / G.cols) * 100 / (rows - 1);
+      return `<i title="${esc(G.prompts[k])}" style="background-image:url(${R}assets/m1/${G.file});background-size:${G.cols * 100}% ${rows * 100}%;background-position:${x}% ${y}%"></i>`; }).join("")}</span>`;
+    const data = [
+      ["Creatures & animals", "good", "Great", ["a blue bird on a branch", "a white rabbit", "a tiny red dragon"]],
+      ["Items & loot", "good", "Great", ["a red apple", "a gold coin", "a blue mana potion"]],
+      ["Plants", "good", "Great", ["a red mushroom", "a cherry blossom tree", "a cactus with a flower"]],
+      ["Buildings", "good", "Good", ["a castle tower", "a wooden cabin", "a stone well"]],
+      ["Tiles & textures", "good", "Great", ["a lava texture tile", "a grass tile with flowers", "a water tile"]],
+      ["Fantasy characters", "meh", "Recognisable, rough faces", ["a robot with glowing eyes", "a wizard with a staff", "a knight with a sword"]],
+      ["Everyday people", "weak", "Not yet", []],
+    ];
+    $("#strengths").insertAdjacentHTML("beforeend", data.map(([s, c, v, l]) => `<tr><td>${s}</td><td><span class="${c}">&#9632; ${v}</span></td><td>${l.length ? ex(l) : '<span style="color:#6f6b62">on our list</span>'}</td></tr>`).join(""));
+  }
+
+  function quotes(scenes) {
+    const A = Object.fromEntries(scenes.map(s => [s.animal.name, s.animal]));
+    const Q = [["cat", "It drew me a fish. I ate the fish. Five stars.", "the cat, autumn office"],
+               ["crab", "Finally, a model that understands sideways.", "the crab, beach office"],
+               ["penguin", "Asked for a snowflake. Got a snowflake. Noot.", "the penguin, snow office"],
+               ["seal", "*clap clap* *clap clap*", "the seal, still clapping"]];
+    Q.forEach(([n, t, who]) => {
+      const d = document.createElement("div"); d.className = "quote notch";
+      d.innerHTML = `<div class="slot"></div><p>&ldquo;${t}&rdquo;</p><small>${who}</small>`;
+      $("#quotes").appendChild(d);
+      if (A[n]) Kit.critter(A[n], d.querySelector(".slot"), { left: "0px", bottom: "0px", P: 3 });
+    });
+  }
+})();
+</script>
+</body>
+</html>

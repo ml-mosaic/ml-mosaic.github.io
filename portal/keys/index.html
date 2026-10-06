@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mosaic · API keys</title>
+<link rel="icon" type="image/svg+xml" sizes="any" href="../../assets/favicon.svg?v=2">
+<link rel="icon" type="image/png" sizes="64x64" href="../../assets/favicon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tiny5&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/kit.css">
+<script src="../../config.js"></script>
+<script src="../../assets/session.js"></script>
+<script>if (!Session.current()) location.replace("../../login/?next=portal");</script>
+<script src="../../assets/kit.js" data-root="../../"></script>
+<style>
+  main { padding: 0 0 90px; }
+  .head { position: relative; display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; padding: 44px 0 26px; flex-wrap: wrap; }
+  .kicker { color: var(--green); letter-spacing: 3px; font-size: 13px; margin: 0 0 10px; }
+  h1 { font-weight: normal; font-size: clamp(32px, 5vw, 48px); margin: 0 0 10px; }
+  .head p { color: #b9b4a8; margin: 0; max-width: 560px; line-height: 1.5; }
+  .seal { position: relative; width: 140px; height: 76px; flex: none; }
+  .seal .critter { bottom: 0; right: 0; }
+  .rock { position: absolute; right: -6px; bottom: -6px; width: 124px; height: 14px; background: #2c1830; }
+
+  .card { background: var(--panel); padding: 22px; margin: var(--u) var(--u) 26px; }
+  .card h2 { font-weight: normal; font-size: 20px; margin: 0 0 4px; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .card h2 small { color: var(--dim); font-size: 13px; }
+  .card .hint { color: var(--dim); font-size: 13px; margin: 0 0 16px; line-height: 1.5; }
+  .new { display: flex; background: var(--field); margin: var(--u); }
+  .new input { flex: 1; min-width: 0; background: none; border: 0; outline: none; padding: 12px; font-size: 16px; }
+  .new .btn { margin: 0; }
+  .reveal { margin-top: 20px; background: #0b1a12; padding: 16px; --c: var(--green); animation: drop .25s steps(4); }
+  @keyframes drop { from { transform: translateY(-10px); opacity: 0; } }
+  .reveal p { margin: 0 0 10px; color: var(--green); font-size: 14px; }
+  .tokenbox { display: flex; background: #000; }
+  .tokenbox code { flex: 1; min-width: 0; padding: 12px; font-family: ui-monospace, Menlo, monospace; font-size: 13px; overflow-wrap: anywhere; }
+  .tokenbox button { background: var(--green); color: #000; border: 0; padding: 0 16px; cursor: pointer; font-size: 14px; }
+
+  .keys { width: 100%; border-collapse: collapse; }
+  .keys th { text-align: left; font-weight: normal; color: var(--dim); font-size: 12px; letter-spacing: 1px; padding: 0 12px 10px 0; }
+  .keys td { padding: 12px 12px 12px 0; border-top: 2px solid var(--line); vertical-align: middle; font-size: 15px; }
+  .keys code { font-family: ui-monospace, Menlo, monospace; font-size: 13px; color: #cfcac0; background: #000; padding: 3px 6px; }
+  .keys .nm { display: flex; align-items: center; gap: 10px; }
+  .keys .nm i { width: 18px; height: 10px; flex: none; background: var(--k);
+                box-shadow: 18px 0 0 -3px var(--k), 22px 3px 0 -3px var(--k); }   /* a tiny pixel key */
+  .keys .nm input { background: var(--field); border: 0; outline: 2px solid var(--fg); padding: 4px 6px; font-size: 15px; width: 180px; }
+  .keys .when { color: var(--dim); font-size: 13px; white-space: nowrap; }
+  .keys .fresh { color: var(--green); }
+  .keys .acts { text-align: right; white-space: nowrap; }
+  .keys tr.gone { animation: crumble .45s steps(5) forwards; }
+  @keyframes crumble { to { opacity: 0; transform: translateX(30px) skewX(-12deg); filter: grayscale(1); } }
+  .empty { color: var(--dim); text-align: center; padding: 28px 0 8px; }
+
+  .ways { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .ways > * { min-width: 0; }
+  .ways h3 { font-weight: normal; font-size: 16px; margin: 0 0 8px; }
+  pre { margin: 0; background: #000; padding: 14px; font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; line-height: 1.6; color: #cfcac0; overflow-x: auto; }
+  pre .s { color: var(--yellow); } pre .c { color: #5d5a52; }
+  .quota { display: flex; align-items: center; gap: 12px; color: #b9b4a8; font-size: 14px; flex-wrap: wrap; }
+  .quota .bar { display: flex; gap: 3px; }
+  .quota .bar i { width: 10px; height: 14px; background: var(--green); }
+  .quota .bar i.used { background: #2a2925; }
+
+  @media (max-width: 760px) {
+    .ways { grid-template-columns: 1fr; }
+    .keys th:nth-child(3), .keys td:nth-child(3) { display: none; }
+    .seal { display: none; }
+  }
+</style>
+</head>
+<body>
+<nav class="topbar" style="--c:var(--green)"></nav>
+<main class="wrap">
+  <div class="head">
+    <div>
+      <p class="kicker">DEV PORTAL &middot; KEYS</p>
+      <h1>Your API keys</h1>
+      <p>A key lets a script use m1 as you, without your password. Make one per app or machine, so you can revoke just
+        that one if it ever leaks.</p>
+    </div>
+    <div class="seal" id="seal"><div class="rock"></div></div>
+  </div>
+
+  <section class="card notch">
+    <h2>Make a new key</h2>
+    <p class="hint">Give it a name you'll recognise later, like "my game" or "laptop". You'll see the whole key once.</p>
+    <form class="new notch" id="new"><input id="name" maxlength="40" placeholder="key name, e.g. my game"><button class="btn" type="submit" style="--c:var(--green)">Make key</button></form>
+    <div class="reveal notch" id="reveal" hidden>
+      <p>Here's <b id="rv-name"></b>. Copy it now: we only keep a fingerprint, so it can't be shown again.</p>
+      <div class="tokenbox"><code id="rv-token"></code><button type="button" id="copy">copy</button></div>
+    </div>
+  </section>
+
+  <section class="card notch">
+    <h2>Active keys <small id="count"></small></h2>
+    <table class="keys"><thead><tr><th>NAME</th><th>KEY</th><th>CREATED</th><th>LAST USED</th><th></th></tr></thead><tbody id="rows"></tbody></table>
+    <div class="empty" id="empty" hidden>No keys. Scripts can still sign in with your email and password, or make a key above.</div>
+  </section>
+
+  <section class="card notch">
+    <h2>Two ways to sign in</h2>
+    <p class="hint">Either works for <code>POST /api/generate</code>. Keys are better for scripts: revocable, and your password stays secret.</p>
+    <div class="ways">
+      <div><h3>With a key</h3><pre id="ex-key"></pre></div>
+      <div><h3>With email + password</h3><pre id="ex-pw"></pre></div>
+    </div>
+  </section>
+
+  <section class="card notch">
+    <h2>Today's allowance</h2>
+    <p class="hint">Every account gets 15 generations a day, shared across all keys, the Studio and profile pictures. It refills at midnight UTC.</p>
+    <div class="quota" id="quota"></div>
+  </section>
+</main>
+
+<script>
+(() => {
+  const $ = s => document.querySelector(s), { esc, toast, ago } = Kit;
+  Kit.nav("Keys");
+  const B = MOSAIC.backend;
+  const COLORS = ["#6ee07a", "#fce060", "#5cacfc", "#f87898", "#e8913a"];
+  let seal = null;
+
+  Kit.json("../../assets/scenes/scenes.json").then(l => {
+    const s = l.find(x => x.animal.name === "seal"); if (s) seal = Kit.critter(s.animal, $("#seal"), { right: "0px", bottom: "0px", P: 4 });
+  });
+  const say = t => seal && (Kit.talk(seal.el, t), Kit.hop(seal.el));
+
+  async function load() {
+    const r = await Session.api("/api/keys");
+    if (r.status === 401) return location.replace("../../login/?next=portal");
+    if (!r.ok) return toast(Session.detail(r.data || {}));
+    const { keys, max } = r.data;
+    $("#count").textContent = `${keys.length} / ${max}`;
+    $("#empty").hidden = keys.length > 0;
+    $("#rows").innerHTML = keys.map((k, i) => `<tr data-id="${k.id}">
+        <td><span class="nm"><i style="--k:${COLORS[i % COLORS.length]}"></i><span class="n">${esc(k.name)}</span></span></td>
+        <td><code>${esc(k.prefix)}&hellip;</code></td>
+        <td class="when">${k.created ? new Date(k.created * 1000).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : "-"}</td>
+        <td class="when ${k.last_used && Date.now() / 1000 - k.last_used < 3600 ? "fresh" : ""}">${k.last_used ? ago(k.last_used) : "never"}</td>
+        <td class="acts"><button class="btn small ghost" data-act="rename" type="button">Rename</button><button class="btn small" data-act="revoke" type="button" style="--c:var(--bad)">Revoke</button></td>
+      </tr>`).join("");
+    $("#rows").querySelectorAll("tr").forEach(tr => {
+      const id = tr.dataset.id, k = keys.find(x => x.id === id);
+      tr.querySelector('[data-act="revoke"]').onclick = async () => {
+        if (!await Kit.confirm(`Anything using "${k.name}" (${k.prefix}...) stops working right away. This can't be undone.`,
+                               { title: "Revoke this key?", ok: "Revoke it", danger: true })) return;
+        const r2 = await Session.api(`/api/keys/${id}/revoke`, { method: "POST" });
+        if (!r2.ok) return toast(Session.detail(r2.data || {}));
+        tr.classList.add("gone"); say("bye bye, key!");
+        setTimeout(load, 450);
+      };
+      tr.querySelector('[data-act="rename"]').onclick = () => {
+        const cell = tr.querySelector(".n"); if (cell.querySelector("input")) return;
+        cell.innerHTML = `<input maxlength="40" value="${esc(k.name)}" aria-label="New name">`;
+        const inp = cell.querySelector("input"); inp.focus(); inp.select();
+        let done = false;
+        const finish = async save => {
+          if (done) return; done = true;
+          if (save && inp.value.trim() && inp.value.trim() !== k.name) {
+            const r2 = await Session.api(`/api/keys/${id}/rename`, { json: { name: inp.value.trim() } });
+            if (!r2.ok) toast(Session.detail(r2.data || {})); else { k.name = r2.data.name; toast("Renamed."); }
+          }
+          cell.textContent = k.name;
+        };
+        inp.addEventListener("keydown", e => { if (e.key === "Enter") finish(true); if (e.key === "Escape") finish(false); });
+        inp.addEventListener("blur", () => finish(true));
+      };
+    });
+  }
+
+  $("#new").addEventListener("submit", async e => {
+    e.preventDefault();
+    const name = $("#name").value.trim() || "key";
+    const r = await Session.api("/api/keys", { json: { name } });
+    if (!r.ok) return Kit.alert(Session.detail(r.data || {}), { title: "Couldn't make a key" });
+    $("#rv-name").textContent = `"${r.data.key.name}"`; $("#rv-token").textContent = r.data.api_token; $("#reveal").hidden = false;
+    $("#name").value = ""; examples(r.data.api_token); load(); say("shiny new key!");
+  });
+  $("#copy").onclick = async () => {
+    try { await navigator.clipboard.writeText($("#rv-token").textContent); $("#copy").textContent = "copied!"; }
+    catch (_) { getSelection().selectAllChildren($("#rv-token")); $("#copy").textContent = "ctrl+c"; }
+    setTimeout(() => $("#copy").textContent = "copy", 1500);
+  };
+
+  function examples(token = "MOSAIC_...") {
+    const q = v => `<span class="s">${esc(v)}</span>`;
+    $("#ex-key").innerHTML = `curl ${esc(B)}/api/generate \\\n  -H ${q(`'Authorization: Bearer ${token}'`)} \\\n  -H 'content-type: application/json' \\\n  -d '{"prompt": "a cute penguin", "scale": 8}' \\\n  -o penguin.png`;
+    $("#ex-pw").innerHTML = `curl ${esc(B)}/api/generate \\\n  -H 'content-type: application/json' \\\n  -d '{"email": ${q('"you@example.com"')},\n       "password": ${q('"..."')},\n       "prompt": "a cute penguin", "scale": 8}' \\\n  -o penguin.png`;
+  }
+  examples();
+
+  Kit.whoami().then(u => {
+    if (!u) return;
+    const q = u.quota;
+    $("#quota").innerHTML = `<span class="bar">${Array.from({ length: q.limit }, (_, i) => `<i class="${i < q.used ? "used" : ""}"></i>`).join("")}</span>
+      <span>${q.remaining} of ${q.limit} left today</span>`;
+  });
+  load();
+})();
+</script>
+</body>
+</html>

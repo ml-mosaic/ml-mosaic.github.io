@@ -1,0 +1,665 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mosaic · Sign in</title>
+<link rel="icon" type="image/svg+xml" sizes="any" href="../assets/favicon.svg?v=2">
+<link rel="icon" type="image/png" sizes="64x64" href="../assets/favicon.png?v=2">
+<link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tiny5&display=swap" rel="stylesheet">
+<script src="../config.js"></script>
+<script src="../assets/session.js"></script>
+<style>
+  :root {
+    --bg: #000; --fg: #fff; --dim: #8a867b; --line: #34322d; --field: #0e0e0d;
+    --bad: #ff5a4e; --good: #6ee07a;
+    --accent: #e8913a;       /* set per scene */
+    --u: 4px;                /* one UI "pixel" for the chunky borders */
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--fg); }
+  body { font-family: "Tiny5", ui-monospace, monospace; -webkit-font-smoothing: none; overflow-x: hidden; }
+  button, input { font: inherit; color: inherit; }
+  a { color: var(--fg); }
+
+  .split { display: grid; grid-template-columns: minmax(380px, 1fr) 1.15fr; min-height: 100vh; }
+
+  /* ------------------------------------------------------------------ left: the form */
+  .form-side { display: flex; flex-direction: column; padding: 32px clamp(20px, 5vw, 72px); min-height: 100vh; }
+  .brand img { height: 18px; image-rendering: pixelated; display: block; }
+  .card { width: 100%; max-width: 400px; margin: auto; padding: 40px 0; }
+
+  .tabs { display: flex; gap: 6px; margin-bottom: 30px; }
+  .tab { flex: 1; background: none; border: 0; padding: 10px 0; cursor: pointer; color: var(--dim);
+         font-size: 15px; letter-spacing: 1px; position: relative; }
+  .tab::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: var(--u); background: var(--line); }
+  .tab[aria-selected="true"] { color: var(--fg); }
+  .tab[aria-selected="true"]::after { background: var(--accent); }
+  .tab:hover { color: var(--fg); }
+  .tab:focus-visible { outline: 2px dashed var(--dim); outline-offset: 2px; }
+
+  h1 { font-weight: normal; font-size: clamp(28px, 4vw, 36px); margin: 0 0 6px; line-height: 1.1; }
+  .sub { color: var(--dim); margin: 0 0 28px; font-size: 15px; }
+
+  .field { margin-bottom: 18px; }
+  .field label { display: flex; justify-content: space-between; font-size: 13px; color: var(--dim);
+                 letter-spacing: 1px; margin-bottom: 8px; }
+  .box { position: relative; display: flex; align-items: center; background: var(--field); margin: var(--u);
+         box-shadow: 0 calc(-1 * var(--u)) 0 0 var(--line), 0 var(--u) 0 0 var(--line),
+                     calc(-1 * var(--u)) 0 0 0 var(--line), var(--u) 0 0 0 var(--line); }   /* notched pixel corners */
+  .box:focus-within { box-shadow: 0 calc(-1 * var(--u)) 0 0 var(--fg), 0 var(--u) 0 0 var(--fg),
+                                  calc(-1 * var(--u)) 0 0 0 var(--fg), var(--u) 0 0 0 var(--fg); }
+  .field.bad .box { box-shadow: 0 calc(-1 * var(--u)) 0 0 var(--bad), 0 var(--u) 0 0 var(--bad),
+                                calc(-1 * var(--u)) 0 0 0 var(--bad), var(--u) 0 0 0 var(--bad); }
+  .box input { flex: 1; min-width: 0; background: none; border: 0; outline: none; padding: 12px 12px; font-size: 17px;
+               caret-color: var(--accent); }
+  .box input::placeholder { color: #4a4740; }
+  .peek { background: none; border: 0; color: var(--dim); cursor: pointer; padding: 0 12px; font-size: 13px; letter-spacing: 1px; }
+  .peek:hover, .peek:focus-visible { color: var(--fg); outline: none; }
+  .err { color: var(--bad); font-size: 13px; min-height: 0; margin-top: 8px; display: none; }
+  .field.bad .err { display: block; }
+
+  .meter { display: flex; gap: 4px; margin-top: 10px; }
+  .meter i { flex: 1; height: 6px; background: var(--line); }
+  .meter[data-s="1"] i:nth-child(-n+1) { background: var(--bad); }
+  .meter[data-s="2"] i:nth-child(-n+2) { background: #f0a030; }
+  .meter[data-s="3"] i:nth-child(-n+3) { background: #e8d040; }
+  .meter[data-s="4"] i:nth-child(-n+4) { background: var(--good); }
+
+  .row { display: flex; justify-content: space-between; align-items: center; margin: 6px 0 26px; font-size: 14px; gap: 12px; }
+  .check { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; color: var(--dim); user-select: none; }
+  .check input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .check .tick { width: 16px; height: 16px; background: var(--field); position: relative;
+                 box-shadow: 0 0 0 3px var(--line); }
+  .check input:checked + .tick { background: var(--accent); box-shadow: 0 0 0 3px var(--accent); }
+  .check input:checked + .tick::after { content: ""; position: absolute; left: 4px; top: 4px; width: 8px; height: 8px; background: #000; }
+  .check input:focus-visible + .tick { outline: 2px dashed var(--dim); outline-offset: 4px; }
+  .check:hover { color: var(--fg); }
+  .link { background: none; border: 0; padding: 0; color: var(--dim); cursor: pointer; text-decoration: none; font-size: 14px; }
+  .link:hover, .link:focus-visible { color: var(--fg); outline: none; }
+
+  .btn { width: calc(100% - 2 * var(--u)); margin: var(--u); border: 0; padding: 14px; font-size: 18px; letter-spacing: 1px;
+         cursor: pointer; background: var(--accent); color: #000; position: relative;
+         box-shadow: 0 calc(-1 * var(--u)) 0 0 var(--accent), 0 var(--u) 0 0 var(--accent),
+                     calc(-1 * var(--u)) 0 0 0 var(--accent), var(--u) 0 0 0 var(--accent),
+                     inset 0 calc(-1 * var(--u)) 0 0 rgba(0,0,0,.28); }
+  .btn:hover { filter: brightness(1.1); }
+  .btn:active { transform: translateY(var(--u)); box-shadow: 0 calc(-1 * var(--u)) 0 0 var(--accent), 0 var(--u) 0 0 var(--accent),
+                calc(-1 * var(--u)) 0 0 0 var(--accent), var(--u) 0 0 0 var(--accent); }
+  .btn:focus-visible { outline: 2px dashed var(--fg); outline-offset: 8px; }
+  .btn[disabled] { cursor: wait; filter: saturate(.4); }
+  .btn .dots::after { content: ""; animation: dots 1s steps(4) infinite; }
+  @keyframes dots { 0% { content: ""; } 25% { content: "."; } 50% { content: ".."; } 75% { content: "..."; } }
+
+  .switch { text-align: center; color: var(--dim); margin-top: 26px; font-size: 14px; }
+  .switch button { background: none; border: 0; padding: 0; cursor: pointer; color: var(--fg); font-size: 14px;
+                   text-decoration: underline; text-underline-offset: 4px; }
+  .note { color: var(--dim); font-size: 13px; margin: -8px 0 20px; }
+
+  .digits { display: flex; gap: 10px; margin: 8px var(--u) 10px; }
+  .digits input { width: 100%; min-width: 0; aspect-ratio: .82; text-align: center; font-size: 30px; background: var(--field); border: 0;
+                  outline: none; caret-color: transparent; box-shadow: 0 0 0 3px var(--line); }
+  .digits input:focus { box-shadow: 0 0 0 3px var(--fg); }
+  .digits input.filled { box-shadow: 0 0 0 3px var(--accent); }
+  .digits.bad input { box-shadow: 0 0 0 3px var(--bad); }
+  .verr { color: var(--bad); font-size: 13px; min-height: 18px; margin: 4px 0 14px; }
+  #v-wait { color: var(--dim); }
+  #resend[disabled] { color: var(--dim); text-decoration: none; cursor: default; }
+  .shake { animation: shake .36s steps(6); }
+  @keyframes shake { 20% { transform: translateX(-8px); } 40% { transform: translateX(8px); } 60% { transform: translateX(-4px); }
+                     80% { transform: translateX(4px); } }
+
+  .tokenbox { display: flex; margin: var(--u) var(--u) 18px; background: var(--field);
+              box-shadow: 0 calc(-1 * var(--u)) 0 0 var(--accent), 0 var(--u) 0 0 var(--accent),
+                          calc(-1 * var(--u)) 0 0 0 var(--accent), var(--u) 0 0 0 var(--accent); }
+  .tokenbox code { flex: 1; min-width: 0; padding: 12px; font-family: ui-monospace, Menlo, monospace; font-size: 13px;
+                   overflow-wrap: anywhere; }
+  .tokenbox button { background: var(--accent); color: #000; border: 0; padding: 0 14px; cursor: pointer; font-size: 14px; }
+
+  .foot { display: flex; justify-content: space-between; color: #4f4c45; font-size: 12px; letter-spacing: 1px; gap: 12px; }
+  .foot a { color: inherit; text-decoration: none; }
+  .foot a:hover { color: var(--dim); }
+
+  .toast { position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 20px); background: var(--fg); color: #000;
+           padding: 10px 16px; font-size: 14px; opacity: 0; pointer-events: none; transition: all .2s steps(3); max-width: calc(100vw - 32px); }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+  [hidden] { display: none !important; }
+
+  /* ------------------------------------------------------------------ right: the scene */
+  .art { position: relative; overflow: hidden; background: #111; cursor: crosshair; min-height: 100vh; }
+  .stage { position: absolute; left: 0; top: 0; image-rendering: pixelated;
+           background-repeat: no-repeat; background-position: 0 0; }
+  .stage img, .stage .px { position: absolute; image-rendering: pixelated; pointer-events: none; display: block; }
+  .animal { position: absolute; cursor: pointer; background: none; border: 0; padding: 0; }
+  .animal > img { position: absolute; left: 0; top: 0; width: 100%; height: 100%; image-rendering: pixelated; }
+  .animal:focus-visible { outline: 3px dashed #fff; outline-offset: 6px; }
+  .eye { position: absolute; overflow: hidden; pointer-events: none; }
+  .pupil { position: absolute; background: #14121a; }
+  .lid { position: absolute; inset: 0; display: none; }
+  .eye.closed .pupil { display: none; }
+  .eye.closed .lid { display: block; }
+  .bubble { position: absolute; transform: translate(-50%, -100%); background: #fff; color: #000; white-space: nowrap;
+            pointer-events: none; opacity: 0; transition: opacity .12s steps(2); }
+  .bubble::after { content: ""; position: absolute; left: 50%; bottom: calc(var(--px) * -1); width: var(--px); height: var(--px); background: #fff; }
+  .bubble.show { opacity: 1; }
+  .chip { position: absolute; left: 16px; bottom: 16px; background: rgba(0,0,0,.65); color: #fff; border: 0; padding: 8px 12px;
+          font-size: 13px; letter-spacing: 1px; cursor: pointer; z-index: 2; }
+  .chip:hover, .chip:focus-visible { background: #000; outline: none; }
+
+  @media (max-width: 860px) {
+    .split { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+    .art { order: -1; min-height: 0; height: 240px; }
+    .form-side { min-height: 0; }
+    .card { padding: 28px 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .btn .dots::after, .shake { animation: none; }
+  }
+</style>
+</head>
+<body>
+<div class="split">
+  <section class="form-side">
+    <a class="brand" href="../" aria-label="Mosaic home"><img src="../assets/logo-wordmark.png" alt="Mosaic"></a>
+
+    <div class="card" id="card">
+      <div class="tabs" role="tablist">
+        <button class="tab" role="tab" id="tab-in" aria-selected="true" aria-controls="signin">Sign in</button>
+        <button class="tab" role="tab" id="tab-up" aria-selected="false" aria-controls="signup">Create account</button>
+      </div>
+
+      <form id="signin" novalidate>
+        <h1>Welcome back!</h1>
+        <p class="sub">Sign in to keep making pixel art.</p>
+        <div class="field" data-for="identifier">
+          <label for="in-id">Username or email</label>
+          <div class="box"><input id="in-id" name="identifier" autocomplete="username" placeholder="pixel_pal" required></div>
+          <div class="err"></div>
+        </div>
+        <div class="field" data-for="password">
+          <label for="in-pw">Password</label>
+          <div class="box"><input id="in-pw" name="password" type="password" autocomplete="current-password" placeholder="********" required>
+            <button type="button" class="peek" aria-controls="in-pw">show</button></div>
+          <div class="err"></div>
+        </div>
+        <div class="row">
+          <label class="check"><input type="checkbox" id="remember" checked><span class="tick"></span>Keep me signed in</label>
+          <button type="button" class="link" id="forgot">Forgot password?</button>
+        </div>
+        <button class="btn" type="submit"><span class="label">Sign in</span></button>
+        <p class="switch">New here? <button type="button" data-go="signup">Create an account</button></p>
+      </form>
+
+      <form id="signup" novalidate hidden>
+        <h1>Join the party!</h1>
+        <p class="sub">One account, one API token, endless tiny art.</p>
+        <p class="note" id="closed" hidden>Sign-ups are closed right now. Ask the person who runs this server for an account.</p>
+        <div class="field" data-for="username">
+          <label for="up-name">Username <span>3-32: letters, numbers, _ -</span></label>
+          <div class="box"><input id="up-name" name="username" autocomplete="username" placeholder="pixel_pal" maxlength="32" required></div>
+          <div class="err"></div>
+        </div>
+        <div class="field" data-for="email">
+          <label for="up-email">Email</label>
+          <div class="box"><input id="up-email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required></div>
+          <div class="err"></div>
+        </div>
+        <div class="field" data-for="password">
+          <label for="up-pw">Password <span>8+ characters</span></label>
+          <div class="box"><input id="up-pw" name="password" type="password" autocomplete="new-password" placeholder="********" required>
+            <button type="button" class="peek" aria-controls="up-pw">show</button></div>
+          <div class="meter" id="meter" data-s="0" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+          <div class="err"></div>
+        </div>
+        <div class="field" data-for="confirm">
+          <label for="up-pw2">Confirm password</label>
+          <div class="box"><input id="up-pw2" name="confirm" type="password" autocomplete="new-password" placeholder="********" required></div>
+          <div class="err"></div>
+        </div>
+        <div class="row">
+          <label class="check"><input type="checkbox" id="nice" required><span class="tick"></span>I promise to be nice to the animals</label>
+        </div>
+        <button class="btn" type="submit"><span class="label">Create account</span></button>
+        <p class="switch">Already have one? <button type="button" data-go="signin">Sign in</button></p>
+      </form>
+
+      <form id="verify" novalidate hidden>
+        <h1>Check your inbox!</h1>
+        <p class="sub">We sent a 6-digit code to <b id="v-email" style="color:var(--fg);font-weight:normal"></b>. It works for 15 minutes.</p>
+        <div class="digits" id="digits" role="group" aria-label="6-digit code">
+          <input inputmode="numeric" maxlength="1" aria-label="digit 1" autocomplete="one-time-code"><input inputmode="numeric" maxlength="1" aria-label="digit 2"><input inputmode="numeric" maxlength="1" aria-label="digit 3"><input inputmode="numeric" maxlength="1" aria-label="digit 4"><input inputmode="numeric" maxlength="1" aria-label="digit 5"><input inputmode="numeric" maxlength="1" aria-label="digit 6">
+        </div>
+        <div class="verr" id="v-err" role="alert"></div>
+        <button class="btn" type="submit"><span class="label">Confirm</span></button>
+        <p class="switch"><button type="button" id="resend">Send a new code</button><span id="v-wait"></span> &middot; <button type="button" id="v-back">Start over</button></p>
+        <p class="note" style="margin:14px 0 0;text-align:center">Can't find it? Check your spam folder.</p>
+      </form>
+
+      <div id="done" hidden>
+        <h1 id="done-title">You're in!</h1>
+        <p class="sub" id="done-sub"></p>
+        <div id="token-wrap" hidden>
+          <p class="note" style="margin:0 0 14px">Your first API key. Copy it now, it won't be shown again (you can make more in the dev portal):</p>
+          <div class="tokenbox"><code id="token"></code><button type="button" id="copy">copy</button></div>
+        </div>
+        <a class="btn" id="continue" href="../studio/" style="display:block;text-align:center;text-decoration:none">Open the studio</a>
+        <p class="switch" id="signout-row" hidden>Not you? <button type="button" id="signout">Sign out</button></p>
+      </div>
+    </div>
+
+    <div class="foot"><span>&copy; Mosaic</span><a href="../">&larr; home</a></div>
+  </section>
+
+  <section class="art" id="art" aria-label="An 8-bit scene with an animal that watches your cursor">
+    <div class="stage" id="stage">
+      <div class="bubble" id="bubble"></div>
+    </div>
+    <button class="chip" id="next-scene" type="button">&#8635; new scene</button>
+  </section>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(() => {
+  // where to go after signing in: the studio, unless ?next=portal|home|status says otherwise
+  const NEXT = { home: "../", portal: "../portal/", status: "../status/" }[new URLSearchParams(location.search).get("next")] || "../studio/";
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const $ = s => document.querySelector(s), rand = (a, b) => a + Math.random() * (b - a);
+  const ACCENT = { autumn: "#e8913a", beach: "#3c9cfc", sunset: "#f87858", snow: "#9cc4fc" };
+  const toast = (msg, ms = 2600) => { const t = $("#toast"); t.textContent = msg; t.classList.add("show");
+                                      clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove("show"), ms); };
+
+  /* =================================================================== the scene */
+  const art = $("#art"), stage = $("#stage"), bubble = $("#bubble");
+  let S, scale = 1, animalEl, eyes = [], parts = [], frame = 0, timers = [];
+  let target = null;        // where the eyes look: {x, y} in page coordinates, or null = straight ahead
+  let eyesShut = false;     // the animal politely closes its eyes while you type a hidden password
+
+  function pick(list) {
+    const want = new URLSearchParams(location.search).get("scene");
+    if (want && list.some(s => s.name === want)) return list.find(s => s.name === want);
+    let last = null;
+    try { last = localStorage.getItem("mosaic-scene"); } catch (_) {}
+    const pool = list.filter(s => s.name !== last);
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+
+  function layout() {
+    const pw = art.clientWidth, ph = art.clientHeight;
+    scale = Math.ceil(Math.max(pw / S.w, ph / S.h));            // whole-pixel scale, covers the panel
+    const sw = S.w * scale, sh = S.h * scale, a = S.animal;
+    const fx = (a.x + a.w / 2) * scale, fy = (a.y + a.h / 2) * scale;   // keep the animal in view
+    const left = Math.min(0, Math.max(pw - sw, pw / 2 - fx)), top = Math.min(0, Math.max(ph - sh, ph * .55 - fy));
+    Object.assign(stage.style, { width: sw + "px", height: sh + "px", left: Math.round(left) + "px", top: Math.round(top) + "px",
+                                 backgroundSize: `${sw * S.frames}px ${sh}px` });
+    stage.style.setProperty("--px", scale + "px");
+    const P = v => v * scale + "px";
+    Object.assign(animalEl.style, { left: P(a.x), top: P(a.y), width: P(a.w), height: P(a.h) });
+    eyes.forEach(e => {
+      Object.assign(e.el.style, { left: P(e.r.x), top: P(e.r.y), width: P(e.r.w), height: P(e.r.h) });
+      Object.assign(e.pupil.style, { width: P(a.pupil[0]), height: P(a.pupil[1]) });
+      e.lid.style.boxShadow = `inset 0 ${-scale}px 0 0 #14121a`;
+    });
+    Object.assign(bubble.style, { left: P(a.x + a.w / 2), top: P(a.y - 2), fontSize: P(4.2),
+                                  padding: `${scale * .5}px ${scale * 1.5}px` });
+    bubble.style.boxShadow = `${scale}px 0 0 0 #fff, ${-scale}px 0 0 0 #fff`;
+    drawFrame(); look();
+  }
+  const drawFrame = () => stage.style.backgroundPositionX = -frame * S.w * scale + "px";
+
+  function build(scene) {
+    S = scene;
+    timers.forEach(clearTimeout); timers = [];
+    parts.forEach(p => p.el.remove()); parts = [];
+    stage.querySelectorAll(".animal").forEach(n => n.remove());
+    try { localStorage.setItem("mosaic-scene", S.name); } catch (_) {}
+    document.documentElement.style.setProperty("--accent", ACCENT[S.name] || "#e8913a");
+    stage.style.backgroundImage = `url(../assets/scenes/${S.name}.png)`;
+    frame = 0;
+
+    const a = S.animal;
+    animalEl = document.createElement("button");
+    animalEl.className = "animal"; animalEl.type = "button"; animalEl.setAttribute("aria-label", `Pet the ${a.name}`);
+    animalEl.innerHTML = `<img src="../assets/scenes/${a.name}.png" alt="">`;
+    eyes = a.eyes.map(r => {
+      const el = document.createElement("div"); el.className = "eye";
+      const pupil = document.createElement("div"); pupil.className = "pupil";
+      const lid = document.createElement("div"); lid.className = "lid"; lid.style.background = a.lid;
+      el.append(pupil, lid); animalEl.appendChild(el);
+      return { el, pupil, lid, r };
+    });
+    stage.insertBefore(animalEl, bubble);
+    animalEl.addEventListener("click", e => { e.stopPropagation(); pet(); });
+    layout();
+    if (!reduce) {
+      if (S.frames > 1) (function anim() { frame = (frame + 1) % S.frames; drawFrame(); timers.push(setTimeout(anim, S.frame_ms)); })();
+      (function ambient() {
+        if (!document.hidden && parts.length < 60) spawnAmbient();
+        timers.push(setTimeout(ambient, rand(...S.ambient.every)));
+      })();
+      (function bob() {   // a 1-pixel breathing bob
+        animalEl.style.transform = animalEl.style.transform ? "" : `translateY(${scale}px)`;
+        timers.push(setTimeout(bob, 700));
+      })();
+    }
+    (function blinkLoop() { if (!reduce) blink(); timers.push(setTimeout(blinkLoop, rand(2200, 5200))); })();
+  }
+
+  // ---- eyes: pupils move whole art pixels toward the target
+  function look() {
+    if (!S) return;
+    const a = S.animal, ar = stage.getBoundingClientRect();
+    eyes.forEach(e => {
+      e.el.classList.toggle("closed", eyesShut || e.blink);
+      const rx = (e.r.w - a.pupil[0]) / 2, ry = (e.r.h - a.pupil[1]) / 2;
+      let ox = rx, oy = ry;
+      if (target) {
+        const cx = ar.left + (a.x + e.r.x + e.r.w / 2) * scale, cy = ar.top + (a.y + e.r.y + e.r.h / 2) * scale;
+        const dx = target.x - cx, dy = target.y - cy, R = 30 * scale;
+        ox = rx + Math.max(-1, Math.min(1, dx / R)) * rx;
+        oy = ry + Math.max(-1, Math.min(1, dy / R)) * ry;
+      }
+      e.pupil.style.left = Math.round(ox) * scale + "px";
+      e.pupil.style.top = Math.round(oy) * scale + "px";
+    });
+  }
+  function blink() { eyes.forEach(e => e.blink = true); look(); setTimeout(() => { eyes.forEach(e => e.blink = false); look(); }, 140); }
+  addEventListener("pointermove", e => { if (!typingTarget) { target = { x: e.clientX, y: e.clientY }; look(); } });
+  document.addEventListener("pointerleave", () => { target = null; look(); });
+
+  function say(text, ms = 1200) {
+    bubble.textContent = text; bubble.classList.add("show");
+    clearTimeout(say.t); say.t = setTimeout(() => bubble.classList.remove("show"), ms);
+  }
+  function hop() {
+    if (reduce) return;
+    animalEl.animate([{ transform: "translateY(0)" }, { transform: `translateY(${-3 * scale}px)` }, { transform: "translateY(0)" }],
+                     { duration: 260, easing: "steps(3)" });
+  }
+  let pets = 0;
+  try { pets = +localStorage.getItem("mosaic-pets") || 0; } catch (_) {}
+  function hearts(n = 3) {
+    if (reduce) return;
+    const a = S.animal;
+    for (let k = 0; k < n; k++) setTimeout(() => spawn("heart", a.x + a.w * (k + .5) / n - 3 + rand(-1, 1), a.y - rand(2, 6),
+                                                       0, 0, { kind: "heart", phase: rand(0, 6) }), k * 150);
+  }
+  function pet() {
+    pets++; try { localStorage.setItem("mosaic-pets", pets); } catch (_) {}
+    const w = S.animal.words;
+    say(pets % 10 === 0 ? `${pets} pets!!` : w[Math.floor(Math.random() * w.length)]);
+    blink(); hop(); hearts();
+  }
+
+  // ---- particles: positions in art pixels, drawn snapped to the art grid
+  function spawn(sprite, x, y, vx, vy, opts = {}) {
+    const el = document.createElement("img");
+    el.src = `../assets/scenes/p-${sprite}.png`; el.alt = ""; el.className = "px";
+    el.onload = () => { el.style.width = el.naturalWidth * scale + "px"; el.style.height = el.naturalHeight * scale + "px"; };
+    stage.insertBefore(el, animalEl);
+    parts.push({ el, x, y, vx, vy, t: 0, ...opts });
+  }
+  function spawnAmbient() {
+    const m = S.ambient, [x0, x1, y0, y1] = m.from;
+    if (m.kind === "fall") spawn(m.sprite, rand(x0, x1), rand(y0, y1), rand(-.4, .4), rand(1.1, 2), { kind: "fall", ground: rand(...m.ground), phase: rand(0, 6) });
+    else spawn(m.sprite, -8, rand(y0, y1), rand(4, 7), 0, { kind: "glide", phase: rand(0, 6) });
+  }
+  function burst(x, y) {
+    const b = S.burst, ground = S.ambient.ground;
+    for (let k = 0; k < 8; k++)
+      spawn(b, x - 1, y - 1, rand(-3, 3), rand(-4.5, -1.5), { kind: "fall", burst: true, ground: Math.min(S.h - 2, Math.max(y + rand(2, 10), ground[0])), phase: rand(0, 6) });
+  }
+  let last = performance.now();
+  function tick(now) {
+    const dt = Math.min(.05, (now - last) / 1000); last = now;
+    for (let k = parts.length - 1; k >= 0; k--) {
+      const q = parts[k]; q.t += dt;
+      let dead = false;
+      if (q.kind === "fall") {
+        if (!q.landed) {
+          if (q.burst) { q.vy += 10 * dt; q.vx *= .985; }
+          else q.x += Math.sin(q.t * 2.4 + q.phase) * .9 * dt * 6;
+          q.x += q.vx * dt * 6; q.y += q.vy * dt * 6;
+          if (q.y >= q.ground && q.vy > 0) { q.y = q.ground; q.landed = q.t; }
+        } else q.el.style.opacity = Math.max(0, 1 - Math.floor((q.t - q.landed) * 2.5) / 4);
+        dead = (q.landed && q.t - q.landed > 1.8) || q.x < -6 || q.x > S.w + 4;
+      } else if (q.kind === "glide") {
+        q.x += q.vx * dt; q.y += Math.sin(q.t * 3 + q.phase) * dt * 1.5;
+        dead = q.x > S.w + 8;
+      } else {   // heart
+        q.y -= dt * 8; q.x += Math.sin(q.t * 5 + q.phase) * dt * 3;
+        q.el.style.opacity = Math.max(0, 1 - Math.floor(q.t * 4) / 5);
+        dead = q.t > 1.3;
+      }
+      if (dead) { q.el.remove(); parts.splice(k, 1); continue; }
+      q.el.style.transform = `translate(${Math.round(q.x) * scale}px, ${Math.round(q.y) * scale}px)`;
+    }
+    requestAnimationFrame(tick);
+  }
+  art.addEventListener("pointerdown", e => {
+    if (reduce || e.target.closest(".animal, .chip")) return;
+    const r = stage.getBoundingClientRect();
+    burst((e.clientX - r.left) / scale, (e.clientY - r.top) / scale);
+  });
+  addEventListener("resize", () => S && layout());
+
+  let SCENES = [];
+  fetch("../assets/scenes/scenes.json").then(r => r.json()).then(list => {
+    SCENES = list; build(pick(list));
+    if (!reduce) requestAnimationFrame(tick);
+  });
+  $("#next-scene").addEventListener("click", e => {
+    e.stopPropagation();
+    const k = SCENES.findIndex(s => s.name === S.name);
+    build(SCENES[(k + 1) % SCENES.length]);
+  });
+
+  /* =================================================================== the forms */
+  const forms = { signin: $("#signin"), signup: $("#signup") }, card = $("#card");
+  function show(name) {
+    for (const [k, f] of Object.entries(forms)) f.hidden = k !== name;
+    $("#done").hidden = true; $("#verify").hidden = true; $(".tabs").hidden = false;
+    $("#tab-in").setAttribute("aria-selected", name === "signin");
+    $("#tab-up").setAttribute("aria-selected", name === "signup");
+    history.replaceState(null, "", name === "signup" ? "#signup" : location.pathname + location.search);
+  }
+  $("#tab-in").onclick = () => show("signin");
+  $("#tab-up").onclick = () => show("signup");
+  document.querySelectorAll("[data-go]").forEach(b => b.onclick = () => show(b.dataset.go));
+  if (location.hash === "#signup") show("signup");
+  Session.api("/api/health", { auth: false }).then(r => {
+    if (r.ok && r.data.allow_signup === false) {
+      $("#closed").hidden = false; forms.signup.querySelectorAll("input, .btn").forEach(i => i.disabled = true);
+    }
+  });
+
+  // the animal watches what you type, and looks away from passwords
+  let typingTarget = null;
+  const ctx = document.createElement("canvas").getContext("2d");
+  function caretPoint(input) {
+    const r = input.getBoundingClientRect(), cs = getComputedStyle(input);
+    ctx.font = `${cs.fontSize} ${cs.fontFamily}`;
+    const shown = input.type === "password" ? "•".repeat(input.value.length) : input.value;
+    const w = ctx.measureText(shown.slice(0, input.selectionStart ?? shown.length)).width;
+    return { x: Math.min(r.right - 8, r.left + parseFloat(cs.paddingLeft) + w), y: r.top + r.height / 2 };
+  }
+  function onType(e) {
+    const input = e.target;
+    eyesShut = input.type === "password" && input.value.length > 0;
+    typingTarget = input; target = caretPoint(input); look();
+  }
+  document.querySelectorAll(".box input").forEach(input => {
+    input.addEventListener("input", onType);
+    input.addEventListener("focus", onType);
+    input.addEventListener("click", onType);
+    input.addEventListener("blur", () => { typingTarget = null; eyesShut = false; look(); });
+    input.addEventListener("input", () => input.closest(".field").classList.remove("bad"));
+  });
+  let saidNoPeek = false;
+  document.querySelectorAll(".peek").forEach(b => b.addEventListener("click", () => {
+    const input = document.getElementById(b.getAttribute("aria-controls"));
+    const showing = input.type === "password";
+    input.type = showing ? "text" : "password"; b.textContent = showing ? "hide" : "show";
+    input.focus(); onType({ target: input });
+    if (showing && S) say("ooh, secret!", 1000);
+  }));
+  forms.signin.querySelector("#in-pw").addEventListener("focus", () => {
+    if (!saidNoPeek && S) { saidNoPeek = true; say("I won't look!", 1300); }
+  });
+
+  // password strength: four 8-bit blocks
+  $("#up-pw").addEventListener("input", e => {
+    const v = e.target.value;
+    const s = !v ? 0 : Math.min(4, (v.length >= 8) + (v.length >= 12) + (/[a-z]/.test(v) && /[A-Z]/.test(v)) + (/\d/.test(v) || /[^\w]/.test(v)));
+    $("#meter").dataset.s = v ? Math.max(1, s) : 0;
+  });
+
+  function fieldError(form, name, msg) {
+    const f = form.querySelector(`.field[data-for="${name}"]`);
+    if (!f) return toast(msg);
+    f.classList.add("bad"); f.querySelector(".err").textContent = msg;
+  }
+  function fail(form, msg) {
+    if (!reduce) { card.classList.remove("shake"); void card.offsetWidth; card.classList.add("shake"); }
+    if (S) { say(msg || "hmm...", 1400); }
+  }
+  async function send(form, url, body) {
+    const btn = form.querySelector(".btn"), label = btn.querySelector(".label"), text = label.textContent;
+    btn.disabled = true; label.innerHTML = `<span class="dots">${{ Sign: "Signing in", Create: "Creating", Confirm: "Checking" }[text.split(" ")[0]] || "Working"}</span>`;
+    try {
+      const r = await Session.api(url, { json: body, auth: false });
+      return { ok: r.ok, status: r.status, data: r.data || {} };
+    } finally { btn.disabled = false; label.textContent = text; }
+  }
+  const detail = d => typeof d.detail === "string" ? d.detail : d.detail?.message || (Array.isArray(d.detail) ? "check the fields" : "something went wrong");
+
+  forms.signin.addEventListener("submit", async e => {
+    e.preventDefault();
+    const f = forms.signin; f.querySelectorAll(".field").forEach(x => x.classList.remove("bad"));
+    const identifier = $("#in-id").value.trim(), password = $("#in-pw").value;
+    let bad = false;
+    if (!identifier) { fieldError(f, "identifier", "enter your username or email"); bad = true; }
+    if (!password) { fieldError(f, "password", "enter your password"); bad = true; }
+    if (bad) return fail(f, "hmm?");
+    const remember = $("#remember").checked;
+    const r = await send(f, "/api/login", { identifier, password, remember });
+    if (r.status === 403 && r.data.detail?.verify) return startVerify(identifier, r.data.detail.email, remember, false);
+    if (!r.ok) {
+      if (r.status === 401) fieldError(f, "password", "wrong username/email or password");
+      else toast(detail(r.data));
+      return fail(f, r.status === 429 ? "slow down!" : "hmm...");
+    }
+    try { if ($("#remember").checked) localStorage.setItem("mosaic-user", identifier); else localStorage.removeItem("mosaic-user"); } catch (_) {}
+    Session.save(r.data, remember);
+    done(`Welcome back, ${r.data.username}!`, "Taking you to the studio...");
+    setTimeout(() => location.href = NEXT, 1300);
+  });
+  try { const u = localStorage.getItem("mosaic-user"); if (u) $("#in-id").value = u; } catch (_) {}
+
+  forms.signup.addEventListener("submit", async e => {
+    e.preventDefault();
+    const f = forms.signup; f.querySelectorAll(".field").forEach(x => x.classList.remove("bad"));
+    const username = $("#up-name").value.trim(), email = $("#up-email").value.trim(), password = $("#up-pw").value;
+    let bad = false;
+    if (!/^[A-Za-z0-9_-]{3,32}$/.test(username)) { fieldError(f, "username", "3-32 letters, numbers, _ or -"); bad = true; }
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { fieldError(f, "email", "that doesn't look like an email"); bad = true; }
+    if (password.length < 8) { fieldError(f, "password", "at least 8 characters"); bad = true; }
+    if (password !== $("#up-pw2").value) { fieldError(f, "confirm", "passwords don't match"); bad = true; }
+    if (!$("#nice").checked) { toast("you have to promise!"); bad = true; }
+    if (bad) return fail(f, "hmm?");
+    const r = await send(f, "/api/signup", { username, email, password });
+    if (!r.ok) {
+      const d = r.data.detail;
+      if (r.status === 409 && d && d.field) fieldError(f, d.field, d.message);
+      else toast(detail(r.data));
+      return fail(f, "oh no...");
+    }
+    startVerify(username, r.data.email, true, true);
+  });
+
+  // ---- the code screen
+  const digits = [...document.querySelectorAll("#digits input")];
+  let vState = null, waitTimer = null;
+  function startVerify(identifier, email, remember, fresh) {
+    vState = { identifier, remember, fresh };
+    Object.values(forms).forEach(f => f.hidden = true); $(".tabs").hidden = true; $("#done").hidden = true;
+    $("#verify").hidden = false; $("#v-email").textContent = email || "your email"; $("#v-err").textContent = "";
+    digits.forEach(d => { d.value = ""; d.classList.remove("filled"); }); digits[0].focus();
+    cooldown(60);
+    if (S) { say("check your inbox!", 1800); hop(); }
+  }
+  function cooldown(sec) {
+    clearInterval(waitTimer);
+    const b = $("#resend"); b.disabled = true;
+    const tick = () => { $("#v-wait").textContent = sec > 0 ? ` in ${sec}s` : ""; if (sec-- <= 0) { clearInterval(waitTimer); b.disabled = false; } };
+    tick(); waitTimer = setInterval(tick, 1000);
+  }
+  const code = () => digits.map(d => d.value).join("");
+  digits.forEach((d, i) => {
+    d.addEventListener("input", () => {
+      d.value = d.value.replace(/\D/g, "").slice(-1); d.classList.toggle("filled", !!d.value);
+      $("#digits").classList.remove("bad"); $("#v-err").textContent = "";
+      if (d.value && i < 5) digits[i + 1].focus();
+      if (code().length === 6) $("#verify").requestSubmit();
+    });
+    d.addEventListener("keydown", e => {
+      if (e.key === "Backspace" && !d.value && i > 0) { digits[i - 1].focus(); digits[i - 1].value = ""; digits[i - 1].classList.remove("filled"); }
+      if (e.key === "ArrowLeft" && i > 0) digits[i - 1].focus();
+      if (e.key === "ArrowRight" && i < 5) digits[i + 1].focus();
+    });
+    d.addEventListener("paste", e => {
+      const t = (e.clipboardData.getData("text") || "").replace(/\D/g, "").slice(0, 6);
+      if (!t) return; e.preventDefault();
+      digits.forEach((x, k) => { x.value = t[k] || ""; x.classList.toggle("filled", !!x.value); });
+      (digits[t.length] || digits[5]).focus();
+      if (t.length === 6) $("#verify").requestSubmit();
+    });
+  });
+  $("#verify").addEventListener("submit", async e => {
+    e.preventDefault();
+    if (code().length !== 6) { $("#v-err").textContent = "type all 6 digits"; return; }
+    const r = await send($("#verify"), "/api/verify", { identifier: vState.identifier, code: code(), remember: vState.remember });
+    if (!r.ok) {
+      $("#digits").classList.add("bad"); $("#v-err").textContent = detail(r.data);
+      digits.forEach(d => { d.value = ""; d.classList.remove("filled"); }); digits[0].focus();
+      return fail($("#verify"), "hmm, not that one");
+    }
+    Session.save(r.data, vState.remember);
+    if (vState.fresh || r.data.api_token) done(`Welcome, ${r.data.username}!`, "Your email is confirmed and you're signed in.", r.data.api_token);
+    else { done(`Welcome back, ${r.data.username}!`, "Email confirmed! Taking you to the studio..."); setTimeout(() => location.href = NEXT, 1300); }
+  });
+  $("#resend").addEventListener("click", async () => {
+    const r = await Session.api("/api/verify/resend", { json: { identifier: vState.identifier }, auth: false });
+    if (!r.ok) { toast(detail(r.data || {})); return; }
+    toast("New code sent! Check your inbox."); cooldown(60);
+    if (S) say("another one, coming up!", 1500);
+  });
+  $("#v-back").addEventListener("click", () => { clearInterval(waitTimer); show("signin"); });
+
+  function done(title, sub, token, { quiet = false, signout = false } = {}) {
+    Object.values(forms).forEach(f => f.hidden = true); $(".tabs").hidden = true; $("#verify").hidden = true;
+    $("#done").hidden = false; $("#done-title").textContent = title; $("#done-sub").textContent = sub;
+    $("#token-wrap").hidden = !token; if (token) $("#token").textContent = token;
+    $("#continue").href = NEXT;
+    $("#continue").textContent = { "../": "Back to the home page", "../portal/": "Open the dev portal", "../status/": "Back to the status page" }[NEXT] || "Open the studio";
+    $("#signout-row").hidden = !signout;
+    if (S && !quiet) { say("yay!!", 1600); hearts(5); hop(); }
+  }
+  $("#signout").addEventListener("click", async () => { await Session.signOut(); location.reload(); });
+  // already signed in? say so, rather than showing an empty form
+  const already = Session.current();
+  if (already) done(`Hi again, ${already.username}!`, "You're already signed in.", null, { quiet: true, signout: true });
+  $("#copy").addEventListener("click", async () => {
+    try { await navigator.clipboard.writeText($("#token").textContent); $("#copy").textContent = "copied!"; }
+    catch (_) { getSelection().selectAllChildren($("#token")); $("#copy").textContent = "press ctrl+c"; }
+    setTimeout(() => $("#copy").textContent = "copy", 1600);
+  });
+  $("#forgot").addEventListener("click", () => toast("Ask the person who runs this server to reset it for you."));
+})();
+</script>
+</body>
+</html>
