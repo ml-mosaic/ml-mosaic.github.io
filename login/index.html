@@ -239,6 +239,41 @@
         <p class="note" style="margin:14px 0 0;text-align:center">Can't find it? Check your spam folder.</p>
       </form>
 
+      <form id="reset" novalidate hidden>
+        <h1>Forgot it? No worries.</h1>
+        <div id="r-step1">
+          <p class="sub">Tell us who you are and we'll email you a code to set a new password.</p>
+          <div class="field" data-for="r-id">
+            <label for="r-id">Username or email</label>
+            <div class="box"><input id="r-id" autocomplete="username" placeholder="pixel_pal"></div>
+            <div class="err"></div>
+          </div>
+          <button class="btn" type="submit"><span class="label">Email me a code</span></button>
+        </div>
+        <div id="r-step2" hidden>
+          <p class="sub">If there's an account for <b id="r-who" style="color:var(--fg);font-weight:normal"></b>, a code is on its way. It works for 15 minutes.</p>
+          <div class="digits" id="rdigits" role="group" aria-label="6-digit code">
+            <input inputmode="numeric" maxlength="1" aria-label="digit 1" autocomplete="one-time-code"><input inputmode="numeric" maxlength="1" aria-label="digit 2"><input inputmode="numeric" maxlength="1" aria-label="digit 3"><input inputmode="numeric" maxlength="1" aria-label="digit 4"><input inputmode="numeric" maxlength="1" aria-label="digit 5"><input inputmode="numeric" maxlength="1" aria-label="digit 6">
+          </div>
+          <div class="field" data-for="r-pw">
+            <label for="r-pw">New password <span>8+ characters</span></label>
+            <div class="box"><input id="r-pw" type="password" autocomplete="new-password" placeholder="********">
+              <button type="button" class="peek" aria-controls="r-pw">show</button></div>
+            <div class="meter" id="r-meter" data-s="0" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+            <div class="err"></div>
+          </div>
+          <div class="field" data-for="r-pw2">
+            <label for="r-pw2">Confirm new password</label>
+            <div class="box"><input id="r-pw2" type="password" autocomplete="new-password" placeholder="********"></div>
+            <div class="err"></div>
+          </div>
+          <div class="verr" id="r-err" role="alert"></div>
+          <button class="btn" type="submit"><span class="label">Change password</span></button>
+          <p class="switch"><button type="button" id="r-resend">Send a new code</button><span id="r-wait"></span></p>
+        </div>
+        <p class="switch"><button type="button" data-go="signin">Back to sign in</button></p>
+      </form>
+
       <div id="done" hidden>
         <h1 id="done-title">You're in!</h1>
         <p class="sub" id="done-sub"></p>
@@ -462,7 +497,7 @@
   const forms = { signin: $("#signin"), signup: $("#signup") }, card = $("#card");
   function show(name) {
     for (const [k, f] of Object.entries(forms)) f.hidden = k !== name;
-    $("#done").hidden = true; $("#verify").hidden = true; $(".tabs").hidden = false;
+    $("#done").hidden = true; $("#verify").hidden = true; $("#reset").hidden = true; $(".tabs").hidden = false;
     $("#tab-in").setAttribute("aria-selected", name === "signin");
     $("#tab-up").setAttribute("aria-selected", name === "signup");
     history.replaceState(null, "", name === "signup" ? "#signup" : location.pathname + location.search);
@@ -528,8 +563,9 @@
     if (S) { say(msg || "hmm...", 1400); }
   }
   async function send(form, url, body) {
-    const btn = form.querySelector(".btn"), label = btn.querySelector(".label"), text = label.textContent;
-    btn.disabled = true; label.innerHTML = `<span class="dots">${{ Sign: "Signing in", Create: "Creating", Confirm: "Checking" }[text.split(" ")[0]] || "Working"}</span>`;
+    const btn = [...form.querySelectorAll(".btn")].find(b => b.offsetParent !== null) || form.querySelector(".btn"),
+          label = btn.querySelector(".label"), text = label.textContent;
+    btn.disabled = true; label.innerHTML = `<span class="dots">${{ Sign: "Signing in", Create: "Creating", Confirm: "Checking", Email: "Sending", Change: "Changing" }[text.split(" ")[0]] || "Working"}</span>`;
     try {
       const r = await Session.api(url, { json: body, auth: false });
       return { ok: r.ok, status: r.status, data: r.data || {} };
@@ -641,7 +677,7 @@
   $("#v-back").addEventListener("click", () => { clearInterval(waitTimer); show("signin"); });
 
   function done(title, sub, token, { quiet = false, signout = false } = {}) {
-    Object.values(forms).forEach(f => f.hidden = true); $(".tabs").hidden = true; $("#verify").hidden = true;
+    Object.values(forms).forEach(f => f.hidden = true); $(".tabs").hidden = true; $("#verify").hidden = true; $("#reset").hidden = true;
     $("#done").hidden = false; $("#done-title").textContent = title; $("#done-sub").textContent = sub;
     $("#token-wrap").hidden = !token; if (token) $("#token").textContent = token;
     $("#continue").href = NEXT;
@@ -658,7 +694,75 @@
     catch (_) { getSelection().selectAllChildren($("#token")); $("#copy").textContent = "press ctrl+c"; }
     setTimeout(() => $("#copy").textContent = "copy", 1600);
   });
-  $("#forgot").addEventListener("click", () => toast("Ask the person who runs this server to reset it for you."));
+  // ---- forgot password: email a code, then code + new password
+  const rdigits = [...document.querySelectorAll("#rdigits input")];
+  let rWho = "", rTimer = null;
+  rdigits.forEach((d, i) => {
+    d.addEventListener("input", () => {
+      d.value = d.value.replace(/\D/g, "").slice(-1); d.classList.toggle("filled", !!d.value);
+      $("#rdigits").classList.remove("bad"); $("#r-err").textContent = "";
+      if (d.value && i < 5) rdigits[i + 1].focus(); else if (d.value) $("#r-pw").focus();
+    });
+    d.addEventListener("keydown", e => { if (e.key === "Backspace" && !d.value && i > 0) { rdigits[i - 1].focus(); rdigits[i - 1].value = ""; rdigits[i - 1].classList.remove("filled"); } });
+    d.addEventListener("paste", e => {
+      const t = (e.clipboardData.getData("text") || "").replace(/\D/g, "").slice(0, 6);
+      if (!t) return; e.preventDefault();
+      rdigits.forEach((x, k) => { x.value = t[k] || ""; x.classList.toggle("filled", !!x.value); });
+      t.length === 6 ? $("#r-pw").focus() : rdigits[t.length].focus();
+    });
+  });
+  $("#r-pw").addEventListener("input", e => {
+    const v = e.target.value, s = !v ? 0 : Math.min(4, (v.length >= 8) + (v.length >= 12) + (/[a-z]/.test(v) && /[A-Z]/.test(v)) + (/\d/.test(v) || /[^\w]/.test(v)));
+    $("#r-meter").dataset.s = v ? Math.max(1, s) : 0;
+  });
+  function rCooldown(sec) {
+    clearInterval(rTimer); const b = $("#r-resend"); b.disabled = true;
+    const tick = () => { $("#r-wait").textContent = sec > 0 ? ` in ${sec}s` : ""; if (sec-- <= 0) { clearInterval(rTimer); b.disabled = false; } };
+    tick(); rTimer = setInterval(tick, 1000);
+  }
+  async function sendReset() {
+    const r = await Session.api("/api/password/forgot", { json: { identifier: rWho }, auth: false });
+    if (!r.ok) { toast(detail(r.data || {})); return false; }
+    return true;
+  }
+  $("#forgot").addEventListener("click", () => {
+    Object.values(forms).forEach(f => f.hidden = true); $(".tabs").hidden = true; $("#verify").hidden = true; $("#done").hidden = true;
+    $("#reset").hidden = false; $("#r-step1").hidden = false; $("#r-step2").hidden = true;
+    $("#r-id").value = $("#in-id").value.trim(); $("#r-id").focus();
+    if (S) say("happens to the best of us", 1600);
+  });
+  $("#reset").addEventListener("submit", async e => {
+    e.preventDefault();
+    const f = $("#reset");
+    f.querySelectorAll(".field").forEach(x => x.classList.remove("bad"));
+    if (!$("#r-step1").hidden) {                                   // step 1: send the code
+      rWho = $("#r-id").value.trim();
+      if (!rWho) { fieldError(f, "r-id", "enter your username or email"); return fail(f, "hmm?"); }
+      const btn = $("#r-step1 .btn"); btn.disabled = true;
+      const ok = await sendReset(); btn.disabled = false;
+      if (!ok) return;
+      $("#r-step1").hidden = true; $("#r-step2").hidden = false; $("#r-who").textContent = rWho;
+      rdigits.forEach(d => { d.value = ""; d.classList.remove("filled"); }); rdigits[0].focus(); rCooldown(60);
+      if (S) { say("check your inbox!", 1600); hop(); }
+      return;
+    }
+    const code = rdigits.map(d => d.value).join(""), pw = $("#r-pw").value;     // step 2: code + new password
+    let bad = false;
+    if (code.length !== 6) { $("#r-err").textContent = "type all 6 digits"; bad = true; }
+    if (pw.length < 8) { fieldError(f, "r-pw", "at least 8 characters"); bad = true; }
+    if (pw !== $("#r-pw2").value) { fieldError(f, "r-pw2", "passwords don't match"); bad = true; }
+    if (bad) return fail(f, "hmm?");
+    const r = await send(f, "/api/password/reset", { identifier: rWho, code, password: pw, remember: true });
+    if (!r.ok) {
+      $("#rdigits").classList.add("bad"); $("#r-err").textContent = detail(r.data);
+      return fail(f, "not quite...");
+    }
+    Session.save(r.data, true);
+    try { localStorage.setItem("mosaic-user", rWho); } catch (_) {}
+    done(`All set, ${r.data.username}!`, "Your password is changed and you're signed in. Other devices were signed out, just in case.");
+    setTimeout(() => location.href = NEXT, 2200);
+  });
+  $("#r-resend").addEventListener("click", async () => { if (await sendReset()) { toast("New code sent!"); rCooldown(60); } });
 })();
 </script>
 </body>
