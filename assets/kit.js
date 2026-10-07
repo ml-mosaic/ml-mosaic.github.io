@@ -33,6 +33,8 @@ window.Kit = (() => {
     if (!mePromise || refresh) mePromise = Session.api("/api/me").then(r => r.ok ? r.data : null);
     return mePromise;
   }
+  // tags next to a person's name ("Developer")
+  const tags = person => (person?.badges || []).map(b => `<span class="utag">${esc(b)}</span>`).join("");
   // a person's picture: their own upload / m1 sprite from the backend, else the pixel pattern made from their name
   function pfp(person, px = 8) {
     return person.avatar ? MOSAIC.backend + person.avatar : avatar(person.username, px);
@@ -155,6 +157,6 @@ window.Kit = (() => {
   }
   const json = url => fetch(url).then(r => r.json());
 
-  return { root, reduce, rand, pick, nav, avatar, pfp, whoami, critter, talk, hop, burst, toast, esc, ago, json,
+  return { root, reduce, rand, pick, nav, avatar, pfp, tags, whoami, critter, talk, hop, burst, toast, esc, ago, json,
            dialog, confirm: confirmBox, alert: alertBox };
 })();

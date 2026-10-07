@@ -207,7 +207,7 @@
 
 <script>
 (() => {
-  const $ = s => document.querySelector(s), { esc, pfp, toast, ago, burst } = Kit;
+  const $ = s => document.querySelector(s), { esc, pfp, tags, toast, ago, burst } = Kit;
   const me = Session.current();
   Kit.nav("Studio");
   const api = (path, opts) => Session.api(path, opts);
@@ -287,7 +287,7 @@
           <div class="chips"><span class="chip m1">model ${esc(p.model)}</span><span class="chip">${p.creativity}</span><span class="chip">seed ${p.seed}</span>
             <span class="chip">${ago(p.created)}</span>${mine ? `<span class="chip">${p.shared ? "in the gallery" : "private"}</span>` : ""}</div>
           <div class="person"><img class="avatar" src="${pfp(p.author)}" alt="">
-            <button class="who-b" type="button" id="to-profile"><b>${esc(p.author.display_name || p.author.username)}${mine ? " (you)" : ""}</b><span>@${esc(p.author.username)} &middot; ${p.author.followers} followers</span></button>
+            <button class="who-b" type="button" id="to-profile"><b>${esc(p.author.display_name || p.author.username)}${mine ? " (you)" : ""}${tags(p.author)}</b><span>@${esc(p.author.username)} &middot; ${p.author.followers} followers</span></button>
             ${mine ? "" : `<button class="btn small ${p.author.following ? "ghost" : ""}" id="follow" type="button" style="--c:var(--blue)">${p.author.following ? "Following" : "Follow"}</button>`}</div>
           <div class="actions">
             <button class="btn small ghost like" id="like" type="button" aria-pressed="${p.liked}"><span class="ht"></span><span id="like-n">${p.likes}</span></button>
@@ -348,7 +348,7 @@
     $("#profile-sheet").innerHTML = `<button class="close" aria-label="Close">&times;</button>
       <div class="pf-banner" style="background-image:url(../assets/scenes/${esc(u.banner || "autumn")}.png)"></div>
       <div class="profile-head"><img class="avatar" src="${pfp(u, 12)}" alt="">
-        <div><h2>${esc(u.display_name || u.username)}${u.is_me ? " (you)" : ""}</h2>
+        <div><h2>${esc(u.display_name || u.username)}${u.is_me ? " (you)" : ""}${tags(u)}</h2>
           <p class="handle">@${esc(u.username)}${u.website ? ` &middot; <a href="${esc(u.website)}" target="_blank" rel="noopener nofollow">${esc(u.website.replace(/^https?:\/\//, ""))}</a>` : ""}</p>
           <p>${esc(u.bio || "No bio yet.")}</p>
           <div class="stats"><span><b id="pf-followers">${u.followers}</b>followers</span><span><b>${u.following_count}</b>following</span>
@@ -396,7 +396,8 @@
     if (!q) return; quota = q;
     const el = $("#left");
     el.classList.toggle("out", q.remaining === 0);
-    el.innerHTML = `<span class="pips">${Array.from({ length: q.limit }, (_, i) => `<i class="${i < q.used ? "used" : ""}"></i>`).join("")}</span>${q.remaining} / ${q.limit} left today`;
+    el.innerHTML = q.limit > 30 ? `${q.remaining.toLocaleString()} / ${q.limit.toLocaleString()} left today`   // big allowances: no pips
+      : `<span class="pips">${Array.from({ length: q.limit }, (_, i) => `<i class="${i < q.used ? "used" : ""}"></i>`).join("")}</span>${q.remaining} / ${q.limit} left today`;
   }
   if (me) Kit.whoami().then(u => u && showQuota(u.quota));
 

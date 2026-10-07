@@ -37,6 +37,9 @@ a { color: inherit; } button, input, select, textarea { font: inherit; color: in
 .topbar .links a[aria-current] { color: var(--fg); box-shadow: 0 6px 0 -2px var(--c, var(--orange)); }
 .topbar .who { margin-left: auto; display: flex; align-items: center; gap: 12px; font-size: 14px; color: var(--dim); white-space: nowrap; }
 .topbar .who a.me { display: flex; align-items: center; gap: 8px; text-decoration: none; color: var(--fg); }
+/* tags next to a name ("Developer"); set on the server, not by the user */
+.utag { display: inline-block; vertical-align: middle; margin-left: 8px; padding: 3px 6px 2px; font-size: 11px; line-height: 1; letter-spacing: 1px;
+        background: var(--blue); color: #000; box-shadow: 0 -2px 0 0 var(--blue), 0 2px 0 0 var(--blue); white-space: nowrap; }
 .avatar { width: 24px; height: 24px; image-rendering: pixelated; display: inline-block; flex: none; }
 @keyframes kit-hop { 50% { transform: translateY(-5px); } }
 

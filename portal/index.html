@@ -214,7 +214,7 @@
         <tr><td><code>200</code></td><td>image/png</td><td>Header <code>X-Seed</code> is the seed it used (send it back to get the same sprite); <code>X-Quota-Remaining</code> is how many you have left today.</td></tr>
         <tr><td><code>401</code></td><td>json</td><td>The key is wrong or revoked, or the email/password don't match.</td></tr>
         <tr><td><code>422</code></td><td>json</td><td>A field is missing or out of range.</td></tr>
-        <tr><td><code>429</code></td><td>json</td><td>All 15 of today's generations used (refills at 00:00 UTC), or 10 failed sign-ins from one address in 5 minutes.</td></tr>
+        <tr><td><code>429</code></td><td>json</td><td>All of today's generations used (15 a day) (refills at 00:00 UTC), or 10 failed sign-ins from one address in 5 minutes.</td></tr>
       </table>
     </section>
   </div>
@@ -260,7 +260,8 @@
 
   // ---- token
   // ---- keys + allowance summary
-  function showQuota(q) { $("#k-quota").textContent = `${q.remaining} of ${q.limit} generations left`; }
+  let qLimit = 15;
+  function showQuota(q) { qLimit = q.limit; $("#k-quota").textContent = `${q.remaining} of ${q.limit} generations left`; }
   Session.api("/api/keys").then(r => { if (r.ok) $("#k-count").textContent = `${r.data.keys.length} of ${r.data.max}`; });
   Kit.whoami().then(u => u && showQuota(u.quota));
 
@@ -296,7 +297,7 @@
     if (r.status === 429 && r.data?.detail?.quota) { showQuota(r.data.detail.quota);
       return Kit.alert("You've used all of today's generations. They refill at midnight UTC.", { title: "Out of sprites for today" }); }
     const left = r.res && r.res.headers.get("X-Quota-Remaining");
-    if (left != null) $("#k-quota").textContent = `${left} of 15 generations left`;
+    if (left != null) $("#k-quota").textContent = `${left} of ${qLimit} generations left`;
     if (!r.ok) return toast(Session.detail(r.data || {}));
     const url = URL.createObjectURL(await r.res.blob());
     const h = { url, prompt, seed: r.res.headers.get("X-Seed"), cr: body.creativity.toFixed(2),

@@ -160,7 +160,7 @@
   // ---- live preview
   let critterEl = null;
   function preview() {
-    $("#p-dn").textContent = $("#dn").value.trim() || me.username;
+    $("#p-dn").innerHTML = esc($("#dn").value.trim() || me.username) + Kit.tags(me.profile);
     const w = $("#web").value.trim();
     $("#p-handle").innerHTML = `@${esc(me.username)}${w ? ` &middot; <a>${esc(w.replace(/^https?:\/\//, ""))}</a>` : ""}`;
     $("#p-bio").textContent = $("#bio").value.trim() || "No bio yet.";
