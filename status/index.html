@@ -195,7 +195,7 @@
   });
 
   // ---------------------------------------------------------------- run the checks
-  let mood = "ok", cat = null;
+  let mood = "ok", cat = null, lastResults = null;
   const log = (() => { try { return JSON.parse(localStorage.getItem("mosaic-status-log")) || []; } catch (_) { return []; } })();
   async function runChecks() {
     $("#recheck").disabled = true;
@@ -204,7 +204,7 @@
     await Promise.all(COMPONENTS.map(async c => results[c.id] = await c.check({ health })));
     const backend = COMPONENTS.filter(c => c.id !== "website").map(c => results[c.id].state);
     const overall = backend.every(s => s === "down") ? "outage" : backend.every(s => s === "ok") ? "ok" : "partial";
-    renderComps(results); setMood(overall);
+    lastResults = results; renderComps(results); setMood(overall);
     const now = Date.now();
     log.unshift({ t: now, overall, ms: health.ms });
     while (log.length && now - log[log.length - 1].t > 86400000) log.pop();
@@ -232,8 +232,10 @@
   $("#recheck").onclick = runChecks;
 
   // ---------------------------------------------------------------- the exhausted site manager, sitting on the crate
-  Kit.json("../assets/scenes/extras.json").then(x => {
-    const a = x["hardhat-cat"];
+  // the cat's details are built in, so it shows up even if the data file can't load
+  const HARDHAT_CAT = {"name": "hardhat-cat", "w": 24, "h": 19, "eyes": [{"x": 6, "y": 7, "w": 4, "h": 2}, {"x": 13, "y": 7, "w": 4, "h": 2}], "pupil": [2, 1], "lid": "#e8913a", "words": ["*yawn*", "we're on it...", "five more minutes", "it's fine. probably."]};
+  Kit.json("../assets/scenes/extras.json").catch(() => ({})).then(x => {
+    const a = x["hardhat-cat"] || HARDHAT_CAT;
     cat = Kit.critter(a, $("#site"), { left: "44px", bottom: "68px", P: 4 });
     // z's drift up while things are fine; it's too stressed to nap during an outage
     (function snooze() {
@@ -251,15 +253,18 @@
   });
 
   // ---------------------------------------------------------------- incidents
-  Kit.json("../assets/status/incidents.json").then(d => {
-    incidents = d.incidents;
+  // Checks start right away; the incident history loads on its own and can never hold them up.
+  renderComps(); runChecks();
+  Kit.json("../assets/status/incidents.json").catch(() => ({ incidents: [] })).then(d => {
+    incidents = d.incidents || [];
     const fmt = s => new Date(s).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
     const dur = x => { const m = Math.round((new Date(x.end) - new Date(x.start)) / 60000); return m >= 60 ? `${Math.floor(m / 60)}h ${m % 60}m` : `${m} min`; };
     $("#incidents").innerHTML = incidents.map(x => `<div class="inc notch" style="--s:${COLORS[x.impact]}">
       <h3><span class="tag">${x.impact.toUpperCase()}</span>${esc(x.title)}</h3>
       <div class="when">${fmt(x.start)} &rarr; ${fmt(x.end)} &middot; ${dur(x)} &middot; ${x.components.join(", ")}</div>
-      <ol>${x.updates.map(([t, s, m]) => `<li><b>${s}</b>${esc(m)}<span>${fmt(t)}</span></li>`).join("")}</ol></div>`).join("");
-    renderComps(); runChecks();
+      <ol>${x.updates.map(([t, s, m]) => `<li><b>${s}</b>${esc(m)}<span>${fmt(t)}</span></li>`).join("")}</ol></div>`).join("")
+      || '<p class="note">No incidents to show.</p>';
+    if (lastResults) renderComps(lastResults);       // redraw the 90-day bars with the history
   });
 })();
 </script>
