@@ -228,7 +228,7 @@
       </form>
 
       <form id="verify" novalidate hidden>
-        <h1>Check your inbox!</h1>
+        <h1 id="v-title">Check your inbox!</h1>
         <p class="sub">We sent a 6-digit code to <b id="v-email" style="color:var(--fg);font-weight:normal"></b>. It works for 15 minutes.</p>
         <div class="digits" id="digits" role="group" aria-label="6-digit code">
           <input inputmode="numeric" maxlength="1" aria-label="digit 1" autocomplete="one-time-code"><input inputmode="numeric" maxlength="1" aria-label="digit 2"><input inputmode="numeric" maxlength="1" aria-label="digit 3"><input inputmode="numeric" maxlength="1" aria-label="digit 4"><input inputmode="numeric" maxlength="1" aria-label="digit 5"><input inputmode="numeric" maxlength="1" aria-label="digit 6">
@@ -584,6 +584,10 @@
     const remember = $("#remember").checked;
     const r = await send(f, "/api/login", { identifier, password, remember });
     if (r.status === 403 && r.data.detail?.verify) return startVerify(identifier, r.data.detail.email, remember, false);
+    if (r.ok && r.data.two_factor) {                                  // two-step sign-in: the emailed code is next
+      try { if (remember) localStorage.setItem("mosaic-user", identifier); else localStorage.removeItem("mosaic-user"); } catch (_) {}
+      return startVerify(identifier, r.data.email, remember, false, { username: r.data.username, ticket: r.data.ticket, password });
+    }
     if (!r.ok) {
       if (r.status === 401) fieldError(f, "password", "wrong username/email or password");
       else toast(detail(r.data));
@@ -620,8 +624,10 @@
   // ---- the code screen
   const digits = [...document.querySelectorAll("#digits input")];
   let vState = null, waitTimer = null;
-  function startVerify(identifier, email, remember, fresh) {
-    vState = { identifier, remember, fresh };
+  function startVerify(identifier, email, remember, fresh, login = null) {
+    vState = { identifier, remember, fresh, login };
+    $("#v-title").textContent = login ? "One more step!" : "Check your inbox!";
+    $("#verify .btn .label").textContent = login ? "Sign in" : "Confirm";
     Object.values(forms).forEach(f => f.hidden = true); $(".tabs").hidden = true; $("#done").hidden = true;
     $("#verify").hidden = false; $("#v-email").textContent = email || "your email"; $("#v-err").textContent = "";
     digits.forEach(d => { d.value = ""; d.classList.remove("filled"); }); digits[0].focus();
@@ -658,23 +664,29 @@
   $("#verify").addEventListener("submit", async e => {
     e.preventDefault();
     if (code().length !== 6) { $("#v-err").textContent = "type all 6 digits"; return; }
-    const r = await send($("#verify"), "/api/verify", { identifier: vState.identifier, code: code(), remember: vState.remember });
+    const L = vState.login;
+    const r = L ? await send($("#verify"), "/api/login/code", { username: L.username, ticket: L.ticket, code: code(), remember: vState.remember })
+                : await send($("#verify"), "/api/verify", { identifier: vState.identifier, code: code(), remember: vState.remember });
     if (!r.ok) {
       $("#digits").classList.add("bad"); $("#v-err").textContent = detail(r.data);
       digits.forEach(d => { d.value = ""; d.classList.remove("filled"); }); digits[0].focus();
       return fail($("#verify"), "hmm, not that one");
     }
     Session.save(r.data, vState.remember);
+    if (L) { vState.login = null; done(`Welcome back, ${r.data.username}!`, "Taking you to the studio..."); return setTimeout(() => location.href = NEXT, 1300); }
     if (vState.fresh || r.data.api_token) done(`Welcome, ${r.data.username}!`, "Your email is confirmed and you're signed in.", r.data.api_token);
     else { done(`Welcome back, ${r.data.username}!`, "Email confirmed! Taking you to the studio..."); setTimeout(() => location.href = NEXT, 1300); }
   });
   $("#resend").addEventListener("click", async () => {
-    const r = await Session.api("/api/verify/resend", { json: { identifier: vState.identifier }, auth: false });
+    const L = vState.login;
+    const r = L ? await Session.api("/api/login", { json: { identifier: vState.identifier, password: L.password, remember: vState.remember }, auth: false })
+                : await Session.api("/api/verify/resend", { json: { identifier: vState.identifier }, auth: false });
     if (!r.ok) { toast(detail(r.data || {})); return; }
+    if (L) L.ticket = r.data.ticket;
     toast("New code sent! Check your inbox."); cooldown(60);
     if (S) say("another one, coming up!", 1500);
   });
-  $("#v-back").addEventListener("click", () => { clearInterval(waitTimer); show("signin"); });
+  $("#v-back").addEventListener("click", () => { clearInterval(waitTimer); vState.login = null; show("signin"); });
 
   function done(title, sub, token, { quiet = false, signout = false } = {}) {
     Object.values(forms).forEach(f => f.hidden = true); $(".tabs").hidden = true; $("#verify").hidden = true; $("#reset").hidden = true;

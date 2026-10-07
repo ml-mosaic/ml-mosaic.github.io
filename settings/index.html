@@ -62,6 +62,11 @@
   .pcard .handle a { color: var(--blue); text-decoration: none; }
   .pcard p { color: #c8c2d4; margin: 0; line-height: 1.45; font-size: 14px; overflow-wrap: anywhere; min-height: 20px; }
   .danger h2 { color: var(--bad); }
+  .tf h2 .state { font-size: 12px; padding: 3px 6px 2px; margin-left: 10px; vertical-align: middle; background: #2a2925; color: var(--dim); }
+  .tf h2 .state.on { background: var(--green); color: #000; }
+  .tf .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .tf .row .field { margin-bottom: 0; flex: 1; min-width: 160px; }
+  .tf #tf-code { letter-spacing: 8px; font-size: 20px; }
   .account dl { display: grid; grid-template-columns: auto 1fr; gap: 10px 18px; margin: 0; font-size: 15px; }
   .account dt { color: var(--dim); } .account dd { margin: 0; overflow-wrap: anywhere; }
 
@@ -110,6 +115,19 @@
         <dl><dt>Username</dt><dd id="a-user"></dd><dt>Email</dt><dd id="a-email"></dd><dt>Today</dt><dd id="a-quota"></dd></dl>
       </section>
 
+      <form class="card notch tf" id="tf" autocomplete="off">
+        <h2>Two-step sign-in<span class="state" id="tf-state">OFF</span></h2>
+        <p class="hint" id="tf-hint"></p>
+        <div class="row" id="tf-off-row" hidden><button class="btn" type="button" id="tf-start" style="--c:var(--green)">Turn it on</button></div>
+        <div class="row" id="tf-code-row" hidden>
+          <div class="field notch"><input id="tf-code" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="000000"></div>
+          <button class="btn" type="submit" style="--c:var(--green)">Confirm</button>
+          <button class="btn ghost small" type="button" id="tf-resend">Send a new code</button></div>
+        <div class="row" id="tf-on-row" hidden>
+          <div class="field notch"><input id="tf-pw" type="password" autocomplete="current-password" placeholder="your password"></div>
+          <button class="btn ghost" type="submit">Turn it off</button></div>
+      </form>
+
       <form class="card notch danger" id="del" autocomplete="off" style="--c:#4a1c1a">
         <h2>Danger zone</h2>
         <p class="hint">Deleting your account removes your profile, picture, sprites, likes and follows, and every API key stops
@@ -142,7 +160,7 @@
     $("#dn").value = p.display_name; $("#bio").value = p.bio; $("#web").value = p.website.replace(/^https?:\/\//, "");
     banner = p.banner;
     $("#a-user").textContent = "@" + u.username; $("#a-email").textContent = u.email || "(none)";
-    showQuota(u.quota); showPic(p); preview(); counts(); dirty();
+    showQuota(u.quota); showPic(p); preview(); counts(); dirty(); showTwoFactor(u.two_factor);
   }
   function showQuota(q) {
     $("#a-quota").textContent = `${q.remaining} of ${q.limit} generations left`;
@@ -226,6 +244,44 @@
     if (!r.ok) return toast(Session.detail(r.data || {}));
     showPic(r.data);
   };
+
+  // ---- two-step sign-in (a code from their email after the password)
+  let tfMode = "off";
+  function showTwoFactor(on, sentTo = null) {
+    tfMode = on ? "on" : sentTo ? "code" : "off";
+    $("#tf-state").textContent = on ? "ON" : "OFF"; $("#tf-state").classList.toggle("on", on);
+    $("#tf-hint").innerHTML = on ? "Every time you sign in, we email you a code too. With it on, the API takes API keys only (not your password)."
+      : sentTo ? `We sent a 6-digit code to <b style="color:var(--fg);font-weight:normal">${esc(sentTo)}</b>. Type it here to turn it on.`
+      : "After your password, sign-in also asks for a code we email you, so a leaked password alone can't get in.";
+    $("#tf-off-row").hidden = tfMode !== "off"; $("#tf-code-row").hidden = tfMode !== "code"; $("#tf-on-row").hidden = tfMode !== "on";
+    $("#tf-code").value = ""; $("#tf-pw").value = "";
+    if (tfMode === "code") $("#tf-code").focus();
+  }
+  async function tfSend() {
+    const r = await Session.api("/api/account/2fa/start", { method: "POST" });
+    if (!r.ok) { toast(Session.detail(r.data || {})); return false; }
+    showTwoFactor(false, r.data.email); return true;
+  }
+  $("#tf-start").onclick = tfSend;
+  $("#tf-resend").onclick = async () => { if (await tfSend()) toast("New code sent!"); };
+  $("#tf-code").addEventListener("input", e => { e.target.value = e.target.value.replace(/\D/g, "").slice(0, 6); if (e.target.value.length === 6) $("#tf").requestSubmit(); });
+  $("#tf").addEventListener("submit", async e => {
+    e.preventDefault();
+    if (tfMode === "code") {
+      const code = $("#tf-code").value;
+      if (code.length !== 6) return toast("Type all 6 digits");
+      const r = await Session.api("/api/account/2fa", { json: { on: true, code } });
+      if (!r.ok) { $("#tf-code").value = ""; return toast(Session.detail(r.data || {})); }
+      me.two_factor = true; showTwoFactor(true); toast("Two-step sign-in is on!");
+    } else if (tfMode === "on") {
+      const password = $("#tf-pw").value;
+      if (!password) { $("#tf-pw").focus(); return toast("Type your password first"); }
+      if (!await Kit.confirm("Sign-in will only need your password again.", { title: "Turn off two-step sign-in?", ok: "Turn it off", cancel: "Keep it on" })) return;
+      const r = await Session.api("/api/account/2fa", { json: { on: false, password } });
+      if (!r.ok) { $("#tf-pw").value = ""; return toast(Session.detail(r.data || {})); }
+      me.two_factor = false; showTwoFactor(false); toast("Two-step sign-in is off");
+    }
+  });
 
   // ---- delete the account
   $("#del").addEventListener("submit", async e => {
