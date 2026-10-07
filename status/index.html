@@ -130,7 +130,16 @@
                                        critical: "var(--down)", down: "var(--down)", maintenance: "var(--maint)", unknown: "#555" };
 
   // ---------------------------------------------------------------- what we check (all from the browser)
+  // One slow or failed answer isn't an outage (a home server's first HTTPS handshake can take a few seconds):
+  // anything slow or failed is tried once more before it counts.
+  const SLOW_MS = 6000;
   async function probe(path, opts = {}) {
+    const first = await probeOnce(path, opts);
+    if (first.reached && first.ms <= SLOW_MS && first.status < 500) return first;
+    const second = await probeOnce(path, opts);
+    return second.reached && (!first.reached || second.ms < first.ms) ? second : (first.reached ? first : second);
+  }
+  async function probeOnce(path, opts = {}) {
     const ctl = new AbortController(), t0 = performance.now(), timer = setTimeout(() => ctl.abort(), 6000);
     try {
       const r = await fetch(B + path, { signal: ctl.signal, ...opts });
@@ -142,7 +151,7 @@
   }
   const COMPONENTS = [
     { id: "website", name: "Website", desc: "this site, on GitHub Pages", check: async () => ({ state: "ok", ms: null, note: "you're reading it" }) },
-    { id: "api", name: "API", desc: "the m1 server answers", check: async ctx => ({ state: ctx.health.reached && ctx.health.status === 200 ? (ctx.health.ms > 2500 ? "degraded" : "ok") : "down", ms: ctx.health.ms }) },
+    { id: "api", name: "API", desc: "the m1 server answers", check: async ctx => ({ state: ctx.health.reached && ctx.health.status === 200 ? (ctx.health.ms > SLOW_MS ? "degraded" : "ok") : "down", ms: ctx.health.ms }) },
     { id: "model", name: "m1 model", desc: "loaded and ready to draw", check: async ctx => !ctx.health.reached ? { state: "down", ms: null }
         : { state: ctx.health.body?.model_loaded ? "ok" : "degraded", ms: ctx.health.ms, note: ctx.health.body?.model_loaded ? "ready" : "starting up" } },
     { id: "accounts", name: "Accounts", desc: "sign-in and sessions", check: async () => { const r = await probe("/api/logout", { method: "POST" }); return { state: r.reached && r.status === 200 ? "ok" : r.reached ? "degraded" : "down", ms: r.ms }; } },
