@@ -107,7 +107,7 @@
 
 <main class="wrap">
   <section>
-    <h2>Components <small>last 90 days &middot; history is sample data</small></h2>
+    <h2>Components <small>last 90 days</small></h2>
     <div id="comps"></div>
   </section>
   <section>
@@ -116,7 +116,7 @@
     <p class="note">The status page isn't part of the server: it asks the server how it's doing every 30 seconds. If nothing answers, that's an outage.</p>
   </section>
   <section>
-    <h2>Past incidents <small>sample data</small></h2>
+    <h2>Past incidents</h2>
     <div id="incidents"></div>
   </section>
 </main>
@@ -159,8 +159,8 @@
   ];
   const LABEL = { ok: "Operational", degraded: "Wobbly", down: "Down", unknown: "Checking" };
 
-  // ---------------------------------------------------------------- 90-day bars from the (sample) incident log + today's live checks
-  let incidents = [];
+  // ---------------------------------------------------------------- 90-day bars from the incident log + today's live checks
+  let incidents = [], launched = "2026-10-07";            // days before launch show as "no data"
   const dayKey = d => d.toISOString().slice(0, 10);
   function history(compId) {
     const days = [];
@@ -170,20 +170,21 @@
       const hits = incidents.filter(x => x.components.includes(compId) && x.start.slice(0, 10) === key);
       const worst = hits.reduce((w, x) => ["minor", "maintenance", "major", "critical"].indexOf(x.impact) > ["minor", "maintenance", "major", "critical"].indexOf(w) ? x.impact : w, hits.length ? hits[0].impact : null);
       const mins = hits.reduce((m, x) => m + (new Date(x.end) - new Date(x.start)) / 60000, 0);
-      days.push({ key, cls: worst || "", mins, titles: hits.map(h => h.title) });
+      days.push(key < launched ? { key, cls: "none", mins: 0, titles: [], before: true } : { key, cls: worst || "", mins, titles: hits.map(h => h.title) });
     }
     return days;
   }
   function renderComps(results = {}) {
     $("#comps").innerHTML = COMPONENTS.map(c => {
       const r = results[c.id] || { state: "unknown" }, days = history(c.id), down = days.reduce((m, d) => m + (d.cls && d.cls !== "maintenance" ? d.mins : 0), 0);
-      const up = (100 - down / (90 * 1440) * 100).toFixed(2);
+      const live = Math.max(1, days.filter(d => !d.before).length);
+      const up = (100 - down / (live * 1440) * 100).toFixed(2);
       if (r.state !== "ok" && r.state !== "unknown") days[days.length - 1].cls = r.state === "down" ? "major" : "minor";
       return `<div class="comp notch" style="--s:${COLORS[r.state]}">
         <div class="top"><div><div class="name">${c.name}</div><div class="desc">${c.desc}${r.note ? ` &middot; ${esc(r.note)}` : ""}</div></div>
           <span class="st">&#9632; ${LABEL[r.state]}</span><span class="ms">${r.ms != null ? r.ms + " ms" : ""}</span></div>
-        <div class="bars">${days.map(d => `<i class="${d.cls}" data-tip="${d.key}${d.titles.length ? " · " + esc(d.titles.join(", ")) + ` · ${Math.round(d.mins)} min` : " · no incidents"}"></i>`).join("")}</div>
-        <div class="barsl"><span>90 days ago</span><span>${up}% uptime</span><span>today</span></div></div>`;
+        <div class="bars">${days.map(d => `<i class="${d.cls}" data-tip="${d.key}${d.before ? " · before launch" : d.titles.length ? " · " + esc(d.titles.join(", ")) + ` · ${Math.round(d.mins)} min` : " · no incidents"}"></i>`).join("")}</div>
+        <div class="barsl"><span>90 days ago</span><span>${up}% uptime since launch</span><span>today</span></div></div>`;
     }).join("");
   }
   const tip = $("#tip");
@@ -256,14 +257,14 @@
   // Checks start right away; the incident history loads on its own and can never hold them up.
   renderComps(); runChecks();
   Kit.json("../assets/status/incidents.json").catch(() => ({ incidents: [] })).then(d => {
-    incidents = d.incidents || [];
+    incidents = d.incidents || []; launched = d.launched || launched;
     const fmt = s => new Date(s).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
     const dur = x => { const m = Math.round((new Date(x.end) - new Date(x.start)) / 60000); return m >= 60 ? `${Math.floor(m / 60)}h ${m % 60}m` : `${m} min`; };
     $("#incidents").innerHTML = incidents.map(x => `<div class="inc notch" style="--s:${COLORS[x.impact]}">
       <h3><span class="tag">${x.impact.toUpperCase()}</span>${esc(x.title)}</h3>
       <div class="when">${fmt(x.start)} &rarr; ${fmt(x.end)} &middot; ${dur(x)} &middot; ${x.components.join(", ")}</div>
       <ol>${x.updates.map(([t, s, m]) => `<li><b>${s}</b>${esc(m)}<span>${fmt(t)}</span></li>`).join("")}</ol></div>`).join("")
-      || '<p class="note">No incidents to show.</p>';
+      || '<p class="note">No incidents yet. Long may it last.</p>';
     if (lastResults) renderComps(lastResults);       // redraw the 90-day bars with the history
   });
 })();

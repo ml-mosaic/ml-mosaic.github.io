@@ -159,7 +159,7 @@
   <div class="wrap">
     <h1>Mosaic Studio</h1>
     <p id="greet">What are we drawing today?</p>
-    <span class="sample" title="The community gallery is sample data for now">PREVIEW &middot; SAMPLE GALLERY</span>
+    <span class="sample" title="m1 is still learning: expect the odd surprise">m1 PREVIEW</span>
   </div>
 </header>
 
@@ -253,6 +253,8 @@
     if (reset) { offset = 0; $("#grid").innerHTML = ""; }
     const r = await api(`/api/studio/feed?sort=${sort}&offset=${offset}&limit=48`, { auth: !!me });
     if (!r.ok) return $("#grid").innerHTML = `<div class="empty"><b>Can't reach the studio.</b>${esc(Session.detail(r.data || {}))} &middot; <a href="../status/">check the status page</a></div>`;
+    if (reset && !r.data.posts.length)
+      $("#grid").innerHTML = `<div class="empty"><b>Nothing shared yet.</b>Make a sprite below, open it and press <i>Share to gallery</i>: you'll be the very first!</div>`;
     r.data.posts.forEach((p, i) => { const t = tileEl(p); t.style.animationDelay = (i % 12) * 30 + "ms"; $("#grid").appendChild(t); });
     offset = r.data.next ?? offset; $("#more").hidden = r.data.next == null;
   }
