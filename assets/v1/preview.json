@@ -1,0 +1,56 @@
+[
+ {
+  "file": "walk-beach.gif",
+  "prompt": "96x54 pixel animation of a light gray elf knight walking to the right. Across a sunny beach on a sunny day. 12 fps. A steel helmet and a indigo plume. 16:9 widescreen",
+  "scene": "walk",
+  "loop": false
+ },
+ {
+  "file": "jump-desert.gif",
+  "prompt": "Create a 16:9 pixel art clip of a cyan hero running to the right and jumping over a log. It should be in a sandy desert at sunset. Keep the camera still.",
+  "scene": "jump",
+  "loop": false
+ },
+ {
+  "file": "campfire.gif",
+  "prompt": "i want a retro animated scene of a crackling campfire burning and flickering at night under the stars. make sure it has flickering firelight. make it about 2 seconds long :)",
+  "scene": "campfire",
+  "loop": false
+ },
+ {
+  "file": "aurora.gif",
+  "prompt": "Make me a pixel art animation of the silhouette of a hut under shooting stars over a sandy desert at night. Make it look like a retro game.",
+  "scene": "night_sky",
+  "loop": false
+ },
+ {
+  "file": "sailboat.gif",
+  "prompt": "Can you animate a small sailboat bobbing on the waves? Set it on the open sea on a sunny day. Make it about 2 seconds long. Make it look like a retro game. Animate it at 12 fps.",
+  "scene": "ocean",
+  "loop": false
+ },
+ {
+  "file": "windmill-snow.gif",
+  "prompt": "i need a looping gif of a gray windmill with its sails turning for my game. set it in a snowy field on a sunny day",
+  "scene": "building",
+  "loop": false
+ },
+ {
+  "file": "dungeon-golem.gif",
+  "prompt": "96x54 pixel animation of a teal golem standing idle; in a dark dungeon with flickering torches; seamless loop; widescreen pixel art; with glowing magenta core and moss",
+  "scene": "idle",
+  "loop": true
+ },
+ {
+  "file": "bat.gif",
+  "prompt": "Classic pixel art scene, a purple bat flying to the right and flapping its wings, 12 fps, across the sky on a sunny day, with spread wings, 2 seconds clip",
+  "scene": "fly",
+  "loop": false
+ },
+ {
+  "file": "coin.gif",
+  "prompt": "A light gray coin glowing and pulsing, 12 fps pixel art; on a light gray background; static camera; 2 seconds clip; hard pixel edges, no blur; with a star symbol",
+  "scene": "pickup",
+  "loop": true
+ }
+]

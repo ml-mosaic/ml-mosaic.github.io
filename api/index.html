@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mosaic API</title>
+<link rel="icon" type="image/png" sizes="64x64" href="../assets/favicon.png?v=2">
+<script src="../config.js"></script>
+<script>
+  // Forward to the API itself, keeping any path after /api/ and the query string.
+  (() => {
+    const rest = location.pathname.replace(/^.*?\/api\/?/, "");
+    location.replace(MOSAIC.production.replace(/\/$/, "") + "/" + rest + location.search);
+  })();
+</script>
+<noscript><meta http-equiv="refresh" content="0; url=https://server.tail8c8f14.ts.net/"></noscript>
+<style>body{background:#16151a;color:#d8d2c4;font:16px/1.6 system-ui,sans-serif;display:grid;place-items:center;min-height:100vh;margin:0}
+a{color:#ff9f43}</style>
+</head>
+<body>
+<p>Taking you to the Mosaic API&hellip; If nothing happens, <a id="go" href="https://server.tail8c8f14.ts.net/">continue here</a>.
+  Calling it from code? Use the direct address shown in the <a href="../portal/#ref">API reference</a>.</p>
+<script>document.getElementById("go").href = MOSAIC.production;</script>
+</body>
+</html>

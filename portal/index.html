@@ -197,6 +197,8 @@
 
     <section class="card wide notch" aria-labelledby="ref">
       <h2 id="ref">API reference</h2>
+      <p class="hint">API home: <a class="apilink" href="../api/"></a> (opens the API in your browser). Code below talks to the API's
+        direct address, <code class="base"></code>, because that link can forward browsers but not tools like curl.</p>
       <p class="hint">One endpoint makes sprites: <code>POST <span class="base"></span>/api/generate</code>, which returns a PNG. Sign in with an API key (below), or put <code>"email"</code> + <code>"password"</code> in the body instead.</p>
       <div class="tabs" role="tablist"><button role="tab" aria-selected="true" data-tab="curl">curl</button><button role="tab" aria-selected="false" data-tab="py">python</button><button role="tab" aria-selected="false" data-tab="js">javascript</button></div>
       <pre id="code"></pre>
@@ -238,6 +240,7 @@
   });
   $("#hello").textContent = `Hi, ${S.username}!`;
   document.querySelectorAll(".base").forEach(e => e.textContent = MOSAIC.backend);
+  document.querySelectorAll(".apilink").forEach(e => e.textContent = MOSAIC.apiLink.replace(/^https?:\/\//, ""));
 
   const signout = async () => { await Session.signOut(); location.href = "../"; };
   $("#signout2").onclick = signout;
