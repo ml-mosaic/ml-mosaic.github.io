@@ -586,7 +586,7 @@ curl <span id="code-url"></span>/api/generate \
     // v1: its latest training samples (real v1 output, refreshed every checkpoint by v1/tools/export_samples.py);
     // without them, the training-set clips from the blog post
     const real = fetch("assets/v1/samples.json").then(r => r.ok ? r.json() : Promise.reject()).then(m => {
-      $("#v1-cap").textContent = `real v1 output · training step ${m.step.toLocaleString("en-US")}, still learning`;
+      $("#v1-cap").textContent = `real v1 output${m.unseen ? " from prompts it never trained on" : ""} · step ${m.step.toLocaleString("en-US")}`;
       return m.clips;
     });
     real.catch(() => fetch("assets/v1/preview.json").then(r => r.json())).then(list => {
