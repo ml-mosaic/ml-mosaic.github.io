@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Mosaic · m1 draws tiny things</title>
-<meta name="description" content="m1 turns a sentence into a 64x64 pixel-art sprite.">
+<title>Mosaic · pixel art from a sentence</title>
+<meta name="description" content="Mosaic turns a sentence into pixel art: 64x64 sprites with m1, and little animated 16:9 scenes with v1 (preview).">
 <link rel="icon" type="image/svg+xml" sizes="any" href="assets/favicon.svg?v=2">
 <link rel="icon" type="image/png" sizes="64x64" href="assets/favicon.png?v=2">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -87,6 +87,8 @@
   @keyframes blink { 50% { opacity: 0; } }
   .hello p { font-size: 19px; line-height: 1.5; max-width: 470px; margin: 0 0 28px; color: #fff3e4; }
   .cta { display: flex; gap: 14px; flex-wrap: wrap; }
+  .hello p b { font-weight: normal; color: var(--yellow); }
+  .api li code { color: var(--yellow); font-family: ui-monospace, Menlo, monospace; font-size: 14px; }
 
   .machine { background: #1a1424; padding: 18px; margin: var(--u); --c: #000; position: relative;
              transform: rotate(1.2deg); filter: drop-shadow(8px 8px 0 rgba(0,0,0,.35)); }
@@ -123,6 +125,31 @@
   .hud .xp .track { flex: 1; height: 16px; background: #2a2333; position: relative; }
   .hud .xp .fill { position: absolute; inset: 0 auto 0 0; background: repeating-linear-gradient(90deg, var(--green) 0 10px, #4cbc58 10px 12px); }
   .hud .xp span { color: #fff; font-size: 14px; white-space: nowrap; }
+
+  /* ---------------------------------------------------------------- the models */
+  #models { background: #0b0910; padding-top: 90px; }
+  .lineup { display: grid; grid-template-columns: 1fr 1.25fr; gap: 28px; align-items: stretch; }
+  .lineup > * { min-width: 0; }
+  .mcard { background: #120f17; margin: var(--u); --c: #2e2838; display: flex; flex-direction: column; position: relative; overflow: hidden; }
+  .mcard .plate { height: 64px; background: no-repeat right center / auto 100%; image-rendering: pixelated; position: relative; }
+  .mcard .plate::before { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, #120f17 20%, transparent 75%); }
+  .mcard .plate b { position: absolute; left: 22px; top: 14px; font-weight: normal; font-size: 40px; line-height: 1; z-index: 1; }
+  .mcard.m1 .plate { background-image: url(assets/scenes/nameplate-autumn.png), linear-gradient(270deg, rgba(232,145,58,.3), transparent 70%); }
+  .mcard.v1 .plate { background-image: url(assets/scenes/nameplate-snow.png), linear-gradient(270deg, rgba(140,164,220,.3), transparent 70%); }
+  .mcard .body { padding: 18px 22px 22px; display: flex; flex-direction: column; gap: 16px; flex: 1; }
+  .mcard .kind { font-size: 19px; color: #fff; }
+  .mcard .state { display: inline-block; font-size: 12px; letter-spacing: 2px; padding: 3px 8px; color: #000; margin-left: 8px; vertical-align: 3px; }
+  .mcard.m1 .state { background: var(--orange); } .mcard.v1 .state { background: #c4d4f0; }
+  .mcard .show { background: #0b0910; display: grid; place-items: center; position: relative; }
+  .mcard.m1 .show { aspect-ratio: 16 / 9; }
+  .mcard.m1 .show div { width: 46%; aspect-ratio: 1; background-repeat: no-repeat; }
+  .mcard.v1 .show img { width: 100%; aspect-ratio: 16 / 9; display: block; }
+  .mcard .show small { position: absolute; left: 8px; bottom: 6px; font-size: 11px; color: #8f86a0; background: rgba(0,0,0,.6); padding: 2px 6px; }
+  .mcard ul { list-style: none; margin: 0; padding: 0; color: #b9b0c8; font-size: 15px; line-height: 1.45; }
+  .mcard li { padding: 3px 0 3px 20px; position: relative; }
+  .mcard li::before { content: ""; position: absolute; left: 0; top: 10px; width: 8px; height: 8px; background: var(--c2); }
+  .mcard.m1 { --c2: var(--orange); } .mcard.v1 { --c2: #8ca4dc; }
+  .mcard .go { margin-top: auto; display: flex; gap: 10px; flex-wrap: wrap; }
 
   /* ---------------------------------------------------------------- wish machine */
   #explore { background: #120d1c; }
@@ -202,7 +229,7 @@
 
   @media (max-width: 900px) {
     nav .links a.opt { display: none; }
-    .world .wrap, .slots, .api { grid-template-columns: 1fr; }
+    .world .wrap, .slots, .api, .lineup { grid-template-columns: 1fr; }
     .machine { transform: none; max-width: 420px; }
     .hud .wrap { grid-template-columns: 1fr 1fr; }
     .hud .wrap > :first-child { grid-column: 1 / -1; }
@@ -226,6 +253,7 @@
   <div class="wrap">
     <a class="brand" href="#top" aria-label="Mosaic"><img src="assets/logo-wordmark.png" alt="Mosaic"></a>
     <div class="links">
+      <a class="opt" href="#models">Models</a>
       <a class="opt" href="#explore">Wish machine</a>
       <a class="opt" href="#gallery">Sticker book</a>
       <a href="studio/">Studio</a>
@@ -245,11 +273,11 @@
   <div class="ground"></div>
   <div class="wrap">
     <div class="hello">
-      <h1>m1 draws<br><span class="what" id="what">frogs</span></h1>
-      <p>Tell it what you want, in plain words. It stares at some static until a tiny 64&times;64 sprite
-        blinks into existence. Then it does it again.</p>
+      <h1>Mosaic draws<br><span class="what" id="what">frogs</span></h1>
+      <p>Tell it what you want, in plain words. <b>m1</b> turns it into a tiny 64&times;64 sprite; <b>v1</b>, our new
+        preview, turns it into a little animated scene. Pixel art, no smudges.</p>
       <div class="cta">
-        <a class="btn" href="#explore">Make a wish</a>
+        <a class="btn" href="#models">Meet the models</a>
         <a class="btn ghost" href="login/#signup" id="cta-key">Get an API key</a>
       </div>
     </div>
@@ -268,12 +296,45 @@
 <div class="hud">
   <div class="wrap">
     <div class="stat">MODE<div class="xp"><div class="track"><div class="fill" id="xp-fill" style="width:0"></div></div><span>PREVIEW &middot; still learning</span></div></div>
-    <div class="stat">BACKGROUND<b>see-through</b></div>
-    <div class="stat">SPEED<b>a few sec</b></div>
-    <div class="stat">CANVAS<b>64&times;64</b></div>
+    <div class="stat">MODELS<b>m1 + v1</b></div>
+    <div class="stat">SPRITES<b>64&times;64</b></div>
+    <div class="stat">SCENES<b>16:9 &middot; 12 fps</b></div>
     <div class="stat">FREE PER DAY<b>15</b></div>
   </div>
 </div>
+
+<section id="models">
+  <div class="wrap">
+    <span class="tag" style="--c:var(--yellow)">THE MODELS</span>
+    <h2>Two models, one crisp style.</h2>
+    <p class="lede">m1 makes the pieces of a game; v1 makes them move. Same plain-words prompts, same hard pixels.</p>
+    <div class="lineup">
+      <div class="mcard notch m1">
+        <div class="plate"><b>m1</b></div>
+        <div class="body">
+          <div class="kind">Sprites<span class="state">AVAILABLE</span></div>
+          <div class="show px"><div id="m1-show"></div><small>real m1 output</small></div>
+          <ul><li>A 64&times;64 sprite on a see-through background</li>
+            <li>Critters, items, plants, buildings and tiles</li>
+            <li>1 generation each, 15 free a day</li></ul>
+          <div class="go"><a class="btn small" href="studio/" style="--c:var(--orange)">Try it in the Studio</a>
+            <a class="btn small ghost" href="#explore">Make a wish</a></div>
+        </div>
+      </div>
+      <div class="mcard notch v1">
+        <div class="plate"><b>v1</b></div>
+        <div class="body">
+          <div class="kind">Animated scenes<span class="state">DEVELOPER PREVIEW</span></div>
+          <div class="show px"><img id="v1-show" src="assets/v1/campfire.gif" alt="A campfire crackling at night under the stars"><small>from v1's training set &middot; not v1 output (yet)</small></div>
+          <ul><li>A 2-second, 16:9 clip: 24 frames at 12 fps, made to loop</li>
+            <li>Walks, weather, campfires, rolling seas, spinning pickups</li>
+            <li>5 generations each; open to developer accounts while it learns</li></ul>
+          <div class="go"><a class="btn small" href="blog/a-first-look-at-v1/" style="--c:#c4d4f0">Read: A first look at v1</a></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
 <section id="explore">
   <div class="wrap">
@@ -331,11 +392,12 @@
   <div class="wrap api">
     <div>
       <span class="tag" style="--c:var(--green)">FOR BUILDERS</span>
-      <h2>Put m1 in your game.</h2>
+      <h2>Put Mosaic in your game.</h2>
       <ol>
         <li><span><b>Make an account</b> on the sign-in page.</span></li>
         <li><span><b>Make an API key</b> in the dev portal (or use your email and password).</span></li>
-        <li><span><b>POST a wish,</b> get a PNG. Same seed, same sprite. 15 a day.</span></li>
+        <li><span><b>POST a wish,</b> get a PNG sprite from m1. Same seed, same sprite. 15 a day.</span></li>
+        <li><span><b>Developer account?</b> Add <code>"model": "v1"</code> and get an animated GIF scene (5 generations each).</span></li>
       </ol>
       <a class="btn" href="portal/" style="--c:var(--green)">Open the dev portal</a>
     </div>
@@ -421,7 +483,7 @@ curl <span id="code-url"></span>/api/generate \
   Promise.all([fetch("assets/m1/showcase.json").then(r => r.json()), fetch("assets/scenes/scenes.json").then(r => r.json())])
     .then(([M, scenes]) => {
       const A = Object.fromEntries(scenes.map(s => [s.animal.name, s]));
-      world(M, A); hud(M); wishMachine(M); how(M); book(M, A); footer(A);
+      world(M, A); hud(M); models(M); wishMachine(M); how(M); book(M, A); footer(A);
     });
 
   /* ================================================================ hero world */
@@ -433,7 +495,7 @@ curl <span id="code-url"></span>/api/generate \
     });
 
     // the headline's last word keeps changing
-    const words = ["frogs", "potions", "dragons", "cottages", "penguins", "cacti", "chests", "slimes"];
+    const words = ["frogs", "snowfall", "potions", "dragons", "campfires", "cottages", "penguins", "sea breezes", "chests", "slimes"];
     let wi = 0;
     function cycleWord() {
       const el = $("#what"), next = words[++wi % words.length];
@@ -513,6 +575,23 @@ curl <span id="code-url"></span>/api/generate \
       if (reduce) return fill.style.width = pct + "%";
       let w = 0; (function grow() { w = Math.min(pct, w + pct / 14); fill.style.width = w + "%"; if (w < pct) setTimeout(grow, 50); })();
     })).observe(fill);
+  }
+
+  /* ================================================================ the models */
+  function models(M) {
+    // m1: its finished cut-out sprites, one after another
+    const E = M.explore, eRows = Math.ceil(E.cutout.length / E.cols), cut = E.cutout.map((c, k) => c ? k : -1).filter(k => k >= 0);
+    const m1 = $("#m1-show");
+    if (cut.length) { let i = Math.floor(Math.random() * cut.length); (function next() { tileBg(m1, E.file, cut[i++ % cut.length], E.cols, eRows); if (!reduce) setTimeout(next, 1800); })(); }
+    // v1: sample clips from its training set (the same ones as the blog post), a new one every few loops
+    fetch("assets/v1/preview.json").then(r => r.json()).then(list => {
+      const img = $("#v1-show");
+      list.forEach(c => { new Image().src = `assets/v1/${c.file}`; });
+      let i = 0;
+      const show = c => { img.src = `assets/v1/${c.file}`; img.alt = c.prompt; };
+      show(list[0]);
+      if (!reduce) setInterval(() => show(list[++i % list.length]), 6000);
+    }).catch(() => {});
   }
 
   /* ================================================================ wish machine */
