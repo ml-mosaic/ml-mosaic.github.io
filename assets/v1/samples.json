@@ -1,0 +1,45 @@
+{
+ "step": 12000,
+ "clips": [
+  {
+   "file": "samples/knight.gif",
+   "title": "A knight's walk",
+   "prompt": "pixel art animation of a knight walking to the right across a grassy meadow on a sunny day"
+  },
+  {
+   "file": "samples/slime.gif",
+   "title": "Dungeon slime",
+   "prompt": "a slime bouncing in a dark dungeon with flickering torches, seamless loop"
+  },
+  {
+   "file": "samples/campfire.gif",
+   "title": "Campfire night",
+   "prompt": "a crackling campfire at night under the stars with glowing embers rising"
+  },
+  {
+   "file": "samples/snow.gif",
+   "title": "Snowy pines",
+   "prompt": "make me a pixel art animation of snow gently falling on a pine tree at night"
+  },
+  {
+   "file": "samples/sailboat.gif",
+   "title": "Sunset sail",
+   "prompt": "a small sailboat bobbing on the waves on the open sea at sunset"
+  },
+  {
+   "file": "samples/coin.gif",
+   "title": "Shiny pickup",
+   "prompt": "a gold coin spinning on a dark background, sparkles, seamless loop"
+  },
+  {
+   "file": "samples/windmill.gif",
+   "title": "Meadow windmill",
+   "prompt": "a windmill with its sails turning in a grassy meadow on a sunny day"
+  },
+  {
+   "file": "samples/bat.gif",
+   "title": "Night flight",
+   "prompt": "can you animate a bat flying to the left across the sky at night?"
+  }
+ ]
+}

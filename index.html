@@ -325,7 +325,7 @@
         <div class="plate"><b>v1</b></div>
         <div class="body">
           <div class="kind">Animated scenes<span class="state">DEVELOPER PREVIEW</span></div>
-          <div class="show px"><img id="v1-show" src="assets/v1/campfire.gif" alt="A campfire crackling at night under the stars"><small>from v1's training set &middot; not v1 output (yet)</small></div>
+          <div class="show px"><img id="v1-show" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="A campfire crackling at night under the stars"><small id="v1-cap">from v1's training set &middot; not v1 output (yet)</small></div>
           <ul><li>A 2-second, 16:9 clip: 24 frames at 12 fps, made to loop</li>
             <li>Walks, weather, campfires, rolling seas, spinning pickups</li>
             <li>5 generations each; open to developer accounts while it learns</li></ul>
@@ -583,8 +583,13 @@ curl <span id="code-url"></span>/api/generate \
     const E = M.explore, eRows = Math.ceil(E.cutout.length / E.cols), cut = E.cutout.map((c, k) => c ? k : -1).filter(k => k >= 0);
     const m1 = $("#m1-show");
     if (cut.length) { let i = Math.floor(Math.random() * cut.length); (function next() { tileBg(m1, E.file, cut[i++ % cut.length], E.cols, eRows); if (!reduce) setTimeout(next, 1800); })(); }
-    // v1: sample clips from its training set (the same ones as the blog post), a new one every few loops
-    fetch("assets/v1/preview.json").then(r => r.json()).then(list => {
+    // v1: its latest training samples (real v1 output, refreshed every checkpoint by v1/tools/export_samples.py);
+    // without them, the training-set clips from the blog post
+    const real = fetch("assets/v1/samples.json").then(r => r.ok ? r.json() : Promise.reject()).then(m => {
+      $("#v1-cap").textContent = `real v1 output · training step ${m.step.toLocaleString("en-US")}, still learning`;
+      return m.clips;
+    });
+    real.catch(() => fetch("assets/v1/preview.json").then(r => r.json())).then(list => {
       const img = $("#v1-show");
       list.forEach(c => { new Image().src = `assets/v1/${c.file}`; });
       let i = 0;
