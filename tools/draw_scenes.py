@@ -234,6 +234,27 @@ def nameplate():
     return img
 
 
+# v1's nameplate: a snow drift with two snowy pines on the right, flakes thickest there too.
+def nameplate_snow():
+    w, h = 96, 16
+    img = canvas(w, h)
+    r = np.random.default_rng(7)
+    for x in range(40, w):                        # the drift rises towards the right edge
+        top = int(round(h - 1 - (x - 40) / 9 - 0.8 * np.sin(x / 5.0)))
+        if top < h:
+            img[max(top, 8):, x] = hexc("e8f0fc") + (255,)
+            img[max(top, 8), x] = hexc("c4d4f0") + (255,)
+    blit(img, PINE, 66, 2, PINE_PAL)
+    blit(img, PINE, 82, 1, PINE_PAL)
+    for _ in range(70):
+        x = int(w - 1 - abs(r.normal(0, 28)))
+        y = int(r.integers(0, h - 3))
+        if 0 <= x < w - 2 and not img[max(0, y - 1):y + 4, max(0, x - 1):x + 4, 3].any():
+            blit(img, [".W.\nWWW\n.W.", "W", "W.\n.W"][int(r.integers(3))], x, y,
+                 {"W": hexc("ffffff" if r.random() < .6 else "c4d4f0")})
+    return img
+
+
 # --------------------------------------------------------------------------------------------- scenes
 LEAF_PAL = {"A": hexc("de6e28"), "Y": hexc("f0ba3c"), "R": hexc("c43e26"), "B": hexc("5c3a24"), "b": hexc("42291a")}
 TREE = """
@@ -460,6 +481,7 @@ def main():
     Image.fromarray(sprite(HARDHAT_CAT, WORK_PAL)).save(os.path.join(OUT, "hardhat-cat.png"))
     Image.fromarray(sprite(CONE, CONE_PAL)).save(os.path.join(OUT, "cone.png"))
     Image.fromarray(nameplate()).save(os.path.join(OUT, "nameplate-autumn.png"))
+    Image.fromarray(nameplate_snow()).save(os.path.join(OUT, "nameplate-snow.png"))
     extras = {"hardhat-cat": {"name": "hardhat-cat", "w": len(HARDHAT_CAT.strip().split()[0]), "h": len(HARDHAT_CAT.strip().split()),
                               "eyes": eyes_of(HARDHAT_CAT), "pupil": [2, 1], "lid": "#e8913a",
                               "words": ["*yawn*", "we're on it...", "five more minutes", "it's fine. probably."]}}
