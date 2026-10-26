@@ -1,6 +1,8 @@
 // Plan prices in the visitor's own currency. The plans are priced in BASE on Patreon (which charges each patron in
 // their own currency); here every element with data-price="free|artisan|atelier" shows the price converted, as an
 // estimate ("≈ US$3.86"), from a free exchange-rate feed remembered for 12 hours. If the rates can't load, BASE shows.
+// The visitor's country comes from the backend (/api/geo: their IP, looked up on our server in DB-IP's database, which
+// we credit in the price note), else from the browser's language and time zone.
 // Add data-price-suffix=" / month" to append text; Prices.label(tier) gives the same string for scripts.
 window.Prices = (() => {
   const BASE = "SGD", AMOUNT = { free: 0, artisan: 5, atelier: 15 };
@@ -20,7 +22,23 @@ window.Prices = (() => {
                "Australia/Sydney": "AU", "Australia/Melbourne": "AU", "Pacific/Auckland": "NZ", "America/Toronto": "CA",
                "America/Vancouver": "CA", "America/Sao_Paulo": "BR", "America/Mexico_City": "MX" };
 
-  function region() {
+  // the country from the visitor's IP (asked once per tab, so switching a VPN on and opening a new tab shows the change)
+  async function ipRegion() {
+    try {
+      const saved = sessionStorage.getItem("mosaic-country");
+      if (saved != null) return saved || null;
+    } catch (_) {}
+    if (!window.MOSAIC || !MOSAIC.backend) return null;
+    try {
+      const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), 2500);
+      const d = await fetch(`${MOSAIC.backend}/api/geo`, { signal: ctl.signal }).then(r => r.json()).finally(() => clearTimeout(timer));
+      const c = typeof d.country === "string" ? d.country.toUpperCase() : "";
+      try { sessionStorage.setItem("mosaic-country", c); } catch (_) {}
+      return c || null;
+    } catch (_) { return null; }
+  }
+
+  function guessRegion() {
     for (const lang of navigator.languages || [navigator.language]) {
       const m = /[-_]([A-Z]{2})\b/i.exec(lang || "");
       if (m && CUR[m[1].toUpperCase()]) return m[1].toUpperCase();
@@ -33,7 +51,12 @@ window.Prices = (() => {
     } catch (_) {}
     return null;
   }
-  const currency = () => CUR[region()] || BASE;
+  let fromIp = false;
+  async function currency() {
+    const ip = await ipRegion();
+    if (ip) { fromIp = true; return CUR[ip] || BASE; }        // a country we have no currency for: show BASE
+    return CUR[guessRegion()] || BASE;
+  }
 
   function format(amount, cur) {
     if (cur === "SGD") return `S$${amount.toLocaleString("en", { maximumFractionDigits: amount % 1 ? 2 : 0 })}`;
@@ -63,19 +86,20 @@ window.Prices = (() => {
     if (state.cur === BASE || base === 0) return format(base * state.rate, state.cur);
     return "≈ " + format(base * state.rate, state.cur);
   };
-  const note = () => state.cur === BASE ? `Prices in ${BASE}.`
-    : `Prices are set in ${BASE} (S$5 and S$15 a month); shown here in ${state.cur} as an estimate. Patreon charges you in your own currency.`;
+  const credit = () => fromIp ? ` Your country is looked up by <a href="https://db-ip.com" rel="noopener">DB-IP</a>.` : "";
+  const note = () => (state.cur === BASE ? `Prices in ${BASE}.`
+    : `Prices are set in ${BASE} (S$5 and S$15 a month); shown here in ${state.cur} as an estimate. Patreon charges you in your own currency.`) + credit();
 
   function apply(root = document) {
     root.querySelectorAll("[data-price]").forEach(el => {
       el.textContent = label(el.dataset.price) + (el.dataset.priceSuffix || "");
       el.title = state.cur === BASE ? "" : `${format(AMOUNT[el.dataset.price], BASE)} a month, about ${label(el.dataset.price).replace("≈ ", "")} in ${state.cur}`;
     });
-    root.querySelectorAll("[data-price-note]").forEach(el => el.textContent = note());
+    root.querySelectorAll("[data-price-note]").forEach(el => el.innerHTML = note());
   }
 
   const ready = (async () => {
-    const cur = currency();
+    const cur = await currency();
     if (cur !== BASE) {
       const r = await rates();
       if (r && r[cur]) state = { cur, rate: r[cur] };
