@@ -10,7 +10,7 @@ window.Kit = (() => {
     const el = document.querySelector("nav.topbar");
     if (!el) return;
     const me = Session.current();
-    const links = [["Home", "", "opt"], ["Studio", "studio/", ""], ["Pricing", "pricing/", "opt"], ["Blog", "blog/", "opt"],
+    const links = [["Home", "", "opt"], ["Studio", "studio/", ""], ["Pricing", "pricing/", ""], ["Blog", "blog/", "opt"],
                    ["Dev portal", "portal/", "opt"], ["Status", "status/", "opt"]];
     if (me) links.splice(5, 0, ["Keys", "portal/keys/", "opt"]);
     el.innerHTML = `<div class="wrap">
