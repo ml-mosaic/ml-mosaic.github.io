@@ -221,16 +221,29 @@
       const r = await api(`/api/console/patreon${sync ? "?sync=1" : ""}`);
       if (!r.ok) return $("#pt").innerHTML = `<div class="empty">${esc(Session.detail(r.data || {}))}</div>`;
       const d = r.data;
-      if (!d.auto) return $("#pt").innerHTML = `<div class="empty">Auto-linking is off: add the creator tokens to the server's config.env.</div>`;
+      if (!d.auto) {
+        $("#pt").innerHTML = `<div class="empty">Auto-linking is off: add the creator tokens to the server's config.env.<br><br>
+          <button class="btn small ghost" id="pt-mail" type="button">Send me test emails</button></div>`;
+        $("#pt-mail").onclick = async () => {
+          const r = await api("/api/console/test-emails", { json: {} });
+          toast(r.ok ? `Sent to ${r.data.to}: ${r.data.sent.join(", ")}` : Session.detail(r.data || {}), 4000);
+        };
+        return;
+      }
       $("#pt").innerHTML = `<div class="act" style="justify-content:space-between"><span class="sub" style="margin:0">Checked ${d.at ? Kit.ago(d.at) : "never"} &middot;
           ${d.members} members, ${d.active} paying &middot; ${d.changed} change(s) last time</span>
-          <button class="btn small" id="pt-sync" type="button" style="--c:#ff424d">Check now</button></div>
+          <span><button class="btn small" id="pt-sync" type="button" style="--c:#ff424d">Check now</button>
+          <button class="btn small ghost" id="pt-mail" type="button">Send me test emails</button></span></div>
         <div class="sec"><h3>PATRONS WITHOUT A MATCHING ACCOUNT</h3>${d.unmatched.length ? d.unmatched.map(m =>
           `<div class="row" style="cursor:default"><span></span><span class="n">${esc(m.name || "?")}<small>${esc(m.email || "no email")} &middot; ${esc(m.why)}</small></span>
              <span class="chips"><span class="chip ${esc(m.plan)}">${esc(m.plan)}${m.trial ? " trial" : ""}</span></span></div>`).join("")
           : `<div class="empty">Everyone paying is linked.</div>`}</div>
         <p class="sub">To fix one: find their Mosaic account and set the plan by hand, or ask them to press Link Patreon in their settings.</p>`;
       $("#pt-sync").onclick = () => loadPatreon(true);
+      $("#pt-mail").onclick = async () => {
+        const r = await api("/api/console/test-emails", { json: {} });
+        toast(r.ok ? `Sent to ${r.data.to}: ${r.data.sent.join(", ")}` : Session.detail(r.data || {}), 4000);
+      };
     }
 
     async function loadAudit() {
