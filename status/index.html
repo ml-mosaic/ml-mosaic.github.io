@@ -159,7 +159,7 @@
         if (!ws || !ws.length) return { state: ctx.health.body?.model_loaded ? "ok" : "degraded", ms: null };
         const up = ws.filter(w => w.up).length, busy = ws.filter(w => w.up && w.busy).length;
         return { state: up === ws.length ? "ok" : up ? "degraded" : "down", ms: null,
-                 note: `${up} of ${ws.length} up${busy ? `, ${busy} drawing right now` : ""}` }; } },
+                 note: `${up} of ${ws.length} up${busy ? `, ${busy} drawing right now` : ""}${ctx.health.body.waiting ? `, ${ctx.health.body.waiting} in line` : ""}` }; } },
     { id: "model", name: "m1", desc: "64×64 sprites", check: async ctx => !ctx.health.reached ? { state: "down", ms: null }
         : { state: (ctx.health.body?.models?.m1 ?? ctx.health.body?.model_loaded) ? "ok" : "degraded", ms: null,
             note: (ctx.health.body?.models?.m1 ?? ctx.health.body?.model_loaded) ? "ready" : "starting up" } },

@@ -173,7 +173,7 @@
     $("#dn").value = p.display_name; $("#bio").value = p.bio; $("#web").value = p.website.replace(/^https?:\/\//, "");
     banner = p.banner;
     $("#a-user").textContent = "@" + u.username; $("#a-email").textContent = u.email || "(none)";
-    $("#a-plan").textContent = { artisan: "Artisan · 250 a day, pro Studio, commercial use", atelier: "Atelier · 1,000 a day, v1, pro Studio, commercial use" }[u.plan]
+    $("#a-plan").textContent = { artisan: "Artisan · 250 sprites a day, pro Studio, priority, commercial use", atelier: "Atelier · 500 sprites + 50 v1 clips a day, pro Studio, top priority, commercial use" }[u.plan]
                                || "Free · 15 generations a day, personal use";
     showQuota(u.quota); showPic(p); preview(); counts(); dirty(); showTwoFactor(u.two_factor); showStudio(u);
   }
@@ -191,7 +191,7 @@
     if (location.hash === "#studio") $("#studio").scrollIntoView({ block: "center" });
   }
   function showQuota(q) {
-    $("#a-quota").textContent = `${q.remaining} of ${q.limit} generations left`;
+    $("#a-quota").textContent = `${q.remaining} of ${q.limit} sprites left` + (q.video?.limit ? ` · ${q.video.remaining} of ${q.video.limit} clips left` : "");
     $("#cost").textContent = q.remaining ? `Costs 1 of today's generations (${q.remaining} left).` : "No generations left today: try again after midnight UTC.";
   }
   function showPic(p) {

@@ -464,7 +464,7 @@
       model = o.dataset.id; $("#model-name").textContent = o.querySelector("b").textContent; closeMenu();
       menu.querySelectorAll(".mopt[data-id]").forEach(x => { x.setAttribute("aria-selected", x === o); x.querySelector(".tick").innerHTML = x === o ? "&#10003;" : ""; });
       $("#prompt").placeholder = placeholders[models[model].kind] || placeholders.image;
-      setBatch(batch);
+      setBatch(batch); showQuota();             // clips and sprites have separate allowances
     });
   });
   document.querySelectorAll("#creativity button").forEach(b => b.onclick = () => {
@@ -472,13 +472,17 @@
   });
 
   // ---------------------------------------------------------------- composer: today's allowance
+  // sprites and clips have separate daily allowances; this shows the one for the model that's picked
   let quota = null;
+  const isClip = () => models[model]?.kind === "video";
+  const allowance = () => quota && (isClip() ? quota.video || { used: 0, limit: 0, remaining: 0 } : quota);
   function showQuota(q) {
-    if (!q) return; quota = q;
-    const el = $("#left");
-    el.classList.toggle("out", q.remaining === 0);
-    el.innerHTML = q.limit > 30 ? `${q.remaining.toLocaleString()} / ${q.limit.toLocaleString()} left today`   // big allowances: no pips
-      : `<span class="pips">${Array.from({ length: q.limit }, (_, i) => `<i class="${i < q.used ? "used" : ""}"></i>`).join("")}</span>${q.remaining} / ${q.limit} left today`;
+    if (q) quota = q;
+    if (!quota) return;
+    const a = allowance(), label = isClip() ? "clips left today" : "left today", el = $("#left");
+    el.classList.toggle("out", a.remaining === 0);
+    el.innerHTML = a.limit > 30 ? `${a.remaining.toLocaleString()} / ${a.limit.toLocaleString()} ${label}`   // big allowances: no pips
+      : `<span class="pips">${Array.from({ length: a.limit }, (_, i) => `<i class="${i < a.used ? "used" : ""}"></i>`).join("")}</span>${a.remaining} / ${a.limit} ${label}`;
   }
   if (me) Kit.whoami().then(u => { if (u) { showQuota(u.quota); setupPro(u); } });
 
@@ -520,7 +524,7 @@
     if (!prompt) { $("#prompt").focus(); return toast(models[model].kind === "video" ? "Describe a scene first" : "Describe a sprite first"); }
     if (busy) return;
     const n = pro ? batch : 1;
-    if (quota && quota.remaining < cost() * n) return outOfSprites(n);
+    if (quota && allowance().remaining < cost() * n) return outOfSprites(n);
     busy = true; $("#create").disabled = true;
     if (tab !== "mine") setTab("mine");
     await new Promise(r => setTimeout(r, 30));
@@ -552,12 +556,14 @@
           : made.length > 1 ? `Done! ${made.length} new sprites, all private for now.` : "Done! It's private: open it to share it to the gallery.", 3200);
   }
   function outOfSprites(n = 1) {
-    const back = new Date(quota.resets_at * 1000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-    if (quota.remaining > 0)        // some left, just not enough for this model or batch
-      return Kit.alert(n > 1 ? `A batch of ${n} costs ${cost() * n} generations and you have ${quota.remaining} left today.\nMake a smaller batch, or come back after ${back} (midnight UTC).`
-                             : `A ${models[model].name} clip costs ${cost()} generations and you have ${quota.remaining} left today.\nSwitch to m1, or come back after ${back} (midnight UTC).`,
+    const back = new Date(quota.resets_at * 1000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }), a = allowance();
+    if (isClip())
+      return Kit.alert(`You've made all ${a.limit} of today's clips. Sprites still work: switch to m1.\nYour clips refill at ${back} (midnight UTC).`,
+                       { title: "That's today's clips", ok: "Okay!" });
+    if (a.remaining > 0)        // some left, just not enough for this batch
+      return Kit.alert(`A batch of ${n} needs ${cost() * n} sprites and you have ${a.remaining} left today.\nMake a smaller batch, or come back after ${back} (midnight UTC).`,
                        { title: "Not quite enough left", ok: "Okay!" });
-    Kit.alert(`You've made all ${quota.limit} sprites for today. m1 needs a nap too!\nYour allowance refills at ${back} (midnight UTC).`,
+    Kit.alert(`You've made all ${a.limit} sprites for today. m1 needs a nap too!\nYour allowance refills at ${back} (midnight UTC).`,
               { title: "That's today's batch", ok: "Okay!" });
   }
   // while m1 "thinks": a tile of animated static

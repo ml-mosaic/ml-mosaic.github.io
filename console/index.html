@@ -82,7 +82,7 @@
   const $ = s => document.querySelector(s), { esc, toast, ago } = Kit;
   const api = (p, o) => Session.api(p, o);
   const PLANS = [["free", "Free", "15 a day"], ["artisan", "Artisan", "250 a day"],
-                 ["atelier", "Atelier", "1,000 a day + v1"]];
+                 ["atelier", "Atelier", "500 a day + 50 clips"]];
   const notFound = () => {
     $("#app").innerHTML = `<div class="nf"><div><h1>404</h1><p>There's nothing here.</p><a class="btn" href="../">Back home</a></div></div>`;
     document.title = "Mosaic · Not found"; Kit.nav(""); document.body.classList.add("ready");
