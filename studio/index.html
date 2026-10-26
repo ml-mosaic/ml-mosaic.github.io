@@ -94,7 +94,7 @@
   .mopt .mk { width: 34px; height: 34px; flex: none; display: grid; place-items: center; background: #2a1f3a; color: var(--orange); font-size: 15px; position: relative; z-index: 1; }
   .mopt .tx { position: relative; z-index: 1; }
   .mopt .tx b { display: block; font-weight: normal; font-size: 15px; }
-  .mopt .tx span { color: #8f86a0; font-size: 12px; }
+  .mopt .tx > span { color: #8f86a0; font-size: 12px; }
   .mopt .tick { margin-left: auto; color: var(--green); position: relative; z-index: 1; }
   .mopt::before, .mopt::after { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity .25s steps(4); }
   .mopt::before { background: linear-gradient(270deg, rgba(232,145,58,.35), rgba(232,145,58,0) 70%); }
@@ -169,7 +169,7 @@
   .person .avatar { width: 40px; height: 40px; }
   .person .who-b { flex: 1; min-width: 0; text-align: left; background: none; border: 0; cursor: pointer; padding: 0; }
   .person .who-b b { display: block; font-weight: normal; font-size: 16px; }
-  .person .who-b span { color: var(--dim); font-size: 12px; }
+  .person .who-b > span { color: var(--dim); font-size: 12px; }   /* the "@name · followers" line, not the badges */
   .actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
   .like { display: inline-flex; align-items: center; gap: 8px; }
   .like .ht { display: inline-block; width: 14px; height: 12px; background: url(../assets/scenes/p-heart.png) 0 0 / 100% 100%; image-rendering: pixelated;
@@ -381,7 +381,7 @@
       if (!r.ok) return toast(Session.detail(r.data));
       p.author = { ...p.author, ...r.data };
       e.target.textContent = p.author.following ? "Following" : "Follow"; e.target.classList.toggle("ghost", p.author.following);
-      sheet.querySelector(".who-b span").textContent = `@${p.author.username} · ${p.author.followers} followers`;
+      sheet.querySelector(".who-b > span").textContent = `@${p.author.username} · ${p.author.followers} followers`;
       if (p.author.following) toast(`You're following ${p.author.username}`);
     });
     sheet.querySelector("#share")?.addEventListener("click", async () => {
