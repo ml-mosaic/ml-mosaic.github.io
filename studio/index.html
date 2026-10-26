@@ -115,6 +115,36 @@
   @keyframes fall { 0% { opacity: 0; transform: translateY(0); } 20% { opacity: 1; } 100% { opacity: 0; transform: translate(-14px, 62px) rotate(90deg); } }
   .mopt[disabled] { cursor: default; opacity: .45; }
 
+  /* ---------------------------------------------------------------- pro Studio (Artisan / Atelier / Developer) */
+  body.pro { --pro: #e8913a; --pro-2: #6b3a1c; }
+  body.pro.atelier { --pro: #fce060; --pro-2: #2c3c74; }
+  body.pro.dev { --pro: #6ee07a; --pro-2: #1d3a24; }
+  body.pro .banner::after { background: linear-gradient(90deg, rgba(0,0,0,.8) 0 34%, rgba(0,0,0,.15) 72%),
+                                        linear-gradient(0deg, var(--pro-2), transparent 70%); }
+  .planmark { display: inline-flex; align-items: center; gap: 8px; margin-top: 12px; align-self: flex-start; font-size: 12px; letter-spacing: 3px;
+              color: #000; background: var(--pro); padding: 4px 10px; }
+  .planmark i { width: 6px; height: 6px; background: #000; }
+  body.pro .sample { display: none; }
+  body.pro .box { --c: var(--pro-2); background: #0f0d14; }
+  body.pro .box:focus-within { --c: var(--pro); }
+  body.pro .tab[aria-selected="true"]::after { background: var(--pro); }
+  body.pro .seg button[aria-pressed="true"] { background: var(--pro); }
+  .pro-controls { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+  .ctl { display: flex; align-items: center; gap: 8px; }
+  .ctl b { font-weight: normal; color: var(--pro); min-width: 34px; display: inline-block; }
+  .ctl input[type=range] { width: 130px; accent-color: var(--pro); }
+  .seed { display: flex; gap: 4px; }
+  .seed input { width: 104px; background: #1d1826; border: 0; color: #fff; padding: 7px 9px; font: inherit; font-size: 13px; }
+  .seed input::placeholder { color: #6f6880; }
+  .seed button, .step button { background: #1d1826; border: 0; color: #a69fb5; padding: 7px 10px; cursor: pointer; font: inherit; font-size: 13px; }
+  .seed button:hover, .step button:hover { color: #fff; }
+  .step { display: inline-flex; align-items: center; gap: 2px; }
+  .step b { min-width: 28px; text-align: center; color: #fff; }
+  .step button:disabled { opacity: .35; cursor: default; }
+  .tile.pending.pro canvas { filter: sepia(.4); }
+  .chip.lic { background: #1d3a24; color: var(--green); }
+  .dl { display: inline-flex; gap: 4px; }
+
   /* ---------------------------------------------------------------- modals */
   .modal { position: fixed; inset: 0; z-index: 60; background: rgba(0,0,0,.84); display: none; place-items: center; padding: 20px; overflow-y: auto; }
   .modal.open { display: grid; animation: rise .16s steps(3); }
@@ -172,6 +202,7 @@
     <h1>Mosaic Studio</h1>
     <p id="greet">What are we drawing today?</p>
     <span class="sample" title="m1 is still learning: expect the odd surprise">m1 PREVIEW</span>
+    <span class="planmark" id="planmark" hidden></span>
   </div>
 </header>
 
@@ -197,11 +228,19 @@
             <button type="button" id="model-btn" aria-haspopup="listbox" aria-expanded="false"><span id="model-name">m1</span><span class="chev">&#9650;</span></button>
             <div class="menu notch" role="listbox" id="model-menu"></div>
           </div>
-          <span class="lbl">CREATIVITY</span>
+          <span class="lbl" id="cr-lbl">CREATIVITY</span>
           <div class="seg" id="creativity" role="group" aria-label="Creativity">
             <button type="button" data-v="strict" aria-pressed="false">Strict</button>
             <button type="button" data-v="classic" aria-pressed="true">Classic</button>
             <button type="button" data-v="wild" aria-pressed="false">Wild</button>
+          </div>
+          <div class="pro-controls" id="pro-controls" hidden>
+            <label class="ctl" title="0 = follow your words closely, 1 = loosest"><span class="lbl">CREATIVITY</span>
+              <input type="range" id="cr" min="0" max="100" value="50" aria-label="Creativity"><b id="cr-out">0.50</b></label>
+            <div class="ctl" title="Same prompt + seed + creativity = the same sprite. Empty = a new one each time."><span class="lbl">SEED</span>
+              <span class="seed"><input id="seed" inputmode="numeric" maxlength="10" placeholder="random" aria-label="Seed"><button type="button" id="dice" title="Pick a random seed">roll</button></span></div>
+            <div class="ctl" id="batch-ctl" title="Sprites in one go (each counts as one)"><span class="lbl">BATCH</span>
+              <span class="step"><button type="button" id="b-minus" aria-label="Fewer">&minus;</button><b id="b-n">1</b><button type="button" id="b-plus" aria-label="More">+</button></span></div>
           </div>
           <span class="spacer"></span>
           <span class="left" id="left" title="Generations left today (resets at 00:00 UTC)"></span>
@@ -297,14 +336,16 @@
         <div>
           <p class="prompt">&ldquo;${esc(p.prompt)}&rdquo;</p>
           <div class="chips"><span class="chip ${video ? "v1" : "m1"}">model ${esc(p.model)}</span><span class="chip">${p.creativity}</span><span class="chip">seed ${p.seed}</span>
-            <span class="chip">${ago(p.created)}</span>${mine ? `<span class="chip">${p.shared ? "in the gallery" : "private"}</span>` : ""}</div>
+            <span class="chip">${ago(p.created)}</span>${mine ? `<span class="chip">${p.shared ? "in the gallery" : "private"}</span>` : ""}
+            ${mine ? `<a class="chip ${p.license === "commercial" ? "lic" : ""}" href="../license/" title="What you may do with it">${p.license === "commercial" ? "commercial use OK" : "personal use"}</a>` : ""}</div>
           <div class="person"><img class="avatar" src="${pfp(p.author)}" alt="">
             <button class="who-b" type="button" id="to-profile"><b>${esc(p.author.display_name || p.author.username)}${mine ? " (you)" : ""}${tags(p.author)}</b><span>@${esc(p.author.username)} &middot; ${p.author.followers} followers</span></button>
             ${mine ? "" : `<button class="btn small ${p.author.following ? "ghost" : ""}" id="follow" type="button" style="--c:var(--blue)">${p.author.following ? "Following" : "Follow"}</button>`}</div>
           <div class="actions">
             <button class="btn small ghost like" id="like" type="button" aria-pressed="${p.liked}"><span class="ht"></span><span id="like-n">${p.likes}</span></button>
             <button class="btn small ghost" id="reuse" type="button">Use this prompt</button>
-            <a class="btn small ghost" href="${img(p.image)}" download="mosaic-${p.id}.${video ? "gif" : "png"}">Download</a>
+            ${pro && !video ? `<span class="dl">${[1, 8, 16].map(k => `<button class="btn small ghost" type="button" data-scale="${k}">${k === 1 ? "PNG" : k + "×"}</button>`).join("")}</span>`
+                            : `<a class="btn small ghost" href="${img(p.image)}" download="mosaic-${p.id}.${video ? "gif" : "png"}">Download</a>`}
             ${mine ? `<button class="btn small" id="share" type="button" style="--c:var(--green)">${p.shared ? "Take out of gallery" : "Share to gallery"}</button>
                       <button class="btn small ghost" id="delete" type="button">Delete</button>` : ""}
           </div>
@@ -313,6 +354,7 @@
         </div>
       </div>`;
     const sheet = $("#post-sheet");
+    sheet.querySelectorAll("[data-scale]").forEach(b => b.onclick = () => download(p, +b.dataset.scale));
     sheet.querySelector(".close").onclick = () => postModal.classList.remove("open");
     sheet.querySelector("#to-profile").onclick = () => openProfile(p.author.username);
     sheet.querySelector("#reuse").onclick = () => { $("#prompt").value = p.prompt; postModal.classList.remove("open"); $("#prompt").focus(); toast("Prompt copied into the box below"); };
@@ -347,6 +389,14 @@
       postModal.classList.remove("open"); toast("Deleted."); tab === "mine" ? loadMine() : loadFeed(true);
     });
     postModal.classList.add("open");
+  }
+  // pro: crisp nearest-neighbour upscales, made in the browser
+  async function download(p, k) {
+    const blob = await fetch(img(p.image)).then(r => r.blob()), bmp = await createImageBitmap(blob);
+    const c = document.createElement("canvas"); c.width = bmp.width * k; c.height = bmp.height * k;
+    const g = c.getContext("2d"); g.imageSmoothingEnabled = false; g.drawImage(bmp, 0, 0, c.width, c.height);
+    c.toBlob(b => { const a = document.createElement("a"); a.href = URL.createObjectURL(b);
+                    a.download = `mosaic-${p.id}${k > 1 ? "-" + k + "x" : ""}.png`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); }, "image/png");
   }
   function refreshTile(p) {
     document.querySelectorAll("#grid .tile").forEach(t => { if (t.getAttribute("aria-label") === p.prompt && t.querySelector("img").src.endsWith(p.image))
@@ -406,6 +456,7 @@
       model = o.dataset.id; $("#model-name").textContent = o.querySelector("b").textContent; closeMenu();
       menu.querySelectorAll(".mopt[data-id]").forEach(x => { x.setAttribute("aria-selected", x === o); x.querySelector(".tick").innerHTML = x === o ? "&#10003;" : ""; });
       $("#prompt").placeholder = placeholders[models[model].kind] || placeholders.image;
+      setBatch(batch);
     });
   });
   document.querySelectorAll("#creativity button").forEach(b => b.onclick = () => {
@@ -421,7 +472,34 @@
     el.innerHTML = q.limit > 30 ? `${q.remaining.toLocaleString()} / ${q.limit.toLocaleString()} left today`   // big allowances: no pips
       : `<span class="pips">${Array.from({ length: q.limit }, (_, i) => `<i class="${i < q.used ? "used" : ""}"></i>`).join("")}</span>${q.remaining} / ${q.limit} left today`;
   }
-  if (me) Kit.whoami().then(u => u && showQuota(u.quota));
+  if (me) Kit.whoami().then(u => { if (u) { showQuota(u.quota); setupPro(u); } });
+
+  // ---------------------------------------------------------------- pro Studio: Artisan, Atelier, Developer
+  let pro = null, batch = 1;
+  const TIERS = { artisan: "ARTISAN", atelier: "ATELIER", dev: "DEVELOPER" };
+  function setupPro(u) {
+    if (!u.features?.pro_studio) return;
+    pro = u.features;
+    const tier = (u.profile?.badges || []).includes("Developer") ? "dev" : u.plan;
+    document.body.classList.add("pro", tier);
+    $("#planmark").innerHTML = `<i></i>STUDIO &middot; ${TIERS[tier] || "PRO"}`; $("#planmark").hidden = false;
+    $("#greet").textContent = `Hi ${me.username}! Your ${{ atelier: "atelier", artisan: "workshop", dev: "test bench" }[tier] || "studio"} is ready.`;
+    $("#cr-lbl").hidden = true; $("#creativity").hidden = true; $("#pro-controls").hidden = false;
+    $("#create").style.setProperty("--c", "var(--pro)");
+    $("#cr").oninput = () => $("#cr-out").textContent = (+$("#cr").value / 100).toFixed(2);
+    $("#dice").onclick = () => { $("#seed").value = Math.floor(Math.random() * 2 ** 31); };
+    $("#seed").oninput = () => { $("#seed").value = $("#seed").value.replace(/\D/g, "").slice(0, 10); };
+    $("#b-minus").onclick = () => setBatch(batch - 1); $("#b-plus").onclick = () => setBatch(batch + 1);
+    setBatch(1);
+  }
+  function setBatch(n) {
+    const sprites = models[model]?.kind !== "video", max = pro && sprites ? pro.batch_max : 1;
+    batch = Math.max(1, Math.min(max, n));
+    if (!pro) return;
+    $("#b-n").textContent = batch; $("#b-minus").disabled = batch <= 1; $("#b-plus").disabled = batch >= max;
+    $("#batch-ctl").title = sprites ? `Sprites in one go, up to ${max} (each counts as one)` : "Clips are made one at a time";
+    $("#create").textContent = batch > 1 ? `Create ×${batch}` : "Create";
+  }
 
   // ---------------------------------------------------------------- composer: create
   if (!me) { $("#compose").hidden = true; $("#signin-cta").hidden = false; }
@@ -432,29 +510,43 @@
     const prompt = $("#prompt").value.trim();
     if (!prompt) { $("#prompt").focus(); return toast(models[model].kind === "video" ? "Describe a scene first" : "Describe a sprite first"); }
     if (busy) return;
-    if (quota && quota.remaining < cost()) return outOfSprites();
+    const n = pro ? batch : 1;
+    if (quota && quota.remaining < cost() * n) return outOfSprites(n);
     busy = true; $("#create").disabled = true;
     if (tab !== "mine") setTab("mine");
     await new Promise(r => setTimeout(r, 30));
     $("#grid").querySelector(".empty")?.remove();
-    const pend = pendingTile(prompt, models[model].kind === "video"); $("#grid").prepend(pend.el);
-    const r = await api("/api/studio/create", { json: { prompt, model, creativity } });
-    pend.stop(); busy = false; $("#create").disabled = false;
+    const pends = Array.from({ length: n }, () => pendingTile(prompt, models[model].kind === "video"));
+    pends.slice().reverse().forEach(p => { if (pro) p.el.classList.add("pro"); $("#grid").prepend(p.el); });
+    const body = { prompt, model, creativity };
+    if (pro) {
+      body.creativity_value = +$("#cr").value / 100;
+      if ($("#seed").value) body.seed = +$("#seed").value % 2 ** 31;
+      if (n > 1) body.count = n;
+    }
+    const r = await api("/api/studio/create", { json: body });
+    pends.forEach(p => p.stop()); busy = false; $("#create").disabled = false;
+    const drop = () => pends.forEach(p => p.el.remove());
     if (r.status === 401) return needSignIn();
-    if (r.status === 429 && r.data?.detail?.quota) { pend.el.remove(); showQuota(r.data.detail.quota); return outOfSprites(); }
-    if (r.status === 403) { pend.el.remove(); return toast(Session.detail(r.data || {})); }
-    if (!r.ok) { pend.el.remove(); return toast(Session.detail(r.data || {})); }
+    if (r.status === 429 && r.data?.detail?.quota) { drop(); showQuota(r.data.detail.quota); return outOfSprites(n); }
+    if (!r.ok) { drop(); return toast(Session.detail(r.data || {})); }
     showQuota(r.data.quota);
-    const t = tileEl(r.data, { fresh: true }); pend.el.replaceWith(t);
-    const b = t.getBoundingClientRect(); burst(b.left + b.width / 2, b.top + b.height / 2, "heart", 5);
-    myPosts.unshift(r.data); $("#mine-count").textContent = ` ${myPosts.length}`;
+    const made = r.data.posts || [r.data];
+    pends.forEach((p, i) => {
+      if (!made[i]) return p.el.remove();
+      const t = tileEl(made[i], { fresh: true }); p.el.replaceWith(t);
+      if (i === 0) { const b = t.getBoundingClientRect(); burst(b.left + b.width / 2, b.top + b.height / 2, "heart", 5); }
+    });
+    myPosts.unshift(...made); $("#mine-count").textContent = ` ${myPosts.length}`;
     $("#prompt").value = "";
-    toast("Done! It's private: open it to share it to the gallery.", 3200);
+    toast(made.length < n ? `Made ${made.length} of ${n}: the rest weren't charged. Try again in a minute.`
+          : made.length > 1 ? `Done! ${made.length} new sprites, all private for now.` : "Done! It's private: open it to share it to the gallery.", 3200);
   }
-  function outOfSprites() {
+  function outOfSprites(n = 1) {
     const back = new Date(quota.resets_at * 1000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-    if (quota.remaining > 0)        // some left, just not enough for this model
-      return Kit.alert(`A ${models[model].name} clip costs ${cost()} generations and you have ${quota.remaining} left today.\nSwitch to m1, or come back after ${back} (midnight UTC).`,
+    if (quota.remaining > 0)        // some left, just not enough for this model or batch
+      return Kit.alert(n > 1 ? `A batch of ${n} costs ${cost() * n} generations and you have ${quota.remaining} left today.\nMake a smaller batch, or come back after ${back} (midnight UTC).`
+                             : `A ${models[model].name} clip costs ${cost()} generations and you have ${quota.remaining} left today.\nSwitch to m1, or come back after ${back} (midnight UTC).`,
                        { title: "Not quite enough left", ok: "Okay!" });
     Kit.alert(`You've made all ${quota.limit} sprites for today. m1 needs a nap too!\nYour allowance refills at ${back} (midnight UTC).`,
               { title: "That's today's batch", ok: "Okay!" });

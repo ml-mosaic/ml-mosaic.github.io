@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mosaic · What you can do with what you make</title>
+<meta name="description" content="Personal and commercial use of sprites and clips made with Mosaic.">
+<link rel="icon" type="image/svg+xml" sizes="any" href="../assets/favicon.svg?v=2">
+<link rel="icon" type="image/png" sizes="64x64" href="../assets/favicon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tiny5&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/kit.css">
+<script src="../config.js"></script>
+<script src="../assets/session.js"></script>
+<script src="../assets/kit.js" data-root="../"></script>
+<style>
+  main { padding: 50px 0 90px; max-width: 820px; }
+  .kicker { color: var(--green); letter-spacing: 3px; font-size: 13px; margin: 0 0 10px; }
+  h1 { font-weight: normal; font-size: clamp(34px, 5vw, 52px); margin: 0 0 14px; line-height: 1.05; }
+  .dek { color: #b9b4a8; font-size: 18px; line-height: 1.55; margin: 0 0 36px; }
+  .plans { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin: 0 0 40px; }
+  .plan { background: var(--panel); padding: 20px; margin: var(--u); }
+  .plan h2 { font-weight: normal; font-size: 22px; margin: 0 0 4px; }
+  .plan .who { color: var(--dim); font-size: 13px; margin: 0 0 14px; }
+  .plan ul { margin: 0; padding-left: 18px; color: #d8d2c4; line-height: 1.6; }
+  .plan.com { --c: var(--green); } .plan.com h2 { color: var(--green); }
+  h3 { font-weight: normal; font-size: 22px; margin: 34px 0 10px; }
+  p, li { color: #d8d2c4; line-height: 1.65; font-size: 16px; }
+  .small { color: var(--dim); font-size: 13px; margin-top: 40px; }
+  @media (max-width: 700px) { .plans { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<nav class="topbar" style="--c:var(--green)"></nav>
+<main class="wrap">
+  <p class="kicker">LICENSE</p>
+  <h1>What you can do with what you make</h1>
+  <p class="dek">Every sprite and clip you make with Mosaic is yours to use. Your plan decides whether that includes
+    selling things made with it. Here's the short version.</p>
+
+  <div class="plans">
+    <div class="plan notch">
+      <h2>Personal use</h2>
+      <p class="who">Free accounts</p>
+      <ul><li>Use them in personal and hobby projects, game jams, school work and your profile.</li>
+        <li>Share them anywhere. A mention of Mosaic is appreciated, not required.</li>
+        <li>No selling, and no use in products or client work you're paid for.</li></ul>
+    </div>
+    <div class="plan notch com">
+      <h2>Commercial use</h2>
+      <p class="who">Artisan and Atelier plans</p>
+      <ul><li>Everything in personal use, plus: use them in games and apps you sell, client work, ads and merch.</li>
+        <li>Edit, recolour and combine them however you like.</li>
+        <li>It's for good: what you made while on the plan stays commercial even if you cancel later.</li></ul>
+    </div>
+  </div>
+
+  <h3>How to tell which is which</h3>
+  <p>Each of your creations in the Studio shows its license: <b>commercial use OK</b> or <b>personal use</b>. It's
+    recorded when you make it, from the plan you were on at that moment. Through the API, every response carries an
+    <code>X-License</code> header saying the same.</p>
+
+  <h3>For everyone</h3>
+  <ul>
+    <li><b>Our models learn only from art we made ourselves</b>: no scraped artwork. Still, if you ask for someone
+      else's character, logo or brand, using the result is on you, the same as drawing it by hand.</li>
+    <li><b>Results aren't unique.</b> Someone else can make a similar sprite with a similar prompt, so you can't stop
+      others from using similar results.</li>
+    <li><b>Don't use Mosaic to make anything illegal, sexual or hateful.</b> We remove that kind of content and may
+      suspend or ban the account.</li>
+    <li><b>Don't use what you make to build or train a competing image or video generator.</b></li>
+    <li><b>Previews can change.</b> Models marked "preview" (like v1) are still learning and may change or pause.</li>
+  </ul>
+
+  <p class="small">Last updated 26 October 2026. Questions about a specific use? Ask us before you ship.</p>
+</main>
+<script>Kit.nav("");</script>
+</body>
+</html>

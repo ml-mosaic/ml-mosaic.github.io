@@ -112,7 +112,7 @@
       <section class="card notch account">
         <h2>Account</h2>
         <p class="hint">Your username is permanent. Manage API keys on the <a href="../portal/keys/">keys page</a>.</p>
-        <dl><dt>Username</dt><dd id="a-user"></dd><dt>Email</dt><dd id="a-email"></dd><dt>Today</dt><dd id="a-quota"></dd></dl>
+        <dl><dt>Username</dt><dd id="a-user"></dd><dt>Email</dt><dd id="a-email"></dd><dt>Plan</dt><dd id="a-plan"></dd><dt>Today</dt><dd id="a-quota"></dd></dl>
       </section>
 
       <form class="card notch tf" id="tf" autocomplete="off">
@@ -160,6 +160,8 @@
     $("#dn").value = p.display_name; $("#bio").value = p.bio; $("#web").value = p.website.replace(/^https?:\/\//, "");
     banner = p.banner;
     $("#a-user").textContent = "@" + u.username; $("#a-email").textContent = u.email || "(none)";
+    $("#a-plan").textContent = { artisan: "Artisan · 250 a day, pro Studio, commercial use", atelier: "Atelier · 1,000 a day, v1, pro Studio, commercial use" }[u.plan]
+                               || "Free · 15 generations a day, personal use";
     showQuota(u.quota); showPic(p); preview(); counts(); dirty(); showTwoFactor(u.two_factor);
   }
   function showQuota(q) {

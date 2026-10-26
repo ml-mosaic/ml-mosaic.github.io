@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Mosaic</title>
+<link rel="icon" type="image/svg+xml" sizes="any" href="../assets/favicon.svg?v=2">
+<link rel="icon" type="image/png" sizes="64x64" href="../assets/favicon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tiny5&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/kit.css">
+<script src="../config.js"></script>
+<script src="../assets/session.js"></script>
+<script src="../assets/kit.js" data-root="../"></script>
+<style>
+  /* Owner console. Hidden: not linked anywhere, not indexed, and for anyone but the owner the API answers 404 and
+     this page shows "not found". The real protection is server-side (every /api/console call is checked). */
+  body { visibility: hidden; }
+  body.ready { visibility: visible; }
+  .nf { min-height: 80vh; display: grid; place-items: center; text-align: center; }
+  .nf h1 { font-weight: normal; font-size: 72px; margin: 0; }
+  .nf p { color: var(--dim); }
+  main { padding: 52px 0 80px; }
+  .head { display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; margin-bottom: 22px; }
+  .head h1 { font-weight: normal; font-size: 40px; margin: 0; }
+  .head .who { color: var(--dim); font-size: 14px; }
+  .tabs { margin-left: auto; display: flex; gap: 6px; }
+  .tabs button { background: var(--panel); border: 0; color: var(--dim); padding: 8px 14px; cursor: pointer; font-size: 14px; }
+  .tabs button[aria-pressed="true"] { background: var(--yellow); color: #000; }
+  .layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 26px; align-items: start; }
+  .card { background: var(--panel); padding: 18px; margin: var(--u); }
+  .search { display: flex; gap: 10px; margin-bottom: 14px; }
+  .search input, .act input { flex: 1; background: #000; border: 0; color: var(--fg); padding: 10px 12px; font: inherit; font-size: 15px; min-width: 0; }
+  .list { display: flex; flex-direction: column; gap: 4px; max-height: 70vh; overflow-y: auto; }
+  .row { display: grid; grid-template-columns: 32px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 9px 10px; background: #0b0a0e;
+         border: 0; color: inherit; text-align: left; cursor: pointer; font: inherit; }
+  .row:hover { background: #17151d; } .row[aria-current="true"] { outline: 2px solid var(--yellow); }
+  .row img { width: 32px; height: 32px; image-rendering: pixelated; }
+  .row .n { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .row .n small { display: block; color: var(--dim); font-size: 12px; }
+  .chips { display: flex; gap: 5px; flex-wrap: wrap; justify-content: flex-end; }
+  .chip { font-size: 11px; padding: 2px 6px; background: #24212b; color: #b9b0c8; letter-spacing: 1px; text-transform: uppercase; }
+  .chip.artisan { background: #6b3a1c; color: #fff; } .chip.atelier { background: #2c3c74; color: #fce060; }
+  .chip.suspended { background: var(--yellow); color: #000; } .chip.banned { background: var(--bad); color: #000; }
+  .chip.dev { background: #1d3a24; color: var(--green); }
+  .detail h2 { font-weight: normal; font-size: 28px; margin: 0; }
+  .detail .sub { color: var(--dim); font-size: 13px; margin: 4px 0 16px; }
+  .facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 18px; }
+  .facts div { background: #0b0a0e; padding: 10px; } .facts b { display: block; font-weight: normal; font-size: 18px; }
+  .facts span { color: var(--dim); font-size: 11px; letter-spacing: 1px; }
+  .sec { border-top: 2px solid #1d1a24; padding-top: 14px; margin-top: 14px; }
+  .sec h3 { font-weight: normal; font-size: 13px; letter-spacing: 2px; color: var(--dim); margin: 0 0 10px; }
+  .seg { display: flex; gap: 4px; }
+  .seg button { flex: 1; background: #0b0a0e; border: 0; color: #b9b0c8; padding: 10px; cursor: pointer; font: inherit; font-size: 14px; }
+  .seg button small { display: block; color: var(--dim); font-size: 11px; }
+  .seg button[aria-pressed="true"] { background: var(--yellow); color: #000; } .seg button[aria-pressed="true"] small { color: #000; }
+  .standing { padding: 10px 12px; margin-bottom: 10px; font-size: 14px; }
+  .standing.ok { background: #0b1a12; color: var(--green); } .standing.suspended { background: #2a2410; color: var(--yellow); }
+  .standing.banned { background: #2a1014; color: var(--bad); }
+  .act { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 8px; }
+  .act input.days { flex: 0 0 70px; }
+  .posts { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; max-height: 46vh; overflow-y: auto; }
+  .post { position: relative; background: #000; }
+  .post img { width: 100%; aspect-ratio: 1; object-fit: contain; image-rendering: pixelated; display: block; }
+  .post .p { font-size: 11px; color: var(--dim); padding: 4px 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .post .del { position: absolute; top: 4px; right: 4px; background: var(--bad); color: #000; border: 0; padding: 2px 7px; cursor: pointer; font: inherit; font-size: 12px; }
+  .post .vis { position: absolute; top: 4px; left: 4px; font-size: 10px; background: rgba(0,0,0,.7); padding: 1px 5px; color: var(--dim); }
+  .empty { color: var(--dim); padding: 30px; text-align: center; }
+  .audit { display: flex; flex-direction: column; gap: 4px; }
+  .audit div { display: grid; grid-template-columns: 150px 110px 1fr; gap: 12px; padding: 8px 10px; background: #0b0a0e; font-size: 14px; }
+  .audit .w { color: var(--dim); }
+  @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } .facts { grid-template-columns: 1fr 1fr; } .audit div { grid-template-columns: 1fr; gap: 2px; } }
+</style>
+</head>
+<body>
+<nav class="topbar" style="--c:var(--bad)"></nav>
+<div id="app"></div>
+<script>
+(() => {
+  const $ = s => document.querySelector(s), { esc, toast, ago } = Kit;
+  const api = (p, o) => Session.api(p, o);
+  const PLANS = [["free", "Free", "15 a day"], ["artisan", "Artisan", "250 a day"],
+                 ["atelier", "Atelier", "1,000 a day + v1"]];
+  const notFound = () => {
+    $("#app").innerHTML = `<div class="nf"><div><h1>404</h1><p>There's nothing here.</p><a class="btn" href="../">Back home</a></div></div>`;
+    document.title = "Mosaic · Not found"; Kit.nav(""); document.body.classList.add("ready");
+  };
+
+  (async () => {
+    if (!Session.current()) return notFound();
+    const r = await api("/api/console/me");
+    if (!r.ok) return notFound();
+    start(r.data.admin);
+  })();
+
+  function start(admin) {
+    Kit.nav(""); document.title = "Mosaic · Console";
+    $("#app").innerHTML = `<main class="wrap">
+      <div class="head"><h1>Console</h1><span class="who">signed in as @${esc(admin)} &middot; owner only</span>
+        <div class="tabs"><button type="button" data-t="users" aria-pressed="true">Accounts</button><button type="button" data-t="audit" aria-pressed="false">Audit log</button></div></div>
+      <div id="users" class="layout">
+        <section class="card notch"><div class="search"><input id="q" placeholder="Search username or email" autocomplete="off"></div>
+          <div class="list" id="list"></div></section>
+        <section class="card notch detail" id="detail"><div class="empty">Pick an account.</div></section></div>
+      <section id="audit" class="card notch" hidden><div class="audit" id="audit-list"></div></section></main>`;
+    document.body.classList.add("ready");
+    document.querySelectorAll(".tabs button").forEach(b => b.onclick = () => {
+      document.querySelectorAll(".tabs button").forEach(x => x.setAttribute("aria-pressed", x === b));
+      $("#users").hidden = b.dataset.t !== "users"; $("#audit").hidden = b.dataset.t !== "audit";
+      if (b.dataset.t === "audit") loadAudit();
+    });
+    let timer = null, current = null;
+    $("#q").oninput = () => { clearTimeout(timer); timer = setTimeout(loadUsers, 200); };
+    loadUsers();
+
+    function chips(u) {
+      return [u.plan !== "free" ? `<span class="chip ${u.plan}">${u.plan}</span>` : "",
+              u.standing ? `<span class="chip ${u.standing.status}">${u.standing.status}</span>` : "",
+              u.badges.includes("Developer") ? `<span class="chip dev">dev</span>` : "",
+              u.admin ? `<span class="chip">owner</span>` : ""].join("");
+    }
+    async function loadUsers() {
+      const r = await api(`/api/console/users?q=${encodeURIComponent($("#q").value)}`);
+      if (!r.ok) return toast(Session.detail(r.data || {}));
+      const list = $("#list");
+      list.innerHTML = r.data.users.length ? "" : `<div class="empty">No accounts match.</div>`;
+      r.data.users.forEach(u => {
+        const b = document.createElement("button"); b.type = "button"; b.className = "row";
+        b.setAttribute("aria-current", u.username === current);
+        b.innerHTML = `<img src="${Kit.pfp(u)}" alt=""><span class="n">@${esc(u.username)}<small>${esc(u.email || "no email")} &middot; ${u.posts} posts &middot; ${u.quota.used}/${u.quota.limit} today</small></span><span class="chips">${chips(u)}</span>`;
+        b.onclick = () => open(u.username);
+        list.appendChild(b);
+      });
+    }
+
+    async function open(name) {
+      current = name;
+      document.querySelectorAll("#list .row").forEach(r => r.setAttribute("aria-current", r.querySelector(".n").firstChild.textContent === "@" + name));
+      const r = await api(`/api/console/users/${encodeURIComponent(name)}`);
+      if (!r.ok) return toast(Session.detail(r.data || {}));
+      const u = r.data, s = u.standing;
+      const until = s?.until ? new Date(s.until * 1000).toLocaleString([], { dateStyle: "medium", timeStyle: "short" }) : null;
+      $("#detail").innerHTML = `
+        <h2>${esc(u.display_name)}</h2>
+        <p class="sub">@${esc(u.username)} &middot; ${esc(u.email || "no email")} &middot; joined ${u.created ? new Date(u.created * 1000).toLocaleDateString() : "?"}
+          ${u.verified ? "" : "&middot; email not confirmed"}${u.two_factor ? " &middot; two-step on" : ""} ${chips(u)}</p>
+        <div class="facts"><div><span>TODAY</span><b>${u.quota.used} / ${u.quota.limit}</b></div><div><span>POSTS</span><b>${u.posts} (${u.shared} shared)</b></div>
+          <div><span>PICTURE</span><b>${u.avatar_source === "pattern" ? "default" : esc(u.avatar_source)}</b></div></div>
+        <div class="sec"><h3>PLAN</h3><div class="seg" id="plan">${PLANS.map(([id, label, what]) =>
+          `<button type="button" data-p="${id}" aria-pressed="${u.plan === id}">${label}<small>${what}</small></button>`).join("")}</div></div>
+        <div class="sec"><h3>STANDING</h3>
+          <div class="standing ${s ? s.status : "ok"}">${!s ? "Good standing." : s.status === "banned"
+            ? `Banned${s.reason ? `: ${esc(s.reason)}` : ""}. Their email can't sign up again; their posts and profile are hidden.`
+            : `Suspended until ${esc(until)}${s.reason ? `: ${esc(s.reason)}` : ""}.`}</div>
+          ${u.admin ? `<p class="sub">Console owners can't be suspended or banned.</p>` : `
+          <div class="act"><input class="days" id="days" type="number" min="1" max="3650" value="7" aria-label="Days"><span class="sub" style="margin:0">days</span>
+            <input id="reason" placeholder="Reason (shown to them when they try to sign in)" maxlength="200"></div>
+          <div class="act">
+            <button class="btn small" id="suspend" type="button" style="--c:var(--yellow)">Suspend</button>
+            <button class="btn small" id="ban" type="button" style="--c:var(--bad)">Ban</button>
+            ${s ? `<button class="btn small" id="restore" type="button" style="--c:var(--green)">${s.status === "banned" ? "Lift ban" : "Lift suspension"}</button>` : ""}
+          </div>`}</div>
+        <div class="sec"><h3>CONTENT</h3>
+          <div class="act"><button class="btn small ghost" id="purge" type="button">Delete all posts and their picture</button></div>
+          <div class="posts" id="posts">${u.post_list.length ? "" : `<div class="empty">No posts.</div>`}</div></div>`;
+      const reason = () => ($("#reason")?.value || "").trim();
+      $("#plan").querySelectorAll("button").forEach(b => b.onclick = async () => {
+        if (b.dataset.p === u.plan) return;
+        const r = await api(`/api/console/users/${encodeURIComponent(name)}/plan`, { json: { plan: b.dataset.p } });
+        if (!r.ok) return toast(Session.detail(r.data || {}));
+        toast(`@${name} is on ${PLANS.find(x => x[0] === b.dataset.p)[1]} now`); open(name); loadUsers();
+      });
+      const act = async (path, body, msg) => {
+        const r = await api(`/api/console/users/${encodeURIComponent(name)}/${path}`, { json: body });
+        if (!r.ok) return toast(Session.detail(r.data || {}));
+        toast(msg); open(name); loadUsers();
+      };
+      $("#suspend")?.addEventListener("click", async () => {
+        const days = +$("#days").value;
+        if (!(days > 0)) return toast("How many days?");
+        if (await Kit.confirm(`@${name} is signed out everywhere and can't sign in or use the API for ${days} day(s).`, { title: "Suspend this account?", ok: "Suspend", danger: true }))
+          act("suspend", { days, reason: reason() }, `Suspended @${name}`);
+      });
+      $("#ban")?.addEventListener("click", async () => {
+        if (await Kit.confirm(`@${name} is signed out for good, their email can't sign up again, and their posts and profile disappear. You can lift it later.`, { title: "Ban this account?", ok: "Ban", danger: true }))
+          act("ban", { reason: reason() }, `Banned @${name}`);
+      });
+      $("#restore")?.addEventListener("click", () => act("restore", undefined, `@${name} is back in good standing`));
+      $("#purge").onclick = async () => {
+        if (await Kit.confirm(`Deletes all ${u.posts} of @${name}'s posts and their profile picture, for good. The account stays.`, { title: "Delete all their content?", ok: "Delete it all", danger: true }))
+          act("purge", { reason: reason() }, "Deleted");
+      };
+      // images through the API with the owner's session (private and hidden posts included), shown from memory
+      u.post_list.forEach(p => {
+        const d = document.createElement("div"); d.className = "post";
+        d.innerHTML = `<img alt="${esc(p.prompt)}" title="${esc(p.prompt)}"><span class="vis">${p.shared ? "shared" : "private"}${p.kind === "video" ? " &middot; v1" : ""}</span>
+          <button class="del" type="button" title="Delete this post">&times;</button><div class="p">${esc(p.prompt)}</div>`;
+        $("#posts").appendChild(d);
+        fetch(MOSAIC.backend + p.image, { headers: { authorization: "Bearer " + Session.current().session } })
+          .then(r => r.ok ? r.blob() : null).then(b => { if (b) d.querySelector("img").src = URL.createObjectURL(b); });
+        d.querySelector(".del").onclick = async () => {
+          if (!await Kit.confirm(`"${p.prompt}" is deleted for good.`, { title: "Delete this post?", ok: "Delete", danger: true })) return;
+          const r = await api(`/api/console/posts/${p.id}/delete`, { json: { reason: reason() } });
+          if (!r.ok) return toast(Session.detail(r.data || {}));
+          d.remove(); toast("Post deleted"); loadUsers();
+        };
+      });
+    }
+
+    async function loadAudit() {
+      const r = await api("/api/console/audit");
+      if (!r.ok) return toast(Session.detail(r.data || {}));
+      const what = e => ({ plan: `plan ${e.old} → ${e.new}`, suspend: `suspended ${e.days} day(s)`, ban: "banned", restore: "restored",
+                           purge: `deleted ${e.posts} posts${e.picture ? " + picture" : ""}`, delete_post: `deleted post "${e.prompt}"` }[e.action] || e.action);
+      $("#audit-list").innerHTML = r.data.entries.length ? r.data.entries.map(e =>
+        `<div><span class="w">${new Date(e.at * 1000).toLocaleString([], { dateStyle: "short", timeStyle: "short" })}</span><span>@${esc(e.target)}</span>
+          <span>${esc(what(e))}${e.reason ? ` <span class="w">&middot; ${esc(e.reason)}</span>` : ""} <span class="w">&middot; by @${esc(e.by)}</span></span></div>`).join("")
+        : `<div class="empty">Nothing yet.</div>`;
+    }
+  }
+})();
+</script>
+</body>
+</html>

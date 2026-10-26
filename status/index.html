@@ -91,7 +91,7 @@
     <div class="state">
       <span class="pill" id="pill"><i></i><span id="pill-t">CHECKING</span></span>
       <h1 id="headline">Checking on things...</h1>
-      <p id="sub">Pinging the m1 server from your browser.</p>
+      <p id="sub">Pinging the Mosaic server from your browser.</p>
       <div class="checkrow"><button class="btn small" id="recheck" type="button" style="--c:#fcc030">Check again</button>
         <span id="when">-</span><span id="countdown"></span></div>
     </div>
@@ -151,9 +151,20 @@
   }
   const COMPONENTS = [
     { id: "website", name: "Website", desc: "this site, on GitHub Pages", check: async () => ({ state: "ok", ms: null, note: "you're reading it" }) },
-    { id: "api", name: "API", desc: "the m1 server answers", check: async ctx => ({ state: ctx.health.reached && ctx.health.status === 200 ? (ctx.health.ms > SLOW_MS ? "degraded" : "ok") : "down", ms: ctx.health.ms }) },
-    { id: "model", name: "m1 model", desc: "loaded and ready to draw", check: async ctx => !ctx.health.reached ? { state: "down", ms: null }
-        : { state: ctx.health.body?.model_loaded ? "ok" : "degraded", ms: ctx.health.ms, note: ctx.health.body?.model_loaded ? "ready" : "starting up" } },
+    { id: "api", name: "API", desc: "the Mosaic server answers", check: async ctx => ({ state: ctx.health.reached && ctx.health.status === 200 ? (ctx.health.ms > SLOW_MS ? "degraded" : "ok") : "down", ms: ctx.health.ms }) },
+    // the image workers draw everything (each one picture at a time); one down just means a longer wait
+    { id: "workers", name: "Image workers", desc: "the machines that draw", check: async ctx => {
+        const ws = ctx.health.body?.workers;
+        if (!ctx.health.reached) return { state: "down", ms: null };
+        if (!ws || !ws.length) return { state: ctx.health.body?.model_loaded ? "ok" : "degraded", ms: null };
+        const up = ws.filter(w => w.up).length, busy = ws.filter(w => w.up && w.busy).length;
+        return { state: up === ws.length ? "ok" : up ? "degraded" : "down", ms: null,
+                 note: `${up} of ${ws.length} up${busy ? `, ${busy} drawing right now` : ""}` }; } },
+    { id: "model", name: "m1", desc: "64×64 sprites", check: async ctx => !ctx.health.reached ? { state: "down", ms: null }
+        : { state: (ctx.health.body?.models?.m1 ?? ctx.health.body?.model_loaded) ? "ok" : "degraded", ms: null,
+            note: (ctx.health.body?.models?.m1 ?? ctx.health.body?.model_loaded) ? "ready" : "starting up" } },
+    { id: "v1", name: "v1", desc: "16:9 animated scenes, preview for Atelier", check: async ctx => !ctx.health.reached ? { state: "down", ms: null }
+        : { state: ctx.health.body?.models?.v1 ? "ok" : "degraded", ms: null, note: ctx.health.body?.models?.v1 ? "ready" : "starting up" } },
     { id: "accounts", name: "Accounts", desc: "sign-in and sessions", check: async () => { const r = await probe("/api/logout", { method: "POST" }); return { state: r.reached && r.status === 200 ? "ok" : r.reached ? "degraded" : "down", ms: r.ms }; } },
     { id: "studio", name: "Studio", desc: "gallery, likes and creations", check: async () => { const r = await probe("/api/studio/feed?limit=1"); return { state: r.reached && r.status === 200 ? "ok" : r.reached ? "degraded" : "down", ms: r.ms }; } },
   ];
@@ -219,9 +230,9 @@
   }
   function setMood(overall) {
     mood = overall;
-    const S = { ok: ["var(--ok)", "ALL GOOD", "Everything's running.", "m1 is awake and drawing. The site manager is... resting its eyes.", "all systems go!"],
+    const S = { ok: ["var(--ok)", "ALL GOOD", "Everything's running.", "m1 and v1 are awake and drawing. The site manager is... resting its eyes.", "all systems go!"],
                 partial: ["var(--warn)", "PARTIAL OUTAGE", "Some things are wobbly.", "Part of Mosaic isn't answering right. We're (sleepily) on it.", "some things are down"],
-                outage: ["var(--down)", "OUTAGE", "Nothing's answering.", "The m1 server isn't responding at all. Hang tight, someone's on the way with coffee.", "everything's down"] }[overall];
+                outage: ["var(--down)", "OUTAGE", "Nothing's answering.", "The Mosaic server isn't responding at all. Hang tight, someone's on the way with coffee.", "everything's down"] }[overall];
     document.documentElement.style.setProperty("--s", S[0]);
     $("#pill").style.setProperty("--s", S[0]); $("#pill-t").textContent = S[1];
     $("#headline").textContent = S[2]; $("#sub").textContent = S[3];
