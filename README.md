@@ -21,7 +21,7 @@ On `localhost` the site talks to the backend at `http://localhost:8000` automati
 - `studio/`: Mosaic Studio. The community gallery (likes, follows, profiles) and your own creations, with a composer
   for m1 and v1. Artisan and Atelier get the **pro Studio** (exact creativity, fixed seeds, batches, a look themed to
   the plan) and more download formats; plan badges show next to names.
-- `pricing/`: Free, Artisan ($5/month, free trial) and Atelier ($15/month), each with its mascot. Plan buttons adapt
+- `pricing/`: Free, Artisan (S$5/month, free trial) and Atelier (S$15/month), each with its mascot. Prices are set in SGD and shown in each visitor's currency (`assets/prices.js`). Plan buttons adapt
   to the signed-in user's plan (start a trial, upgrade, downgrade, cancel).
 - `join/`: a direct link to the subscribe popup (`?tier=artisan|atelier&mode=join|upgrade|downgrade|cancel`).
 - `license/`: what you can do with what you make (personal vs commercial use).
@@ -40,7 +40,8 @@ On `localhost` the site talks to the backend at `http://localhost:8000` automati
 - `assets/session.js`: keeps the sign-in session and calls the backend with it.
 - `assets/subscribe.js`: the subscribe popup (a cat at a cash register) that every plan button opens, and the
   plan-aware buttons.
-- Pages load `kit.css`, `kit.js` and `subscribe.js` with a `?v=` version: bump it when they change so browsers
+- `assets/prices.js`: plan prices converted from SGD to the visitor's currency (rates cached 12 h).
+- Pages load `kit.css`, `kit.js`, `prices.js` and `subscribe.js` with a `?v=` version: bump it when they change so browsers
   pick up the new copy.
 
 ## Art

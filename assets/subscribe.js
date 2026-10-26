@@ -11,8 +11,8 @@ window.Subscribe = (() => {
     atelier: "https://www.patreon.com/checkout/Mosaic_ML?rid=29914428&vanity=17024707",
   };
   const TIERS = {
-    artisan: { name: "Artisan", price: "$5 / month", tb: "#6b3a1c", tf: "#fff", c: "#e8913a", perks: "badge, 250 sprites a day and pro Studio" },
-    atelier: { name: "Atelier", price: "$15 / month", tb: "#2c3c74", tf: "#fce060", c: "#fce060", perks: "badge, v1, 500 sprites + 50 clips a day and pro Studio" },
+    artisan: { name: "Artisan", price: "S$5 / month", tb: "#6b3a1c", tf: "#fff", c: "#e8913a", perks: "badge, 250 sprites a day and pro Studio" },
+    atelier: { name: "Atelier", price: "S$15 / month", tb: "#2c3c74", tf: "#fce060", c: "#fce060", perks: "badge, v1, 500 sprites + 50 clips a day and pro Studio" },
   };
   const root = window.Kit?.root ?? "";
   const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -62,7 +62,8 @@ window.Subscribe = (() => {
   ]));
 
   function content(tier, mode, u, linking) {
-    const t = TIERS[tier] || TIERS.artisan, planName = TIERS[u?.plan]?.name || t.name;
+    const t0 = TIERS[tier] || TIERS.artisan, planName = TIERS[u?.plan]?.name || t0.name;
+    const t = { ...t0, price: window.Prices ? `${Prices.label(tier)} / month` : t0.price };   // in the visitor's currency
     const email = u?.email ? `<b>${esc(u.email)}</b>` : "the email you use on Mosaic";
     const check = linking === "auto" ? "it switches over by itself in about a minute"
                 : linking ? `press <b>Check again</b> in your <a href="${root}settings/#patreon">settings</a>, or it updates by itself within a few hours`
@@ -94,6 +95,7 @@ window.Subscribe = (() => {
   let closeCurrent = null;
   async function open(tier, mode = "join") {
     if (closeCurrent) closeCurrent();
+    if (window.Prices) await Prices.ready;
     const [u, linking] = await info();
     const { t, m, email } = content(tier, mode, u, linking);
     const tb = mode === "cancel" ? "#3a3446" : t.tb, tf = mode === "cancel" ? "#e8e4f0" : t.tf;

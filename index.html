@@ -12,8 +12,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Tiny5&display=swap" rel="stylesheet">
 <script src="config.js"></script>
 <script src="assets/session.js"></script>
-<script src="assets/kit.js?v=20261026e" data-root=""></script>
-<script src="assets/subscribe.js?v=20261026e"></script>
+<script src="assets/kit.js?v=20261026f" data-root=""></script>
+<script src="assets/prices.js?v=20261026f"></script>
+<script src="assets/subscribe.js?v=20261026f"></script>
 <style>
   :root {
     --bg: #000; --fg: #fff; --dim: #8a867b; --line: #2a2925; --panel: #0d0d0c;
@@ -370,27 +371,28 @@
       and the right to sell what you make.</p>
     <div class="tiers">
       <div class="tier notch free"><div class="stage" id="stage-free"></div>
-        <div class="nm">Free</div><div class="price">$0</div><div class="per">15 <small>generations a day</small></div>
+        <div class="nm">Free</div><div class="price"><span data-price="free">S$0</span></div><div class="per">15 <small>generations a day</small></div>
         <ul><li>m1 sprites</li><li>The Studio and the API</li><li>Personal use</li>
           <li class="no">Pro Studio</li><li class="no">v1 animated scenes</li></ul>
         <div class="go"><a class="btn small" href="login/#signup" id="tier-free" data-cta="free" style="--c:#b9b0c8">Start free</a></div>
       </div>
       <div class="tier notch artisan"><div class="stage" id="stage-artisan"></div>
-        <div class="nm">Artisan</div><div class="price">$5 <small>/ month</small></div><div class="trial">Free trial available</div>
+        <div class="nm">Artisan</div><div class="price"><span data-price="artisan">S$5</span> <small>/ month</small></div><div class="trial">Free trial available</div>
         <div class="per">250 <small>generations a day</small></div>
         <ul><li>Everything in Free</li><li>Pro Studio: exact creativity, fixed seeds</li><li>Batches of 4 sprites at once</li>
           <li>Commercial use: sell what you make</li><li>Priority in the queue</li></ul>
         <div class="go"><a class="btn small" href="join/?tier=artisan" data-cta="artisan" data-subscribe="artisan" data-mode="join" style="--c:var(--t)">Start free trial</a></div>
       </div>
       <div class="tier notch atelier"><span class="ribbon">INCLUDES v1</span><div class="stage" id="stage-atelier"></div>
-        <div class="nm">Atelier</div><div class="price">$15 <small>/ month</small></div><div class="per">500 <small>sprites + 50 clips a day</small></div>
+        <div class="nm">Atelier</div><div class="price"><span data-price="atelier">S$15</span> <small>/ month</small></div><div class="per">500 <small>sprites + 50 clips a day</small></div>
         <ul><li>Everything in Artisan</li><li>50 v1 clips a day: 16:9 animated scenes</li><li>Batches of 8 sprites at once</li><li>Top priority in the queue</li>
           <li>Commercial use: sell what you make</li><li>New models first</li></ul>
         <div class="go"><a class="btn small" href="join/?tier=atelier" data-cta="atelier" data-subscribe="atelier" data-mode="join" style="--c:var(--t)">Join Atelier</a></div>
       </div>
     </div>
     <p class="plans-note">Plans run through <a href="https://www.patreon.com/17024707/join" target="_blank" rel="noopener">Patreon</a>, which also handles the Artisan trial. Compare everything on the
-      <a href="pricing/">pricing page</a>; personal and commercial use are explained on the <a href="license/">license page</a>.</p>
+      <a href="pricing/">pricing page</a>; personal and commercial use are explained on the <a href="license/">license page</a>.
+      <span data-price-note>Prices in SGD.</span></p>
   </div>
 </section>
 

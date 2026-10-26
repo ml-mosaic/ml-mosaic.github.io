@@ -4,17 +4,18 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Mosaic · Pricing</title>
-<meta name="description" content="Free, Artisan ($5/month, free trial) and Atelier ($15/month): more sprites, priority, the pro Studio, v1 and commercial use.">
+<meta name="description" content="Free, Artisan (S$5/month, free trial) and Atelier (S$15/month): more sprites, priority, the pro Studio, v1 and commercial use.">
 <link rel="icon" type="image/svg+xml" sizes="any" href="../assets/favicon.svg?v=2">
 <link rel="icon" type="image/png" sizes="64x64" href="../assets/favicon.png?v=2">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Tiny5&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../assets/kit.css?v=20261026e">
+<link rel="stylesheet" href="../assets/kit.css?v=20261026f">
 <script src="../config.js"></script>
 <script src="../assets/session.js"></script>
-<script src="../assets/kit.js?v=20261026e" data-root="../"></script>
-<script src="../assets/subscribe.js?v=20261026e"></script>
+<script src="../assets/kit.js?v=20261026f" data-root="../"></script>
+<script src="../assets/prices.js?v=20261026f"></script>
+<script src="../assets/subscribe.js?v=20261026f"></script>
 <style>
   header { padding: 64px 0 20px; text-align: center; }
   header .kicker { color: #e8913a; letter-spacing: 3px; font-size: 13px; margin: 0 0 12px; }
@@ -22,6 +23,7 @@
   header p { color: #b9b4a8; font-size: 18px; line-height: 1.5; max-width: 620px; margin: 0 auto; }
   main { padding: 40px 0 90px; }
 
+  .price-note { color: var(--dim); font-size: 13px; text-align: center; margin: 26px 0 0; }
   .tiers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; align-items: stretch; margin-top: 70px; }
   .tiers > * { min-width: 0; }
   .tier { position: relative; background: #120f17; margin: var(--u); padding: 0 24px 26px; display: flex; flex-direction: column; --c: #2e2838; --t: #b9b0c8; }
@@ -76,7 +78,7 @@
       <div class="stage" id="stage-free"></div>
       <div class="nm">Free</div>
       <p class="who">For trying things out and making stuff for fun.</p>
-      <div class="price"><b>$0</b><span>forever</span></div><div class="trial"></div>
+      <div class="price"><b data-price="free">S$0</b><span>forever</span></div><div class="trial"></div>
       <ul><li><b>15</b> sprites a day</li><li>m1 sprites in the Studio and the API</li><li>Personal use</li>
         <li>Standard queue: never left behind</li><li class="no">Pro Studio</li><li class="no">v1 animated scenes</li></ul>
       <div class="cta"><a class="btn" id="cta-free" data-cta="free" href="../login/#signup" style="--c:#b9b0c8">Start free</a></div>
@@ -87,7 +89,7 @@
       <span class="badge">POPULAR</span>
       <div class="nm">Artisan</div>
       <p class="who">For making a game's worth of sprites, and selling it.</p>
-      <div class="price"><b>$5</b><span>/ month</span></div><div class="trial">Free trial available</div>
+      <div class="price"><b data-price="artisan">S$5</b><span>/ month</span></div><div class="trial">Free trial available</div>
       <ul><li><b>250</b> sprites a day</li><li><b>Pro Studio</b>: exact creativity, fixed seeds, big downloads</li>
         <li>Batches of <b>4</b> sprites at once</li><li><b>Commercial use</b>: sell what you make</li>
         <li><b>Priority</b> in the queue</li><li class="no">v1 animated scenes</li></ul>
@@ -100,7 +102,7 @@
       <span class="badge">INCLUDES v1</span>
       <div class="nm">Atelier</div>
       <p class="who">For studios and heavy users who want everything, including motion.</p>
-      <div class="price"><b>$15</b><span>/ month</span></div><div class="trial"></div>
+      <div class="price"><b data-price="atelier">S$15</b><span>/ month</span></div><div class="trial"></div>
       <ul><li><b>500</b> sprites a day</li><li><b>50 v1 clips</b> a day: 16:9 animated scenes (preview)</li>
         <li>Batches of <b>8</b> sprites at once</li><li><b>Top priority</b> in the queue</li>
         <li>Everything in Artisan</li><li>New models first</li></ul>
@@ -109,10 +111,12 @@
     </section>
   </div>
 
+  <p class="price-note" data-price-note>Prices in SGD.</p>
+
   <h2>Side by side</h2>
   <div class="scroll"><table>
     <tr><th></th><th>FREE</th><th class="artisan">ARTISAN</th><th class="atelier">ATELIER</th></tr>
-    <tr><td>Price</td><td>$0</td><td>$5 / month, free trial</td><td>$15 / month</td></tr>
+    <tr><td>Price</td><td><span data-price="free">S$0</span></td><td><span data-price="artisan">S$5</span> / month, free trial</td><td><span data-price="atelier">S$15</span> / month</td></tr>
     <tr><td>Sprites a day</td><td>15</td><td>250</td><td>500</td></tr>
     <tr><td>v1 clips a day</td><td class="no">no</td><td class="no">no</td><td>50</td></tr>
     <tr><td>Queue</td><td>standard</td><td>priority</td><td>top priority</td></tr>
