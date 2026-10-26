@@ -10,10 +10,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Tiny5&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../assets/kit.css?v=20261026b">
+<link rel="stylesheet" href="../assets/kit.css?v=20261026c">
 <script src="../config.js"></script>
 <script src="../assets/session.js"></script>
-<script src="../assets/kit.js?v=20261026b" data-root="../"></script>
+<script src="../assets/kit.js?v=20261026c" data-root="../"></script>
 <style>
   /* Owner console. Hidden: not linked anywhere, not indexed, and for anyone but the owner the API answers 404 and
      this page shows "not found". The real protection is server-side (every /api/console call is checked). */
@@ -148,7 +148,11 @@
           ${u.verified ? "" : "&middot; email not confirmed"}${u.two_factor ? " &middot; two-step on" : ""} ${chips(u)}</p>
         <div class="facts"><div><span>TODAY</span><b>${u.quota.used} / ${u.quota.limit}</b></div><div><span>POSTS</span><b>${u.posts} (${u.shared} shared)</b></div>
           <div><span>PICTURE</span><b>${u.avatar_source === "pattern" ? "default" : esc(u.avatar_source)}</b></div></div>
-        <div class="sec"><h3>PLAN</h3><div class="seg" id="plan">${PLANS.map(([id, label, what]) =>
+        <div class="sec"><h3>PLAN</h3>
+          <p class="sub" style="margin:0 0 10px">${u.patreon ? `Patreon: linked to <b>${esc(u.patreon.name || "?")}</b> (${esc(u.patreon.email || "no email")}),
+            ${u.patreon.plan === "free" ? "no active tier" : esc(u.patreon.plan) + (u.patreon.trial ? " trial" : "")}, checked ${u.patreon.synced ? Kit.ago(u.patreon.synced) : "?"}`
+            : "Patreon: not linked"}${u.plan !== "free" ? ` &middot; plan set ${u.plan_source === "patreon" ? "by Patreon" : "by hand (Patreon won't lower it)"}` : ""}</p>
+          <div class="seg" id="plan">${PLANS.map(([id, label, what]) =>
           `<button type="button" data-p="${id}" aria-pressed="${u.plan === id}">${label}<small>${what}</small></button>`).join("")}</div></div>
         <div class="sec"><h3>STANDING</h3>
           <div class="standing ${s ? s.status : "ok"}">${!s ? "Good standing." : s.status === "banned"

@@ -9,11 +9,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Tiny5&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../assets/kit.css?v=20261026b">
+<link rel="stylesheet" href="../assets/kit.css?v=20261026c">
 <script src="../config.js"></script>
 <script src="../assets/session.js"></script>
 <script>if (!Session.current()) location.replace("../login/?next=studio");</script>
-<script src="../assets/kit.js?v=20261026b" data-root="../"></script>
+<script src="../assets/kit.js?v=20261026c" data-root="../"></script>
 <style>
   main { padding: 40px 0 90px; }
   .kicker { color: var(--blue); letter-spacing: 3px; font-size: 13px; margin: 0 0 10px; }
@@ -22,6 +22,9 @@
   .card { background: var(--panel); padding: 22px; margin: var(--u) var(--u) 26px; }
   .card h2 { font-weight: normal; font-size: 20px; margin: 0 0 4px; }
   .card .hint { color: var(--dim); font-size: 13px; margin: 0 0 18px; line-height: 1.5; }
+  .pt-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .pt-linked { background: #0b0a0e; padding: 12px 14px; margin-bottom: 12px; line-height: 1.5; font-size: 15px; }
+  .pt-linked small { display: block; color: var(--dim); font-size: 12px; }
   #studio .seg { display: flex; gap: 6px; }
   #studio .seg button { flex: 1; background: #0b0a0e; border: 0; color: #b9b0c8; padding: 12px; cursor: pointer; font: inherit; font-size: 15px; text-align: left; }
   #studio .seg button small { display: block; color: var(--dim); font-size: 12px; margin-top: 2px; }
@@ -119,6 +122,12 @@
         <dl><dt>Username</dt><dd id="a-user"></dd><dt>Email</dt><dd id="a-email"></dd><dt>Plan</dt><dd id="a-plan"></dd><dt>Today</dt><dd id="a-quota"></dd></dl>
       </section>
 
+      <section class="card notch" id="patreon">
+        <h2>Patreon</h2>
+        <p class="hint" id="pt-hint">Checking...</p>
+        <div class="pt-row" id="pt-row"></div>
+      </section>
+
       <section class="card notch" id="studio" hidden>
         <h2>Studio look</h2>
         <p class="hint">Your plan comes with the pro Studio. Prefer the classic one? Switch any time: your plan's allowance
@@ -175,8 +184,64 @@
     $("#a-user").textContent = "@" + u.username; $("#a-email").textContent = u.email || "(none)";
     $("#a-plan").textContent = { artisan: "Artisan · 250 sprites a day, pro Studio, priority, commercial use", atelier: "Atelier · 500 sprites + 50 v1 clips a day, pro Studio, top priority, commercial use" }[u.plan]
                                || "Free · 15 generations a day, personal use";
-    showQuota(u.quota); showPic(p); preview(); counts(); dirty(); showTwoFactor(u.two_factor); showStudio(u);
+    showQuota(u.quota); showPic(p); preview(); counts(); dirty(); showTwoFactor(u.two_factor); showStudio(u); showPatreon(u);
   }
+  // Patreon: link it once and the plan follows the membership (rechecked every few hours)
+  const PLAN = { free: "Free", artisan: "Artisan", atelier: "Atelier" };
+  function showPatreon(u) {
+    const link = u.patreon, hint = $("#pt-hint"), row = $("#pt-row");
+    if (!u.patreon_ready) {
+      hint.textContent = "Linking Patreon opens soon. Until then, subscribe with the same email as your Mosaic account and we'll switch your plan on.";
+      row.innerHTML = `<a class="btn small ghost" href="../pricing/">See plans</a>`;
+      return;
+    }
+    if (!link) {
+      hint.textContent = "Subscribed on Patreon? Link it and your plan switches on right away, then follows your membership (cancel there and you go back to Free).";
+      row.innerHTML = `<button class="btn small" id="pt-link" type="button" style="--c:#ff424d">Link Patreon</button><a class="btn small ghost" href="../pricing/">See plans</a>`;
+      $("#pt-link").onclick = async () => {
+        const r = await Session.api("/api/patreon/start", { method: "POST" });
+        if (!r.ok) return toast(Session.detail(r.data || {}));
+        location.href = r.data.url;
+      };
+      return;
+    }
+    hint.textContent = "Your plan follows this Patreon membership, rechecked every few hours.";
+    row.innerHTML = `<div class="pt-linked" style="flex-basis:100%">Linked to <b>${esc(link.name || "your Patreon")}</b>${link.email ? ` (${esc(link.email)})` : ""}
+        <small>${link.plan === "free" ? "No active membership yet" : `${PLAN[link.plan]}${link.trial ? " (free trial)" : ""}`} &middot; checked ${link.synced ? Kit.ago(link.synced) : "just now"}</small></div>
+      <button class="btn small" id="pt-check" type="button" style="--c:#ff424d">Check again</button>
+      <button class="btn small ghost" id="pt-unlink" type="button">Unlink</button>`;
+    $("#pt-check").onclick = async () => {
+      const r = await Session.api("/api/patreon/refresh", { method: "POST" });
+      if (!r.ok) return toast(Session.detail(r.data || {}));
+      Object.assign(u, { patreon: r.data.patreon, plan: r.data.plan, quota: r.data.quota, features: r.data.features });
+      fill(u); toast(r.data.plan === "free" ? "No active membership found." : `You're on ${PLAN[r.data.plan]}.`);
+    };
+    $("#pt-unlink").onclick = async () => {
+      if (!await Kit.confirm("A plan that came from Patreon goes back to Free. You can link it again any time.", { title: "Unlink Patreon?", ok: "Unlink", danger: true })) return;
+      const r = await Session.api("/api/patreon/unlink", { method: "POST" });
+      if (!r.ok) return toast(Session.detail(r.data || {}));
+      Object.assign(u, { patreon: null, plan: r.data.plan }); fill(u); toast("Unlinked.");
+    };
+  }
+  // back from Patreon's sign-in: say how it went
+  (() => {
+    const res = new URLSearchParams(location.search).get("patreon");
+    if (!res) return;
+    history.replaceState(null, "", location.pathname + "#patreon");
+    const msg = { artisan: ["You're on Artisan!", "Patreon is linked. Your pro Studio, badge and 250 sprites a day are switched on."],
+                  atelier: ["You're on Atelier!", "Patreon is linked. v1, your pro Studio, badge and 500 sprites + 50 clips a day are switched on."],
+                  nomember: ["Linked, but no plan yet", "We couldn't find an active Artisan or Atelier membership on that Patreon account. Subscribe on Patreon, then press Check again."],
+                  taken: ["Already linked elsewhere", "That Patreon account is linked to another Mosaic account. Unlink it there first."],
+                  cancelled: ["No problem", "Patreon wasn't linked. You can try again any time."],
+                  expired: ["That took a while", "The link expired. Press Link Patreon again."],
+                  error: ["Patreon didn't answer", "Something went wrong talking to Patreon. Try again in a minute."] }[res];
+    if (msg) setTimeout(() => {
+      Kit.alert(msg[1], { title: msg[0], ok: "Okay!" });
+      if (res === "artisan" || res === "atelier") { const b = $("#patreon").getBoundingClientRect(); Kit.burst(b.left + b.width / 2, b.top + 20, "heart", 8); }
+      $("#patreon").scrollIntoView({ block: "center" });
+    }, 400);
+  })();
+
   // paid plans: pro or classic Studio (saved on the account, so it follows them to every device)
   function showStudio(u) {
     if (!u.features?.pro_studio) return;

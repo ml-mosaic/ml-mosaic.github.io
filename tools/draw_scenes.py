@@ -344,6 +344,68 @@ def write_mascots(extras):
                         "lid": lid, "words": words}
 
 
+# --------------------------------------------------------------------------------------------- the join page's cash register
+# register.png = closed and open frames side by side; coin.png pops out when it opens.
+REG_PAL = {"K": hexc("1e1430"), "R": hexc("2f8f86"), "r": hexc("1f6660"), "W": hexc("f4f0e8"), "w": hexc("b8b0a8"),
+           "D": hexc("0f2a20"), "G": hexc("6ee07a"), "Y": hexc("fce060"), "y": hexc("d8a020"), "B": hexc("6b4a2c")}
+# closed: the drawer is flush; open: the drawer slides out (2 rows lower/left) showing coins
+REGISTER = """
+.......KKKKKKKKKK.......
+.......KDDDDDDDDK.......
+.......KDGDGGDGDK.......
+.......KDDDDDDDDK.......
+.......KKKKKKKKKK.......
+..........KwwK..........
+..KKKKKKKKKKKKKKKKKKKK..
+..KRRRRRRRRRRRRRRRRRRK..
+..KRWKWKWKWKRRRRRRRRRK..
+..KRKWKWKWKWRRRWWWWRRK..
+..KRWKWKWKWKRRRWwwWRRK..
+..KRRRRRRRRRRRRRRRRRRK..
+..KKKKKKKKKKKKKKKKKKKK..
+..KrrrrrrrrrrrrrrrrrrK..
+..KrrrrrrrKKKKrrrrrrrK..
+..KKKKKKKKKKKKKKKKKKKK..
+..KBBBBBBBBBBBBBBBBBBK..
+..KKKKKKKKKKKKKKKKKKKK..
+"""
+REGISTER_OPEN = """
+.......KKKKKKKKKK.......
+.......KDDDDDDDDK.......
+.......KDYDYYDYDK.......
+.......KDDDDDDDDK.......
+.......KKKKKKKKKK.......
+..........KwwK..........
+..KKKKKKKKKKKKKKKKKKKK..
+..KRRRRRRRRRRRRRRRRRRK..
+..KRWKWKWKWKRRRRRRRRRK..
+..KRKWKWKWKWRRRWWWWRRK..
+..KRWKWKWKWKRRRWwwWRRK..
+..KRRRRRRRRRRRRRRRRRRK..
+..KKKKKKKKKKKKKKKKKKKK..
+KKKKKKKKKKKKKKKKKKKKK...
+KYyYyYyYyYyYyYyYyYyK....
+KrrrrrrrrKKKKrrrrrrK....
+KKKKKKKKKKKKKKKKKKKKK...
+..KBBBBBBBBBBBBBBBBBBK..
+"""
+COIN_PAL = {"K": hexc("6a4a10"), "Y": hexc("fce060"), "y": hexc("d8a020"), "W": hexc("fffbe0")}
+COIN = """
+.KKKK.
+KYWYYK
+KYYYyK
+KYYYyK
+KyyyyK
+.KKKK.
+"""
+
+
+def write_register():
+    frames = [sprite(REGISTER, REG_PAL), sprite(REGISTER_OPEN, REG_PAL)]
+    Image.fromarray(np.concatenate(frames, axis=1)).save(os.path.join(OUT, "register.png"))
+    Image.fromarray(sprite(COIN, COIN_PAL)).save(os.path.join(OUT, "coin.png"))
+
+
 # --------------------------------------------------------------------------------------------- scenes
 LEAF_PAL = {"A": hexc("de6e28"), "Y": hexc("f0ba3c"), "R": hexc("c43e26"), "B": hexc("5c3a24"), "b": hexc("42291a")}
 TREE = """
@@ -577,6 +639,7 @@ def main():
     with open(os.path.join(OUT, "scenes.json"), "w") as f:
         json.dump(meta, f, indent=1)
     write_mascots(extras)
+    write_register()
     with open(os.path.join(OUT, "extras.json"), "w") as f:
         json.dump(extras, f, indent=1)
     print("wrote", ", ".join(m["name"] for m in meta))

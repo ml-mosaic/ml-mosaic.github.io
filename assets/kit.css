@@ -9,7 +9,7 @@ html, body { margin: 0; background: var(--bg); color: var(--fg); }
 body { font-family: "Tiny5", ui-monospace, monospace; -webkit-font-smoothing: none; overflow-x: hidden; }
 a { color: inherit; } button, input, select, textarea { font: inherit; color: inherit; }
 .px, img.px { image-rendering: pixelated; }
-.wrap { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+.wrap { max-width: 1200px; margin: 0 auto; padding-left: 24px; padding-right: 24px; }   /* sides only: pages set their own top/bottom */
 [hidden] { display: none !important; }
 
 .notch { box-shadow: 0 calc(-1 * var(--u)) 0 0 var(--c, var(--line)), 0 var(--u) 0 0 var(--c, var(--line)),
