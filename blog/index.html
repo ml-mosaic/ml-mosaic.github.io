@@ -47,6 +47,16 @@
   <div class="ground" id="ground"></div>
 </header>
 <main class="wrap">
+  <a class="post notch" href="plans-and-the-pro-studio/">
+    <div class="art" id="plans-art" style="background:linear-gradient(#1f1830 0 62%, #2c2238 62% 66%, #241c30 66%)"></div>
+    <div class="body">
+      <div class="meta"><span class="t">ANNOUNCEMENT</span><span>OCT 26, 2026</span><span>&middot; 3 MIN READ</span></div>
+      <h2>Plans, and a pro Studio</h2>
+      <p>Free stays free. Artisan ($5 a month, with a free trial) and Atelier ($15) add more generations, a pro Studio,
+        batches, commercial use and v1.</p>
+      <span class="read">Read the post &rarr;</span>
+    </div>
+  </a>
   <a class="post notch" href="a-first-look-at-v1/">
     <div class="art" style="background-image:url(../assets/v1/walk-beach.gif)"></div>
     <div class="body">
@@ -79,6 +89,14 @@
     let f = 0;
     (function tick() { el.style.backgroundPosition = `${f * 100 / (h.frames - 1)}% 0`; f = f >= h.frames - 1 ? 0 : f + 1;
                        setTimeout(tick, f === 0 ? 1800 : f === h.frames - 1 ? 2600 : 120); })();
+  });
+  // the plan mascots, standing in the new post's picture
+  Kit.json("../assets/scenes/extras.json").then(x => {
+    const art = document.getElementById("plans-art");
+    ["free", "artisan", "atelier"].forEach((t, i) => {
+      const a = x[`mascot-${t}`], P = 5;
+      if (a) Kit.critter(a, art, { left: `calc(${(i + .5) * 100 / 3}% - ${a.w * P / 2}px)`, bottom: "34%", P });
+    });
   });
   Kit.json("../assets/scenes/scenes.json").then(l => {
     const a = l.find(s => s.animal.name === "cat"); if (a) Kit.critter(a.animal, document.getElementById("ground"), { right: "0px", bottom: "0px", P: 3 });

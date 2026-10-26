@@ -28,5 +28,95 @@
    "five more minutes",
    "it's fine. probably."
   ]
+ },
+ "mascot-free": {
+  "name": "mascot-free",
+  "w": 16,
+  "h": 17,
+  "eyes": [
+   {
+    "x": 4,
+    "y": 5,
+    "w": 3,
+    "h": 3
+   },
+   {
+    "x": 9,
+    "y": 5,
+    "w": 3,
+    "h": 3
+   }
+  ],
+  "pupil": [
+   1,
+   1
+  ],
+  "lid": "#f8d040",
+  "words": [
+   "peep!",
+   "hi there!",
+   "free to try!",
+   "*flap flap*"
+  ]
+ },
+ "mascot-artisan": {
+  "name": "mascot-artisan",
+  "w": 23,
+  "h": 20,
+  "eyes": [
+   {
+    "x": 3,
+    "y": 6,
+    "w": 3,
+    "h": 2
+   },
+   {
+    "x": 11,
+    "y": 6,
+    "w": 3,
+    "h": 2
+   }
+  ],
+  "pupil": [
+   1,
+   1
+  ],
+  "lid": "#e8722a",
+  "words": [
+   "back to work!",
+   "*swish*",
+   "batch of four, coming up",
+   "nice prompt!"
+  ]
+ },
+ "mascot-atelier": {
+  "name": "mascot-atelier",
+  "w": 21,
+  "h": 19,
+  "eyes": [
+   {
+    "x": 2,
+    "y": 7,
+    "w": 5,
+    "h": 3
+   },
+   {
+    "x": 12,
+    "y": 7,
+    "w": 5,
+    "h": 3
+   }
+  ],
+  "pupil": [
+   2,
+   2
+  ],
+  "lid": "#fce060",
+  "words": [
+   "hoo!",
+   "magnifique.",
+   "shall we animate?",
+   "*adjusts beret*"
+  ]
  }
 }

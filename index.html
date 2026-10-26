@@ -153,9 +153,13 @@
 
   /* ---------------------------------------------------------------- plans */
   #plans { background: #0f0c15; }
-  .tiers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; align-items: stretch; }
+  .tiers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; align-items: stretch; margin-top: 70px; }
   .tiers > * { min-width: 0; }
-  .tier { background: #120f17; margin: var(--u); padding: 24px 22px; display: flex; flex-direction: column; gap: 14px; --c: #2e2838; position: relative; }
+  .tier { background: #120f17; margin: var(--u); padding: 0 22px 24px; display: flex; flex-direction: column; gap: 14px; --c: #2e2838; position: relative; }
+  .tier .stage { position: relative; height: 104px; margin: -50px -22px -4px; }
+  .tier .stage .critter { filter: drop-shadow(5px 5px 0 rgba(0,0,0,.35)); }
+  .tier .price { color: #fff; font-size: 30px; } .tier .price small { color: var(--dim); font-size: 14px; }
+  .tier .trial { color: var(--t); font-size: 13px; margin-top: -8px; }
   .tier.artisan { --c: #6b3a1c; --t: #e8913a; } .tier.atelier { --c: #2c3c74; --t: #fce060; } .tier.free { --t: #b9b0c8; }
   .tier .nm { font-size: 30px; color: var(--t); }
   .tier .per { color: #fff; font-size: 20px; } .tier .per small { color: var(--dim); font-size: 13px; }
@@ -248,6 +252,7 @@
   @media (max-width: 900px) {
     nav .links a.opt { display: none; }
     .world .wrap, .slots, .api, .lineup, .tiers { grid-template-columns: 1fr; }
+    .tiers { gap: 76px; }
     .machine { transform: none; max-width: 420px; }
     .hud .wrap { grid-template-columns: 1fr 1fr; }
     .hud .wrap > :first-child { grid-column: 1 / -1; }
@@ -272,7 +277,7 @@
     <a class="brand" href="#top" aria-label="Mosaic"><img src="assets/logo-wordmark.png" alt="Mosaic"></a>
     <div class="links">
       <a class="opt" href="#models">Models</a>
-      <a class="opt" href="#plans">Plans</a>
+      <a class="opt" href="pricing/">Pricing</a>
       <a class="opt" href="#explore">Wish machine</a>
       <a class="opt" href="#gallery">Sticker book</a>
       <a href="studio/">Studio</a>
@@ -362,27 +367,28 @@
     <p class="lede">Everyone gets m1 and 15 generations a day. The plans add more of everything, a pro Studio,
       and the right to sell what you make.</p>
     <div class="tiers">
-      <div class="tier notch free">
-        <div class="nm">Free</div><div class="per">15 <small>generations a day</small></div>
+      <div class="tier notch free"><div class="stage" id="stage-free"></div>
+        <div class="nm">Free</div><div class="price">$0</div><div class="per">15 <small>generations a day</small></div>
         <ul><li>m1 sprites</li><li>The Studio and the API</li><li>Personal use</li>
           <li class="no">Pro Studio</li><li class="no">v1 animated scenes</li></ul>
         <div class="go"><a class="btn small" href="login/#signup" id="tier-free" style="--c:#b9b0c8">Start free</a></div>
       </div>
-      <div class="tier notch artisan">
-        <div class="nm">Artisan</div><div class="per">250 <small>generations a day</small></div>
+      <div class="tier notch artisan"><div class="stage" id="stage-artisan"></div>
+        <div class="nm">Artisan</div><div class="price">$5 <small>/ month</small></div><div class="trial">Free trial available</div>
+        <div class="per">250 <small>generations a day</small></div>
         <ul><li>Everything in Free</li><li>Pro Studio: exact creativity, fixed seeds</li><li>Batches of 4 sprites at once</li>
           <li>Commercial use: sell what you make</li><li class="no">v1 animated scenes</li></ul>
-        <div class="go"><span class="soon">COMING SOON</span></div>
+        <div class="go"><a class="btn small" href="pricing/" style="--c:var(--t)">See pricing</a></div>
       </div>
-      <div class="tier notch atelier"><span class="ribbon">INCLUDES v1</span>
-        <div class="nm">Atelier</div><div class="per">1,000 <small>generations a day</small></div>
+      <div class="tier notch atelier"><span class="ribbon">INCLUDES v1</span><div class="stage" id="stage-atelier"></div>
+        <div class="nm">Atelier</div><div class="price">$15 <small>/ month</small></div><div class="per">1,000 <small>generations a day</small></div>
         <ul><li>Everything in Artisan</li><li>v1: 16:9 animated scenes</li><li>Batches of 8 sprites at once</li>
           <li>Commercial use: sell what you make</li><li>New models first</li></ul>
-        <div class="go"><span class="soon">COMING SOON</span></div>
+        <div class="go"><a class="btn small" href="pricing/" style="--c:var(--t)">See pricing</a></div>
       </div>
     </div>
-    <p class="plans-note">Paid plans open soon. What counts as personal and commercial use is on the
-      <a href="license/">license page</a>.</p>
+    <p class="plans-note">Paid plans open soon on Patreon, which also runs the Artisan trial. Compare everything on the
+      <a href="pricing/">pricing page</a>; personal and commercial use are explained on the <a href="license/">license page</a>.</p>
   </div>
 </section>
 
@@ -534,7 +540,7 @@ curl <span id="code-url"></span>/api/generate \
   Promise.all([fetch("assets/m1/showcase.json").then(r => r.json()), fetch("assets/scenes/scenes.json").then(r => r.json())])
     .then(([M, scenes]) => {
       const A = Object.fromEntries(scenes.map(s => [s.animal.name, s]));
-      world(M, A); hud(M); models(M); wishMachine(M); how(M); book(M, A); footer(A);
+      world(M, A); hud(M); models(M); mascots(); wishMachine(M); how(M); book(M, A); footer(A);
     });
 
   /* ================================================================ hero world */
@@ -647,6 +653,16 @@ curl <span id="code-url"></span>/api/generate \
       const show = c => { img.src = `assets/v1/${c.file}`; img.alt = c.prompt; };
       show(list[0]);
       if (!reduce) setInterval(() => show(list[++i % list.length]), 6000);
+    }).catch(() => {});
+  }
+
+  /* ================================================================ plan mascots on the plan cards */
+  function mascots() {
+    fetch("assets/scenes/extras.json").then(r => r.json()).then(x => {
+      for (const t of ["free", "artisan", "atelier"]) {
+        const a = x[`mascot-${t}`], stage = $(`#stage-${t}`), P = 4;
+        if (a && stage) critter({ animal: a }, stage, `calc(50% - ${a.w * P / 2}px)`, `${104 - a.h * P}px`, P);
+      }
     }).catch(() => {});
   }
 

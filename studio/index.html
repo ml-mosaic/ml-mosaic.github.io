@@ -84,7 +84,7 @@
   .model > button { display: flex; align-items: center; gap: 10px; background: #1d1826; border: 0; padding: 7px 12px; cursor: pointer; font-size: 14px; color: #fff; }
   .model > button .chev { color: #8f86a0; font-size: 11px; transition: transform .12s steps(2); }
   .model[open] > button .chev { transform: rotate(180deg); }
-  .model .menu { position: absolute; bottom: calc(100% + 10px); left: 0; width: 300px; background: #120f17; padding: 6px; --c: #2e2838;
+  .model .menu { position: absolute; bottom: calc(100% + 10px); left: 0; width: 360px; background: #120f17; padding: 6px; --c: #2e2838;
                  margin: var(--u); display: none; }
   .model[open] .menu { display: block; animation: rise .16s steps(3); }
   @keyframes rise { from { transform: translateY(8px); opacity: 0; } }
@@ -105,6 +105,12 @@
                      -webkit-mask-image: linear-gradient(270deg, #000 25%, transparent 85%); mask-image: linear-gradient(270deg, #000 25%, transparent 85%); }
   .mopt.snow .mk { color: #c4d4f0; background: #1c2c5c; }
   .mopt .cost { display: inline-block; margin-left: 6px; padding: 0 5px; background: #1c2c5c; color: #c4d4f0; font-size: 11px; }
+  .mopt .ptag + .tick { margin-left: 8px; }
+  .mopt .ptag { margin-left: auto; position: relative; z-index: 1; font-size: 10px; letter-spacing: 2px; padding: 2px 6px; background: #24212b; color: #b9b0c8; white-space: nowrap; }
+  .mopt .ptag.atelier { background: #2c3c74; color: #fce060; } .mopt .ptag.artisan { background: #6b3a1c; color: #fff; }
+  .classic-note { display: inline-block; margin-top: 12px; align-self: flex-start; font-size: 12px; letter-spacing: 1px; color: #e8e4f0;
+                  background: rgba(0,0,0,.55); padding: 3px 8px; text-decoration: none; }
+  .classic-note:hover { color: #fff; background: rgba(0,0,0,.75); }
   .mopt:hover::before, .mopt:hover::after, .mopt:focus-visible::before, .mopt:focus-visible::after { opacity: 1; }
   .mopt .fall { position: absolute; top: -8px; width: 9px; height: 9px; background: url(../assets/scenes/p-leaf.png) 0 0 / 100% 100%; image-rendering: pixelated;
                opacity: 0; pointer-events: none; }
@@ -190,7 +196,7 @@
     .banner .critter { display: none; }
     .grid { grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 8px; }
     .seg button { padding: 8px 9px; }
-    .model .menu { width: 260px; }
+    .model .menu { width: min(340px, calc(100vw - 40px)); }
   }
 </style>
 </head>
@@ -203,6 +209,7 @@
     <p id="greet">What are we drawing today?</p>
     <span class="sample" title="m1 is still learning: expect the odd surprise">m1 PREVIEW</span>
     <span class="planmark" id="planmark" hidden></span>
+    <a class="classic-note" id="classic-note" href="../settings/#studio" hidden>Classic Studio &middot; switch to pro in settings</a>
   </div>
 </header>
 
@@ -449,6 +456,7 @@
     list.forEach(m => models[m.id] = m);
     menu.innerHTML = list.map(m => `<button class="mopt ${m.nameplate || ""}" type="button" role="option" data-id="${m.id}" aria-selected="${m.id === model}">
         <span class="mk">${esc(m.name)}</span><span class="tx"><b>${esc(m.name)}</b><span>${esc(m.tagline)}${m.cost > 1 ? `<span class="cost">${m.cost} per go</span>` : ""}</span></span>
+        ${m.tag ? `<span class="ptag ${m.tag.toLowerCase()}">${esc(m.tag)}</span>` : ""}
         <span class="tick">${m.id === model ? "&#10003;" : ""}</span>
         ${[0, 1, 2, 3, 4].map(i => `<i class="fall" style="right:${8 + i * 16}%;animation-delay:${i * .32}s"></i>`).join("")}</button>`).join("")
       + `<button class="mopt" type="button" disabled><span class="mk" style="color:#57506a">?</span><span class="tx"><b>more soon</b><span>new models land here</span></span></button>`;
@@ -479,6 +487,7 @@
   const TIERS = { artisan: "ARTISAN", atelier: "ATELIER", dev: "DEVELOPER" };
   function setupPro(u) {
     if (!u.features?.pro_studio) return;
+    if (u.profile?.studio === "classic") { $("#classic-note").hidden = false; return; }   // they prefer the classic look
     pro = u.features;
     const tier = (u.profile?.badges || []).includes("Developer") ? "dev" : u.plan;
     document.body.classList.add("pro", tier);

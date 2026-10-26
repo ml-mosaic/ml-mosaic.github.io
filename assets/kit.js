@@ -10,8 +10,9 @@ window.Kit = (() => {
     const el = document.querySelector("nav.topbar");
     if (!el) return;
     const me = Session.current();
-    const links = [["Home", "", "opt"], ["Studio", "studio/", ""], ["Blog", "blog/", "opt"], ["Dev portal", "portal/", "opt"], ["Status", "status/", "opt"]];
-    if (me) links.splice(4, 0, ["Keys", "portal/keys/", "opt"]);
+    const links = [["Home", "", "opt"], ["Studio", "studio/", ""], ["Pricing", "pricing/", "opt"], ["Blog", "blog/", "opt"],
+                   ["Dev portal", "portal/", "opt"], ["Status", "status/", "opt"]];
+    if (me) links.splice(5, 0, ["Keys", "portal/keys/", "opt"]);
     el.innerHTML = `<div class="wrap">
       <a class="brand" href="${root}" aria-label="Mosaic home"><img src="${root}assets/logo-wordmark.png" alt="Mosaic"></a>
       <div class="links">${links.map(([t, h, c]) => `<a class="${c}" href="${root}${h}"${t === active ? ' aria-current="page"' : ""}>${t}</a>`).join("")}</div>
@@ -33,8 +34,8 @@ window.Kit = (() => {
     if (!mePromise || refresh) mePromise = Session.api("/api/me").then(r => r.ok ? r.data : null);
     return mePromise;
   }
-  // tags next to a person's name ("Developer")
-  const tags = person => (person?.badges || []).map(b => `<span class="utag">${esc(b)}</span>`).join("");
+  // tags next to a person's name: staff ("Developer") and paid plans ("Artisan", "Atelier"), each in its own colours
+  const tags = person => (person?.badges || []).map(b => `<span class="utag utag-${esc(b.toLowerCase().replace(/[^a-z0-9]/g, ""))}">${esc(b)}</span>`).join("");
   // a person's picture: their own upload / m1 sprite from the backend, else the pixel pattern made from their name
   function pfp(person, px = 8) {
     return person.avatar ? MOSAIC.backend + person.avatar : avatar(person.username, px);

@@ -40,6 +40,8 @@ a { color: inherit; } button, input, select, textarea { font: inherit; color: in
 /* tags next to a name ("Developer"); set on the server, not by the user */
 .utag { display: inline-block; vertical-align: middle; margin-left: 8px; padding: 3px 6px 2px; font-size: 11px; line-height: 1; letter-spacing: 1px;
         background: var(--blue); color: #000; box-shadow: 0 -2px 0 0 var(--blue), 0 2px 0 0 var(--blue); white-space: nowrap; }
+.utag-artisan { background: #e8913a; box-shadow: 0 -2px 0 0 #e8913a, 0 2px 0 0 #e8913a; }
+.utag-atelier { background: #2c3c74; color: #fce060; box-shadow: 0 -2px 0 0 #2c3c74, 0 2px 0 0 #2c3c74; }
 .avatar { width: 24px; height: 24px; image-rendering: pixelated; display: inline-block; flex: none; }
 @keyframes kit-hop { 50% { transform: translateY(-5px); } }
 

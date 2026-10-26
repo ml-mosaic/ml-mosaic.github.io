@@ -22,6 +22,10 @@
   .card { background: var(--panel); padding: 22px; margin: var(--u) var(--u) 26px; }
   .card h2 { font-weight: normal; font-size: 20px; margin: 0 0 4px; }
   .card .hint { color: var(--dim); font-size: 13px; margin: 0 0 18px; line-height: 1.5; }
+  #studio .seg { display: flex; gap: 6px; }
+  #studio .seg button { flex: 1; background: #0b0a0e; border: 0; color: #b9b0c8; padding: 12px; cursor: pointer; font: inherit; font-size: 15px; text-align: left; }
+  #studio .seg button small { display: block; color: var(--dim); font-size: 12px; margin-top: 2px; }
+  #studio .seg button[aria-pressed="true"] { background: var(--yellow); color: #000; } #studio .seg button[aria-pressed="true"] small { color: #000; }
 
   /* picture */
   .pic { display: flex; gap: 22px; align-items: center; flex-wrap: wrap; }
@@ -115,6 +119,15 @@
         <dl><dt>Username</dt><dd id="a-user"></dd><dt>Email</dt><dd id="a-email"></dd><dt>Plan</dt><dd id="a-plan"></dd><dt>Today</dt><dd id="a-quota"></dd></dl>
       </section>
 
+      <section class="card notch" id="studio" hidden>
+        <h2>Studio look</h2>
+        <p class="hint">Your plan comes with the pro Studio. Prefer the classic one? Switch any time: your plan's allowance
+          and commercial use stay the same either way.</p>
+        <div class="seg" id="studio-seg" role="group" aria-label="Studio look">
+          <button type="button" data-v="pro" aria-pressed="true">Pro<small>creativity slider, seeds, batches</small></button>
+          <button type="button" data-v="classic" aria-pressed="false">Classic<small>the original Studio</small></button></div>
+      </section>
+
       <form class="card notch tf" id="tf" autocomplete="off">
         <h2>Two-step sign-in<span class="state" id="tf-state">OFF</span></h2>
         <p class="hint" id="tf-hint"></p>
@@ -162,7 +175,20 @@
     $("#a-user").textContent = "@" + u.username; $("#a-email").textContent = u.email || "(none)";
     $("#a-plan").textContent = { artisan: "Artisan · 250 a day, pro Studio, commercial use", atelier: "Atelier · 1,000 a day, v1, pro Studio, commercial use" }[u.plan]
                                || "Free · 15 generations a day, personal use";
-    showQuota(u.quota); showPic(p); preview(); counts(); dirty(); showTwoFactor(u.two_factor);
+    showQuota(u.quota); showPic(p); preview(); counts(); dirty(); showTwoFactor(u.two_factor); showStudio(u);
+  }
+  // paid plans: pro or classic Studio (saved on the account, so it follows them to every device)
+  function showStudio(u) {
+    if (!u.features?.pro_studio) return;
+    $("#studio").hidden = false;
+    const mark = v => document.querySelectorAll("#studio-seg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.v === v));
+    mark(u.profile.studio || "pro");
+    document.querySelectorAll("#studio-seg button").forEach(b => b.onclick = async () => {
+      const r = await Session.api("/api/profile", { json: { studio: b.dataset.v } });
+      if (!r.ok) return toast(Session.detail(r.data || {}));
+      mark(r.data.studio); toast(r.data.studio === "classic" ? "Classic Studio it is." : "Pro Studio is back.");
+    });
+    if (location.hash === "#studio") $("#studio").scrollIntoView({ block: "center" });
   }
   function showQuota(q) {
     $("#a-quota").textContent = `${q.remaining} of ${q.limit} generations left`;
@@ -180,7 +206,8 @@
   // ---- live preview
   let critterEl = null;
   function preview() {
-    $("#p-dn").innerHTML = esc($("#dn").value.trim() || me.username) + Kit.tags(me.profile);
+    const plan = { artisan: "Artisan", atelier: "Atelier" }[me.plan];             // others see your plan's badge too
+    $("#p-dn").innerHTML = esc($("#dn").value.trim() || me.username) + Kit.tags({ badges: [...me.profile.badges, ...(plan ? [plan] : [])] });
     const w = $("#web").value.trim();
     $("#p-handle").innerHTML = `@${esc(me.username)}${w ? ` &middot; <a>${esc(w.replace(/^https?:\/\//, ""))}</a>` : ""}`;
     $("#p-bio").textContent = $("#bio").value.trim() || "No bio yet.";

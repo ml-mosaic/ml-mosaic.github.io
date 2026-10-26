@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mosaic · Pricing</title>
+<meta name="description" content="Free, Artisan ($5/month, free trial) and Atelier ($15/month): more generations, the pro Studio, v1 and commercial use.">
+<link rel="icon" type="image/svg+xml" sizes="any" href="../assets/favicon.svg?v=2">
+<link rel="icon" type="image/png" sizes="64x64" href="../assets/favicon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tiny5&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/kit.css">
+<script src="../config.js"></script>
+<script src="../assets/session.js"></script>
+<script src="../assets/kit.js" data-root="../"></script>
+<style>
+  header { padding: 64px 0 20px; text-align: center; }
+  header .kicker { color: #e8913a; letter-spacing: 3px; font-size: 13px; margin: 0 0 12px; }
+  header h1 { font-weight: normal; font-size: clamp(40px, 7vw, 76px); margin: 0 0 14px; line-height: .95; }
+  header p { color: #b9b4a8; font-size: 18px; line-height: 1.5; max-width: 620px; margin: 0 auto; }
+  main { padding: 40px 0 90px; }
+
+  .tiers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; align-items: stretch; margin-top: 70px; }
+  .tiers > * { min-width: 0; }
+  .tier { position: relative; background: #120f17; margin: var(--u); padding: 0 24px 26px; display: flex; flex-direction: column; --c: #2e2838; --t: #b9b0c8; }
+  .tier.artisan { --c: #6b3a1c; --t: #e8913a; } .tier.atelier { --c: #2c3c74; --t: #fce060; }
+  .tier.mine { box-shadow: 0 0 0 4px var(--t), 0 -8px 0 0 var(--t), 0 8px 0 0 var(--t), -8px 0 0 0 var(--t), 8px 0 0 0 var(--t); }
+  .stage { position: relative; height: 120px; margin: -56px -24px 6px; }      /* the mascot stands on the card's top edge */
+  .stage .critter { filter: drop-shadow(5px 5px 0 rgba(0,0,0,.35)); }
+  .badge { position: absolute; top: 14px; right: 16px; font-size: 11px; letter-spacing: 2px; padding: 3px 8px; background: var(--t); color: #000; }
+  .nm { font-size: 34px; color: var(--t); }
+  .who { color: var(--dim); font-size: 14px; margin: 4px 0 18px; min-height: 2.8em; line-height: 1.4; }
+  .price { display: flex; align-items: baseline; gap: 8px; margin-bottom: 4px; }
+  .price b { font-weight: normal; font-size: 52px; color: #fff; line-height: 1; }
+  .price span { color: var(--dim); font-size: 15px; }
+  .trial { font-size: 13px; color: var(--t); min-height: 1.4em; margin-bottom: 18px; }
+  .tier ul { list-style: none; margin: 0 0 22px; padding: 0; color: #d8d2c4; font-size: 15px; line-height: 1.45; }
+  .tier li { padding: 5px 0 5px 22px; position: relative; }
+  .tier li::before { content: ""; position: absolute; left: 0; top: 12px; width: 8px; height: 8px; background: var(--t); }
+  .tier li.no { color: #5c566a; } .tier li.no::before { background: #3a3445; }
+  .tier li b { font-weight: normal; color: #fff; }
+  .cta { margin-top: auto; }
+  .cta .btn { width: calc(100% - 8px); text-align: center; }
+  .cta .btn[aria-disabled="true"] { cursor: default; filter: saturate(.6); }
+  .cta small { display: block; text-align: center; color: var(--dim); font-size: 12px; margin-top: 12px; }
+
+  h2 { font-weight: normal; font-size: clamp(28px, 4vw, 38px); margin: 80px 0 20px; }
+  table { width: 100%; border-collapse: collapse; font-size: 15px; }
+  th, td { padding: 12px 14px; text-align: left; border-bottom: 2px solid #1d1a24; }
+  th { font-weight: normal; color: var(--dim); font-size: 13px; letter-spacing: 2px; }
+  th.artisan { color: #e8913a; } th.atelier { color: #fce060; }
+  td:first-child { color: #b9b0c8; } td { color: #fff; }
+  td.no { color: #4c4758; }
+  .scroll { overflow-x: auto; }
+  .faq { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 34px; }
+  .faq div { background: var(--panel); padding: 18px 20px; margin: var(--u); }
+  .faq b { display: block; font-weight: normal; color: #fff; font-size: 17px; margin-bottom: 8px; }
+  .faq p { margin: 0; color: #b9b4a8; line-height: 1.55; font-size: 15px; }
+  .faq a { color: var(--fg); }
+  @media (max-width: 900px) { .tiers { grid-template-columns: 1fr; gap: 80px; } .faq { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<nav class="topbar" style="--c:#e8913a"></nav>
+<header><div class="wrap">
+  <p class="kicker">PRICING</p>
+  <h1>Pick your workbench</h1>
+  <p>Start free with m1. When you need more sprites, more control or the right to sell what you make, there's a plan for that.</p>
+</div></header>
+
+<main class="wrap">
+  <div class="tiers">
+    <section class="tier notch free" data-plan="free">
+      <div class="stage" id="stage-free"></div>
+      <div class="nm">Free</div>
+      <p class="who">For trying things out and making stuff for fun.</p>
+      <div class="price"><b>$0</b><span>forever</span></div><div class="trial"></div>
+      <ul><li><b>15</b> generations a day</li><li>m1 sprites in the Studio and the API</li><li>Personal use</li>
+        <li class="no">Pro Studio</li><li class="no">Batches</li><li class="no">v1 animated scenes</li></ul>
+      <div class="cta"><a class="btn" id="cta-free" href="../login/#signup" style="--c:#b9b0c8">Start free</a></div>
+    </section>
+
+    <section class="tier notch artisan" data-plan="artisan">
+      <div class="stage" id="stage-artisan"></div>
+      <span class="badge">POPULAR</span>
+      <div class="nm">Artisan</div>
+      <p class="who">For making a game's worth of sprites, and selling it.</p>
+      <div class="price"><b>$5</b><span>/ month</span></div><div class="trial">Free trial available</div>
+      <ul><li><b>250</b> generations a day</li><li><b>Pro Studio</b>: exact creativity, fixed seeds, big downloads</li>
+        <li>Batches of <b>4</b> sprites at once</li><li><b>Commercial use</b>: sell what you make</li>
+        <li>Everything in Free</li><li class="no">v1 animated scenes</li></ul>
+      <div class="cta"><span class="btn" aria-disabled="true" style="--c:#e8913a">Coming soon on Patreon</span>
+        <small>Billing and the trial run through Patreon.</small></div>
+    </section>
+
+    <section class="tier notch atelier" data-plan="atelier">
+      <div class="stage" id="stage-atelier"></div>
+      <span class="badge">INCLUDES v1</span>
+      <div class="nm">Atelier</div>
+      <p class="who">For studios and heavy users who want everything, including motion.</p>
+      <div class="price"><b>$15</b><span>/ month</span></div><div class="trial"></div>
+      <ul><li><b>1,000</b> generations a day</li><li><b>v1</b>: 16:9 animated scenes (preview)</li>
+        <li>Batches of <b>8</b> sprites at once</li><li><b>Commercial use</b>: sell what you make</li>
+        <li>Everything in Artisan</li><li>New models first</li></ul>
+      <div class="cta"><span class="btn" aria-disabled="true" style="--c:#fce060">Coming soon on Patreon</span>
+        <small>Billing runs through Patreon.</small></div>
+    </section>
+  </div>
+
+  <h2>Side by side</h2>
+  <div class="scroll"><table>
+    <tr><th></th><th>FREE</th><th class="artisan">ARTISAN</th><th class="atelier">ATELIER</th></tr>
+    <tr><td>Price</td><td>$0</td><td>$5 / month, free trial</td><td>$15 / month</td></tr>
+    <tr><td>Generations a day</td><td>15</td><td>250</td><td>1,000</td></tr>
+    <tr><td>m1: 64×64 sprites</td><td>yes</td><td>yes</td><td>yes</td></tr>
+    <tr><td>v1: 16:9 animated scenes (5 generations each)</td><td class="no">no</td><td class="no">no</td><td>yes</td></tr>
+    <tr><td>Studio</td><td>classic</td><td>pro (or classic)</td><td>pro (or classic)</td></tr>
+    <tr><td>Exact creativity and fixed seeds</td><td class="no">no</td><td>yes</td><td>yes</td></tr>
+    <tr><td>Sprites per batch</td><td>1</td><td>4</td><td>8</td></tr>
+    <tr><td>Downloads</td><td>PNG</td><td>PNG, 8×, 16×</td><td>PNG, 8×, 16×</td></tr>
+    <tr><td>Use of what you make</td><td>personal</td><td>commercial</td><td>commercial</td></tr>
+    <tr><td>The API</td><td>yes</td><td>yes</td><td>yes</td></tr>
+  </table></div>
+
+  <h2>Questions</h2>
+  <div class="faq">
+    <div class="notch"><b>How do I subscribe?</b><p>Plans open soon on Patreon. You'll subscribe there and link it to your Mosaic
+      account, and your plan switches on. We'll announce it on the <a href="../blog/">blog</a> the day it opens.</p></div>
+    <div class="notch"><b>Is there a free trial?</b><p>Yes, for Artisan. The trial runs through Patreon, so you can cancel
+      there before it ends and you won't be charged.</p></div>
+    <div class="notch"><b>What happens if I cancel?</b><p>You go back to Free at the end of the period you paid for. Anything
+      you made on a paid plan keeps its commercial license for good.</p></div>
+    <div class="notch"><b>What's a generation?</b><p>One m1 sprite is one generation; one v1 clip is five. Your allowance
+      refills every day at midnight UTC, across the Studio, profile pictures and the API.</p></div>
+    <div class="notch"><b>What counts as commercial use?</b><p>Games and apps you sell, client work, ads and merch. The details
+      are on the <a href="../license/">license page</a>.</p></div>
+    <div class="notch"><b>I liked the old Studio better.</b><p>Paid plans come with the pro Studio, but you can switch back
+      to the classic one any time in your <a href="../settings/">settings</a>.</p></div>
+  </div>
+</main>
+
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  Kit.nav("Pricing");
+  // each plan's mascot stands on top of its card (eyes follow the cursor; click one to say hi)
+  Kit.json("../assets/scenes/extras.json").then(x => {
+    for (const tier of ["free", "artisan", "atelier"]) {
+      const a = x[`mascot-${tier}`], stage = $(`#stage-${tier}`), P = 5;
+      if (!a) continue;
+      Kit.critter(a, stage, { left: `calc(50% - ${a.w * P / 2}px)`, bottom: "0px", P });
+    }
+  });
+  // signed in: mark the plan you're on
+  if (Session.current()) Kit.whoami().then(u => {
+    if (!u) return;
+    $("#cta-free").textContent = "Open the Studio"; $("#cta-free").href = "../studio/";
+    const card = document.querySelector(`.tier[data-plan="${u.plan || "free"}"]`);
+    if (card) {
+      card.classList.add("mine");
+      const b = card.querySelector(".badge") || card.appendChild(Object.assign(document.createElement("span"), { className: "badge" }));
+      b.textContent = "YOUR PLAN";
+    }
+  });
+})();
+</script>
+</body>
+</html>
