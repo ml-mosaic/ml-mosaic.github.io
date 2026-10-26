@@ -351,8 +351,10 @@
           <div class="actions">
             <button class="btn small ghost like" id="like" type="button" aria-pressed="${p.liked}"><span class="ht"></span><span id="like-n">${p.likes}</span></button>
             <button class="btn small ghost" id="reuse" type="button">Use this prompt</button>
-            ${pro && !video ? `<span class="dl">${[1, 8, 16].map(k => `<button class="btn small ghost" type="button" data-scale="${k}">${k === 1 ? "PNG" : k + "×"}</button>`).join("")}</span>`
-                            : `<a class="btn small ghost" href="${img(p.image)}" download="mosaic-${p.id}.${video ? "gif" : "png"}">Download</a>`}
+            ${pro ? `<span class="dl">${(video ? [["mp4", 8, "MP4"], ["gif", 1, "GIF"], ["gif", 8, "GIF 8×"]]
+                                              : [["png", 1, "PNG"], ["png", 8, "8×"], ["png", 16, "16×"]])
+                      .map(([f, k, label]) => `<button class="btn small ghost" type="button" data-fmt="${f}" data-scale="${k}">${label}</button>`).join("")}</span>`
+                  : `<button class="btn small ghost" type="button" data-fmt="${video ? "mp4" : "png"}" data-scale="${video ? 8 : 1}">${video ? "Download MP4" : "Download"}</button>`}
             ${mine ? `<button class="btn small" id="share" type="button" style="--c:var(--green)">${p.shared ? "Take out of gallery" : "Share to gallery"}</button>
                       <button class="btn small ghost" id="delete" type="button">Delete</button>` : ""}
           </div>
@@ -361,7 +363,7 @@
         </div>
       </div>`;
     const sheet = $("#post-sheet");
-    sheet.querySelectorAll("[data-scale]").forEach(b => b.onclick = () => download(p, +b.dataset.scale));
+    sheet.querySelectorAll("[data-fmt]").forEach(b => b.onclick = () => download(p, b.dataset.fmt, +b.dataset.scale, b));
     sheet.querySelector(".close").onclick = () => postModal.classList.remove("open");
     sheet.querySelector("#to-profile").onclick = () => openProfile(p.author.username);
     sheet.querySelector("#reuse").onclick = () => { $("#prompt").value = p.prompt; postModal.classList.remove("open"); $("#prompt").focus(); toast("Prompt copied into the box below"); };
@@ -397,13 +399,29 @@
     });
     postModal.classList.add("open");
   }
-  // pro: crisp nearest-neighbour upscales, made in the browser
-  async function download(p, k) {
-    const blob = await fetch(img(p.image)).then(r => r.blob()), bmp = await createImageBitmap(blob);
-    const c = document.createElement("canvas"); c.width = bmp.width * k; c.height = bmp.height * k;
-    const g = c.getContext("2d"); g.imageSmoothingEnabled = false; g.drawImage(bmp, 0, 0, c.width, c.height);
-    c.toBlob(b => { const a = document.createElement("a"); a.href = URL.createObjectURL(b);
-                    a.download = `mosaic-${p.id}${k > 1 ? "-" + k + "x" : ""}.png`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); }, "image/png");
+  // downloads: fetched and saved here (a plain link to the backend just opens the file, since it's another site).
+  // Sprites: PNG, and for pro plans crisp 8x / 16x upscales made in the browser. Clips: MP4 or GIF, made by the server.
+  const saveBlob = (blob, name) => { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name;
+                                     document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); };
+  async function download(p, fmt, k, btn) {
+    const name = `mosaic-${p.id}${k > 1 ? "-" + k + "x" : ""}.${fmt}`;
+    if (btn) btn.disabled = true;
+    try {
+      if (fmt === "png" && k > 1) {
+        const bmp = await createImageBitmap(await fetch(img(p.image)).then(r => r.blob()));
+        const c = document.createElement("canvas"); c.width = bmp.width * k; c.height = bmp.height * k;
+        const g = c.getContext("2d"); g.imageSmoothingEnabled = false; g.drawImage(bmp, 0, 0, c.width, c.height);
+        return await new Promise(res => c.toBlob(b => { saveBlob(b, name); res(); }, "image/png"));
+      }
+      if (fmt === "mp4") toast("Making your MP4...", 2500);
+      const r = await fetch(img(`/api/studio/download/${p.id}?format=${fmt}&scale=${k}`));
+      if (!r.ok) throw new Error();
+      saveBlob(await r.blob(), name);
+    } catch (_) {
+      toast("Couldn't download that just now: try again in a moment.");
+    } finally {
+      if (btn) btn.disabled = false;
+    }
   }
   function refreshTile(p) {
     document.querySelectorAll("#grid .tile").forEach(t => { if (t.getAttribute("aria-label") === p.prompt && t.querySelector("img").src.endsWith(p.image))
