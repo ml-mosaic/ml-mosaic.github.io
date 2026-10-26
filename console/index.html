@@ -173,7 +173,7 @@
         toast(`@${name} is on ${PLANS.find(x => x[0] === b.dataset.p)[1]} now`); open(name); loadUsers();
       });
       const act = async (path, body, msg) => {
-        const r = await api(`/api/console/users/${encodeURIComponent(name)}/${path}`, { json: body });
+        const r = await api(`/api/console/users/${encodeURIComponent(name)}/${path}`, { json: body || {} });   // always a POST
         if (!r.ok) return toast(Session.detail(r.data || {}));
         toast(msg); open(name); loadUsers();
       };
@@ -187,7 +187,7 @@
         if (await Kit.confirm(`@${name} is signed out for good, their email can't sign up again, and their posts and profile disappear. You can lift it later.`, { title: "Ban this account?", ok: "Ban", danger: true }))
           act("ban", { reason: reason() }, `Banned @${name}`);
       });
-      $("#restore")?.addEventListener("click", () => act("restore", undefined, `@${name} is back in good standing`));
+      $("#restore")?.addEventListener("click", () => act("restore", {}, `@${name} is back in good standing`));
       $("#purge").onclick = async () => {
         if (await Kit.confirm(`Deletes all ${u.posts} of @${name}'s posts and their profile picture, for good. The account stays.`, { title: "Delete all their content?", ok: "Delete it all", danger: true }))
           act("purge", { reason: reason() }, "Deleted");

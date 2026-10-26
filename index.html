@@ -151,6 +151,24 @@
   .mcard.m1 { --c2: var(--orange); } .mcard.v1 { --c2: #8ca4dc; }
   .mcard .go { margin-top: auto; display: flex; gap: 10px; flex-wrap: wrap; }
 
+  /* ---------------------------------------------------------------- plans */
+  #plans { background: #0f0c15; }
+  .tiers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; align-items: stretch; }
+  .tiers > * { min-width: 0; }
+  .tier { background: #120f17; margin: var(--u); padding: 24px 22px; display: flex; flex-direction: column; gap: 14px; --c: #2e2838; position: relative; }
+  .tier.artisan { --c: #6b3a1c; --t: #e8913a; } .tier.atelier { --c: #2c3c74; --t: #fce060; } .tier.free { --t: #b9b0c8; }
+  .tier .nm { font-size: 30px; color: var(--t); }
+  .tier .per { color: #fff; font-size: 20px; } .tier .per small { color: var(--dim); font-size: 13px; }
+  .tier ul { list-style: none; margin: 0; padding: 0; color: #b9b0c8; font-size: 15px; line-height: 1.45; }
+  .tier li { padding: 4px 0 4px 20px; position: relative; }
+  .tier li::before { content: ""; position: absolute; left: 0; top: 11px; width: 8px; height: 8px; background: var(--t); }
+  .tier li.no { color: #5c566a; } .tier li.no::before { background: #3a3445; }
+  .tier .go { margin-top: auto; }
+  .tier .soon { display: inline-block; font-size: 12px; letter-spacing: 2px; padding: 6px 10px; color: #000; background: var(--t); }
+  .tier .ribbon { position: absolute; top: -12px; right: 18px; font-size: 11px; letter-spacing: 2px; padding: 3px 8px; background: var(--t); color: #000; }
+  .plans-note { color: var(--dim); font-size: 14px; margin-top: 26px; }
+  .plans-note a { color: var(--fg); }
+
   /* ---------------------------------------------------------------- wish machine */
   #explore { background: #120d1c; }
   .slots { display: grid; grid-template-columns: 320px 1fr; gap: 44px; }
@@ -229,7 +247,7 @@
 
   @media (max-width: 900px) {
     nav .links a.opt { display: none; }
-    .world .wrap, .slots, .api, .lineup { grid-template-columns: 1fr; }
+    .world .wrap, .slots, .api, .lineup, .tiers { grid-template-columns: 1fr; }
     .machine { transform: none; max-width: 420px; }
     .hud .wrap { grid-template-columns: 1fr 1fr; }
     .hud .wrap > :first-child { grid-column: 1 / -1; }
@@ -254,6 +272,7 @@
     <a class="brand" href="#top" aria-label="Mosaic"><img src="assets/logo-wordmark.png" alt="Mosaic"></a>
     <div class="links">
       <a class="opt" href="#models">Models</a>
+      <a class="opt" href="#plans">Plans</a>
       <a class="opt" href="#explore">Wish machine</a>
       <a class="opt" href="#gallery">Sticker book</a>
       <a href="studio/">Studio</a>
@@ -316,7 +335,7 @@
           <div class="show px"><div id="m1-show"></div><small>real m1 output</small></div>
           <ul><li>A 64&times;64 sprite on a see-through background</li>
             <li>Critters, items, plants, buildings and tiles</li>
-            <li>1 generation each, 15 free a day</li></ul>
+            <li>1 generation each: 15 a day free, more with a plan</li></ul>
           <div class="go"><a class="btn small" href="studio/" style="--c:var(--orange)">Try it in the Studio</a>
             <a class="btn small ghost" href="#explore">Make a wish</a></div>
         </div>
@@ -324,15 +343,46 @@
       <div class="mcard notch v1">
         <div class="plate"><b>v1</b></div>
         <div class="body">
-          <div class="kind">Animated scenes<span class="state">DEVELOPER PREVIEW</span></div>
+          <div class="kind">Animated scenes<span class="state">ATELIER PREVIEW</span></div>
           <div class="show px"><img id="v1-show" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="A campfire crackling at night under the stars"><small id="v1-cap">from v1's training set &middot; not v1 output (yet)</small></div>
           <ul><li>A 2-second, 16:9 clip: 24 frames at 12 fps, made to loop</li>
             <li>Walks, weather, campfires, rolling seas, spinning pickups</li>
-            <li>5 generations each; open to developer accounts while it learns</li></ul>
+            <li>5 generations each; part of the Atelier plan while it learns</li></ul>
           <div class="go"><a class="btn small" href="blog/a-first-look-at-v1/" style="--c:#c4d4f0">Read: A first look at v1</a></div>
         </div>
       </div>
     </div>
+  </div>
+</section>
+
+<section id="plans">
+  <div class="wrap">
+    <span class="tag" style="--c:#e8913a">PLANS</span>
+    <h2>Free to start. More when you need it.</h2>
+    <p class="lede">Everyone gets m1 and 15 generations a day. The plans add more of everything, a pro Studio,
+      and the right to sell what you make.</p>
+    <div class="tiers">
+      <div class="tier notch free">
+        <div class="nm">Free</div><div class="per">15 <small>generations a day</small></div>
+        <ul><li>m1 sprites</li><li>The Studio and the API</li><li>Personal use</li>
+          <li class="no">Pro Studio</li><li class="no">v1 animated scenes</li></ul>
+        <div class="go"><a class="btn small" href="login/#signup" id="tier-free" style="--c:#b9b0c8">Start free</a></div>
+      </div>
+      <div class="tier notch artisan">
+        <div class="nm">Artisan</div><div class="per">250 <small>generations a day</small></div>
+        <ul><li>Everything in Free</li><li>Pro Studio: exact creativity, fixed seeds</li><li>Batches of 4 sprites at once</li>
+          <li>Commercial use: sell what you make</li><li class="no">v1 animated scenes</li></ul>
+        <div class="go"><span class="soon">COMING SOON</span></div>
+      </div>
+      <div class="tier notch atelier"><span class="ribbon">INCLUDES v1</span>
+        <div class="nm">Atelier</div><div class="per">1,000 <small>generations a day</small></div>
+        <ul><li>Everything in Artisan</li><li>v1: 16:9 animated scenes</li><li>Batches of 8 sprites at once</li>
+          <li>Commercial use: sell what you make</li><li>New models first</li></ul>
+        <div class="go"><span class="soon">COMING SOON</span></div>
+      </div>
+    </div>
+    <p class="plans-note">Paid plans open soon. What counts as personal and commercial use is on the
+      <a href="license/">license page</a>.</p>
   </div>
 </section>
 
@@ -396,8 +446,8 @@
       <ol>
         <li><span><b>Make an account</b> on the sign-in page.</span></li>
         <li><span><b>Make an API key</b> in the dev portal (or use your email and password).</span></li>
-        <li><span><b>POST a wish,</b> get a PNG sprite from m1. Same seed, same sprite. 15 a day.</span></li>
-        <li><span><b>Developer account?</b> Add <code>"model": "v1"</code> and get an animated GIF scene (5 generations each).</span></li>
+        <li><span><b>POST a wish,</b> get a PNG sprite from m1. Same seed, same sprite. 15 a day free, up to 1,000 with a plan.</span></li>
+        <li><span><b>On Atelier?</b> Add <code>"model": "v1"</code> and get an animated GIF scene (5 generations each).</span></li>
       </ol>
       <a class="btn" href="portal/" style="--c:var(--green)">Open the dev portal</a>
     </div>
@@ -433,7 +483,8 @@ curl <span id="code-url"></span>/api/generate \
 
   // signed in? the nav says who, and "get a key" goes straight to the portal
   const me = Session.current();
-  if (me) { const a = $("#nav-me"); a.textContent = me.username; a.href = "studio/#mine"; a.classList.add("me"); $("#cta-key").href = "portal/"; }
+  if (me) { const a = $("#nav-me"); a.textContent = me.username; a.href = "studio/#mine"; a.classList.add("me"); $("#cta-key").href = "portal/";
+            $("#tier-free").textContent = "Open the Studio"; $("#tier-free").href = "studio/"; }
 
   function tileBg(el, file, k, cols, rows) {
     el.style.backgroundImage = `url(assets/m1/${file})`;
