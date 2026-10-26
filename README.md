@@ -1,7 +1,8 @@
 # Mosaic website
 
-Static site for m1, ready for GitHub Pages.
-Accounts and image generation come from the backend in `../website_backend`.
+The static site for Mosaic (m1 sprites, v1 animated scenes), served by GitHub Pages at
+[ml-mosaic.github.io](https://ml-mosaic.github.io). Everything live (accounts, the Studio, generation, plans) comes
+from the Mosaic backend, which the pages call over HTTPS (`config.js` → `MOSAIC.backend`).
 
 ## Develop locally
 
@@ -12,42 +13,42 @@ cd ../website_backend && HOME_URL=http://localhost:3000 uvicorn app:app --port 8
 
 On `localhost` the site talks to the backend at `http://localhost:8000` automatically.
 
-## Publish on GitHub Pages
-
-1. Put the backend somewhere reachable over **HTTPS** (see its README) and set `production` in `config.js` to that
-   address.
-2. Push this folder's contents to a repo (or a `docs/` folder) and turn on Pages in the repo settings
-   (Settings → Pages → deploy from branch). All links are relative, so it works at `you.github.io/<repo>/`.
-   `.nojekyll` makes Pages serve every file as-is.
-3. Start the backend with `HOME_URL=https://you.github.io/<repo>` and `CORS_ORIGINS=https://you.github.io`.
-
 ## Pages
 
-- `index.html`: the home page: a pixel world where m1 draws live (real denoising frames) and finished sprites join a
-  parade; a training-progress HUD; the wish machine (8 prompts × 3 weirdness levels × 4 seeds, all real); how it
-  works; the sticker book (48 prompts, first take each); the API.
-- `login/`: sign in / create account, with a random 8-bit scene per visit whose animal watches the cursor.
-- `studio/`: Mosaic Studio, where sign-in lands. Explore (community gallery: enlarge, like, follow, profiles) and
-  Your stuff, with a composer pinned to the bottom: prompt, model menu (hover m1 for its autumn nameplate),
-  Strict / Classic / Wild. **Dummy data for now** (see the backend README).
-- `status/`: server status. Checks the backend from the browser every 30 s (API, model, accounts, studio); no answer
-  = outage. The 90-day bars and past incidents come from `assets/status/incidents.json`, which is **sample data**.
-  The site manager (a very tired cat in a hard hat) naps while things are fine.
-- `portal/`: account, keys and today's allowance, a live playground and the API reference. Needs sign-in.
-- `portal/keys/`: make, rename and revoke API keys (each shown in full once).
-- `settings/`: your public profile: display name, bio, website, banner, and a picture (upload, have m1 draw it, or the
-  pixel pattern), with a live preview.
-- `blog/`: posts; `blog/introducing-m1/` is the launch post. Keep posts about what m1 does, never how it works inside (closed source).
-- `assets/kit.js` / `kit.css`: the shared top bar, pixel avatars, critters whose eyes follow the cursor, toasts, and
-  `Kit.confirm` / `Kit.alert` (pixel dialogs with an animal peeking over; the site never uses the browser's own).
-- `assets/session.js`: keeps the sign-in session (localStorage with "remember me", else sessionStorage) and calls the
-  backend with it.
+- `index.html`: the home page. A pixel world where m1 draws live and finished sprites join a parade; the two models
+  (v1's card plays its latest real training samples, refreshed every checkpoint); the plans; the wish machine; the
+  sticker book; the API.
+- `studio/`: Mosaic Studio. The community gallery (likes, follows, profiles) and your own creations, with a composer
+  for m1 and v1. Artisan and Atelier get the **pro Studio** (exact creativity, fixed seeds, batches, a look themed to
+  the plan) and more download formats; plan badges show next to names.
+- `pricing/`: Free, Artisan ($5/month, free trial) and Atelier ($15/month), each with its mascot. Plan buttons adapt
+  to the signed-in user's plan (start a trial, upgrade, downgrade, cancel).
+- `join/`: a direct link to the subscribe popup (`?tier=artisan|atelier&mode=join|upgrade|downgrade|cancel`).
+- `license/`: what you can do with what you make (personal vs commercial use).
+- `login/`: sign in / create account, with a random 8-bit scene whose animal watches the cursor.
+- `settings/`: profile (name, bio, website, banner, picture), plan and today's allowance, linking Patreon, the
+  Studio look (pro or classic), two-step sign-in.
+- `portal/`, `portal/keys/`: the API: account, keys, today's allowance, a playground and the reference.
+- `status/`: live checks of the API, the image workers, m1, v1, accounts and the Studio every 30 s, plus the incident
+  history in `assets/status/incidents.json`.
+- `blog/`: posts. Keep posts about what the models do, never how they work inside (closed source).
 
-## Refreshing the art
+## Shared pieces
+
+- `assets/kit.js` / `kit.css`: the top bar, pixel avatars, badges, critters whose eyes follow the cursor, toasts and
+  pixel dialogs (the site never uses the browser's own).
+- `assets/session.js`: keeps the sign-in session and calls the backend with it.
+- `assets/subscribe.js`: the subscribe popup (a cat at a cash register) that every plan button opens, and the
+  plan-aware buttons.
+- Pages load `kit.css`, `kit.js` and `subscribe.js` with a `?v=` version: bump it when they change so browsers
+  pick up the new copy.
+
+## Art
 
 ```bash
-python3 tools/draw_scenes.py                   # the hand-drawn 8-bit scenes and animals
+python3 tools/draw_scenes.py      # the 8-bit scenes and animals, plan mascots, nameplates, the cash register
 ```
 
-The m1 sprites in `assets/m1/` are made by a private tool outside this folder (m1 is closed source; nothing here
-touches the model). `assets/m1/showcase.json` lists their prompts, seeds and creativity values.
+The m1 sprites in `assets/m1/` come from a private tool outside this folder (`assets/m1/showcase.json` lists their
+prompts). `assets/v1/samples/` and `samples.json` are updated automatically from v1's training (real output from
+prompts it never trained on).
