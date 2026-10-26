@@ -64,14 +64,14 @@ window.Subscribe = (() => {
   function content(tier, mode, u, linking) {
     const t = TIERS[tier] || TIERS.artisan, planName = TIERS[u?.plan]?.name || t.name;
     const email = u?.email ? `<b>${esc(u.email)}</b>` : "the email you use on Mosaic";
-    const check = linking === "auto" ? "it switches over by itself within a few minutes"
+    const check = linking === "auto" ? "it switches over by itself in about a minute"
                 : linking ? `press <b>Check again</b> in your <a href="${root}settings/#patreon">settings</a>, or it updates by itself within a few hours`
                 : `it switches over once we've matched your email`;
     const M = {
       join: { title: tier === "artisan" ? "Start your Artisan trial" : "Join Atelier", price: tier === "artisan" ? `${t.price}, free trial first` : t.price,
               go: tier === "artisan" ? "Start the free trial on Patreon" : "Join Atelier on Patreon", url: CHECKOUT[tier], coins: true, say: "ka-ching!",
               steps: [tier === "artisan" ? "Subscribe on <b>Patreon</b>: the trial is free, and you can cancel there before it ends." : "Subscribe on <b>Patreon</b>, which handles the billing.",
-                      linking === "auto" ? `Use the <b>same email</b> on Patreon as on Mosaic (${email}): your plan switches on <b>by itself</b> within minutes. Different email? Press <b>Link Patreon</b> in your <a href="${root}settings/#patreon">settings</a>.`
+                      linking === "auto" ? `Use the <b>same email</b> on Patreon as on Mosaic (${email}): your plan switches on <b>by itself</b> in about a minute. Different email? Press <b>Link Patreon</b> in your <a href="${root}settings/#patreon">settings</a>.`
                       : linking ? `Come back and press <b>Link Patreon</b> in your <a href="${root}settings/#patreon">settings</a>: your plan switches on right away.`
                               : "Use the <b>same email</b> on Patreon as on Mosaic, and we'll switch your plan on.",
                       `That's it: your <b>${t.name}</b> ${t.perks} show up in the Studio.`],
@@ -81,11 +81,11 @@ window.Subscribe = (() => {
                          `Your <b>${t.name}</b> ${t.perks} switch on in the Studio.`], email: !linking },
       downgrade: { title: `Switch to ${t.name}`, price: t.price, go: "Change tier on Patreon", url: CHECKOUT[`${tier}_change`] || CHECKOUT[tier], coins: false, say: "okie!",
                    steps: [`On <b>Patreon</b>, change your membership to <b>${t.name}</b>.`,
-                           "Patreon decides when the change kicks in (usually your next billing date); your plan follows.",
+                           "Patreon decides when the change kicks in (usually your next billing date); your plan follows within a minute.",
                            "Everything you've made keeps its commercial license."], email: !linking },
       cancel: { title: `Cancel ${planName}`, price: "We'll miss you!", go: "Cancel on Patreon", url: MANAGE, coins: false, say: "bye for now!", ghost: true,
                 steps: [`Cancel your membership on <b>Patreon</b> (Settings, then Memberships).`,
-                        `You keep <b>${planName}</b> until the end of the period you've paid for, then you're back on Free.`,
+                        `You keep <b>${planName}</b> until the end of the period you've paid for, then you're back on Free (within a minute of Patreon ending it).`,
                         "Everything you made on a paid plan keeps its commercial license, for good."], email: false },
     };
     return { t, m: M[mode] || M.join, email };
@@ -108,7 +108,7 @@ window.Subscribe = (() => {
         ${m.email ? `<div class="sub-email">${linking && mode === "join" ? "No time to link? " : ""}Use the same email on Patreon as your Mosaic account (${email}) so we can match the two.</div>` : ""}
         <div class="sub-row"><a class="sub-btn" href="${m.url}" target="_blank" rel="noopener">${esc(m.go)}</a>
           <button class="sub-btn ghost" type="button" data-close>${mode === "cancel" ? "Keep my plan" : "Not now"}</button></div>
-        <p class="sub-note">${u ? `Signed in as @${esc(u.username)}.` : `No Mosaic account yet? <a href="${root}login/#signup">Make one first</a>: it's free, and it's what your plan switches on.`}
+        <p class="sub-note">${linking === "auto" && mode !== "cancel" ? `&#x23F3; After Patreon, it takes about a minute for your plan to update here.<br>` : ""}${u ? `Signed in as @${esc(u.username)}.` : `No Mosaic account yet? <a href="${root}login/#signup">Make one first</a>: it's free, and it's what your plan switches on.`}
           Patreon opens in a new tab.</p></div></div>`;
     document.body.appendChild(back);
     const prev = document.activeElement, timers = [];
