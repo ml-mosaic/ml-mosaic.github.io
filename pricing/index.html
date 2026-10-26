@@ -10,10 +10,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Tiny5&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../assets/kit.css?v=20261026c">
+<link rel="stylesheet" href="../assets/kit.css?v=20261026d">
 <script src="../config.js"></script>
 <script src="../assets/session.js"></script>
-<script src="../assets/kit.js?v=20261026c" data-root="../"></script>
+<script src="../assets/kit.js?v=20261026d" data-root="../"></script>
+<script src="../assets/subscribe.js?v=20261026d"></script>
 <style>
   header { padding: 64px 0 20px; text-align: center; }
   header .kicker { color: #e8913a; letter-spacing: 3px; font-size: 13px; margin: 0 0 12px; }
@@ -42,6 +43,7 @@
   .tier li b { font-weight: normal; color: #fff; }
   .cta { margin-top: auto; }
   .cta .btn { width: calc(100% - 8px); text-align: center; }
+  .cta .btn[aria-disabled="true"] { cursor: default; filter: saturate(.5) brightness(.85); transform: none; }
   .cta small { display: block; text-align: center; color: var(--dim); font-size: 12px; margin-top: 12px; }
 
   h2 { font-weight: normal; font-size: clamp(28px, 4vw, 38px); margin: 80px 0 20px; }
@@ -77,7 +79,7 @@
       <div class="price"><b>$0</b><span>forever</span></div><div class="trial"></div>
       <ul><li><b>15</b> sprites a day</li><li>m1 sprites in the Studio and the API</li><li>Personal use</li>
         <li>Standard queue: never left behind</li><li class="no">Pro Studio</li><li class="no">v1 animated scenes</li></ul>
-      <div class="cta"><a class="btn" id="cta-free" href="../login/#signup" style="--c:#b9b0c8">Start free</a></div>
+      <div class="cta"><a class="btn" id="cta-free" data-cta="free" href="../login/#signup" style="--c:#b9b0c8">Start free</a></div>
     </section>
 
     <section class="tier notch artisan" data-plan="artisan">
@@ -89,7 +91,7 @@
       <ul><li><b>250</b> sprites a day</li><li><b>Pro Studio</b>: exact creativity, fixed seeds, big downloads</li>
         <li>Batches of <b>4</b> sprites at once</li><li><b>Commercial use</b>: sell what you make</li>
         <li><b>Priority</b> in the queue</li><li class="no">v1 animated scenes</li></ul>
-      <div class="cta"><a class="btn" href="../join/?tier=artisan" style="--c:#e8913a">Start free trial</a>
+      <div class="cta"><a class="btn" data-cta="artisan" data-subscribe="artisan" data-mode="join" href="../join/?tier=artisan" style="--c:#e8913a">Start free trial</a>
         <small>On Patreon, which runs billing and the trial.</small></div>
     </section>
 
@@ -102,7 +104,7 @@
       <ul><li><b>500</b> sprites a day</li><li><b>50 v1 clips</b> a day: 16:9 animated scenes (preview)</li>
         <li>Batches of <b>8</b> sprites at once</li><li><b>Top priority</b> in the queue</li>
         <li>Everything in Artisan</li><li>New models first</li></ul>
-      <div class="cta"><a class="btn" href="../join/?tier=atelier" style="--c:#fce060">Join Atelier</a>
+      <div class="cta"><a class="btn" data-cta="atelier" data-subscribe="atelier" data-mode="join" href="../join/?tier=atelier" style="--c:#fce060">Join Atelier</a>
         <small>On Patreon, which runs billing.</small></div>
     </section>
   </div>
@@ -158,7 +160,7 @@
   // signed in: mark the plan you're on
   if (Session.current()) Kit.whoami().then(u => {
     if (!u) return;
-    $("#cta-free").textContent = "Open the Studio"; $("#cta-free").href = "../studio/";
+    Subscribe.ctas();                                     // Upgrade / Downgrade / Cancel on Patreon, by plan
     const card = document.querySelector(`.tier[data-plan="${u.plan || "free"}"]`);
     if (card) {
       card.classList.add("mine");

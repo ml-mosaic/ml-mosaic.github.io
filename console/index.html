@@ -10,10 +10,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Tiny5&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../assets/kit.css?v=20261026c">
+<link rel="stylesheet" href="../assets/kit.css?v=20261026d">
 <script src="../config.js"></script>
 <script src="../assets/session.js"></script>
-<script src="../assets/kit.js?v=20261026c" data-root="../"></script>
+<script src="../assets/kit.js?v=20261026d" data-root="../"></script>
 <style>
   /* Owner console. Hidden: not linked anywhere, not indexed, and for anyone but the owner the API answers 404 and
      this page shows "not found". The real protection is server-side (every /api/console call is checked). */
@@ -99,17 +99,19 @@
     Kit.nav(""); document.title = "Mosaic · Console";
     $("#app").innerHTML = `<main class="wrap">
       <div class="head"><h1>Console</h1><span class="who">signed in as @${esc(admin)} &middot; owner only</span>
-        <div class="tabs"><button type="button" data-t="users" aria-pressed="true">Accounts</button><button type="button" data-t="audit" aria-pressed="false">Audit log</button></div></div>
+        <div class="tabs"><button type="button" data-t="users" aria-pressed="true">Accounts</button><button type="button" data-t="patreon" aria-pressed="false">Patreon</button><button type="button" data-t="audit" aria-pressed="false">Audit log</button></div></div>
       <div id="users" class="layout">
         <section class="card notch"><div class="search"><input id="q" placeholder="Search username or email" autocomplete="off"></div>
           <div class="list" id="list"></div></section>
         <section class="card notch detail" id="detail"><div class="empty">Pick an account.</div></section></div>
+      <section id="patreon" class="card notch" hidden><div id="pt"></div></section>
       <section id="audit" class="card notch" hidden><div class="audit" id="audit-list"></div></section></main>`;
     document.body.classList.add("ready");
     document.querySelectorAll(".tabs button").forEach(b => b.onclick = () => {
       document.querySelectorAll(".tabs button").forEach(x => x.setAttribute("aria-pressed", x === b));
-      $("#users").hidden = b.dataset.t !== "users"; $("#audit").hidden = b.dataset.t !== "audit";
+      $("#users").hidden = b.dataset.t !== "users"; $("#audit").hidden = b.dataset.t !== "audit"; $("#patreon").hidden = b.dataset.t !== "patreon";
       if (b.dataset.t === "audit") loadAudit();
+      if (b.dataset.t === "patreon") loadPatreon(false);
     });
     let timer = null, current = null;
     $("#q").oninput = () => { clearTimeout(timer); timer = setTimeout(loadUsers, 200); };
@@ -211,6 +213,24 @@
           d.remove(); toast("Post deleted"); loadUsers();
         };
       });
+    }
+
+    // Patreon auto-linking: the last member check, and patrons no account matched (sort those out by hand)
+    async function loadPatreon(sync) {
+      $("#pt").innerHTML = `<div class="empty">${sync ? "Reading the members from Patreon..." : "Loading..."}</div>`;
+      const r = await api(`/api/console/patreon${sync ? "?sync=1" : ""}`);
+      if (!r.ok) return $("#pt").innerHTML = `<div class="empty">${esc(Session.detail(r.data || {}))}</div>`;
+      const d = r.data;
+      if (!d.auto) return $("#pt").innerHTML = `<div class="empty">Auto-linking is off: add the creator tokens to the server's config.env.</div>`;
+      $("#pt").innerHTML = `<div class="act" style="justify-content:space-between"><span class="sub" style="margin:0">Checked ${d.at ? Kit.ago(d.at) : "never"} &middot;
+          ${d.members} members, ${d.active} paying &middot; ${d.changed} change(s) last time</span>
+          <button class="btn small" id="pt-sync" type="button" style="--c:#ff424d">Check now</button></div>
+        <div class="sec"><h3>PATRONS WITHOUT A MATCHING ACCOUNT</h3>${d.unmatched.length ? d.unmatched.map(m =>
+          `<div class="row" style="cursor:default"><span></span><span class="n">${esc(m.name || "?")}<small>${esc(m.email || "no email")} &middot; ${esc(m.why)}</small></span>
+             <span class="chips"><span class="chip ${esc(m.plan)}">${esc(m.plan)}${m.trial ? " trial" : ""}</span></span></div>`).join("")
+          : `<div class="empty">Everyone paying is linked.</div>`}</div>
+        <p class="sub">To fix one: find their Mosaic account and set the plan by hand, or ask them to press Link Patreon in their settings.</p>`;
+      $("#pt-sync").onclick = () => loadPatreon(true);
     }
 
     async function loadAudit() {

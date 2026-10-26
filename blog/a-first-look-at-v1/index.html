@@ -10,10 +10,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Tiny5&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../../assets/kit.css?v=20261026c">
+<link rel="stylesheet" href="../../assets/kit.css?v=20261026d">
 <script src="../../config.js"></script>
 <script src="../../assets/session.js"></script>
-<script src="../../assets/kit.js?v=20261026c" data-root="../../"></script>
+<script src="../../assets/kit.js?v=20261026d" data-root="../../"></script>
 <style>
   .progress { position: fixed; left: 0; top: 0; height: 4px; background: var(--orange); z-index: 40; width: 0; }
   .hero { padding: 64px 0 0; text-align: center; }
@@ -54,6 +54,8 @@
   .clip span { display: block; color: var(--dim); font-size: 13px; line-height: 1.4; margin: 0 2px 2px; }
   figcaption { color: #8a867b; font-size: 14px; line-height: 1.5; margin-top: 12px; }
   .pull { font-size: clamp(24px, 3vw, 30px); line-height: 1.35; color: #fff; margin: 40px 0; padding-left: 22px; box-shadow: inset 6px 0 0 var(--orange); }
+  .update { background: #1d1826; padding: 16px 20px; margin: 0 var(--u) 36px; --c: #e8913a; font-size: 16px; line-height: 1.6; color: #d8d2c4; }
+  .update b { color: #e8913a; font-weight: normal; letter-spacing: 1px; } .update a { color: #fff; }
   .callout { background: #0b1a12; padding: 20px 22px; margin: 30px var(--u); --c: var(--green); font-size: 16px; line-height: 1.6; }
   .callout b { color: var(--green); }
   ul.kinds { padding-left: 0; list-style: none; margin: 0 0 20px; }
@@ -92,6 +94,10 @@
     <li><a href="#care">Made with care</a></li><li><a href="#where">Where it stands</a></li></ol></aside>
 
   <article>
+    <div class="update notch"><b>UPDATE, 26 OCTOBER 2026.</b> v1 is now in the Studio and the API as a preview, for the
+      <a href="../../pricing/">Atelier plan</a> (50 clips a day). It's still training, so its clips get better with every
+      checkpoint, and you can see its latest real output on the <a href="../../#models">front page</a>. The clips on this page
+      are still from its training set.</div>
     <h2 id="meet"><span class="n">01</span>Meet v1</h2>
     <p>A sprite is a start, but games move. Characters walk, fires flicker, rain falls, coins spin. Animating pixel art by hand
       is even slower than drawing it: every frame is its own little drawing. v1 is our first try at doing the first draft of that
@@ -127,11 +133,12 @@
     <p class="pull">Pixel art that moves, without the frame-by-frame grind.</p>
 
     <h2 id="where"><span class="n">04</span>Where it stands</h2>
-    <p>v1 is <b>training now</b>, alongside the next round of improvements to m1. There's no release date yet: it ships when its clips are
-      good enough that we'd use them ourselves. When it's ready, it'll appear in the Studio's model menu next to m1, and in the API.</p>
-    <div class="callout notch"><b>Until then</b>, m1 is ready today: make sprites in the Studio or through the API, and tell us which
-      scenes you'd want v1 to animate first.</div>
-    <div class="share"><a class="btn" href="../../studio/">Open the Studio</a><a class="btn ghost" href="../introducing-m1/">Read: Introducing m1</a></div>
+    <p>v1 is still <b>training</b>, and it's now in <b>preview</b>: on the Atelier plan it's in the Studio's model menu next to m1,
+      and in the API, with 50 clips a day. A preview means exactly that: it's learning, it has gaps, and it gets better with every
+      checkpoint. We'll keep showing its real output on the front page as it goes.</p>
+    <div class="callout notch"><b>Not on Atelier?</b> m1 is ready for everyone: make sprites in the Studio or through the API, and tell us
+      which scenes you'd want v1 to animate first.</div>
+    <div class="share"><a class="btn" href="../../pricing/">See plans</a><a class="btn ghost" href="../../studio/">Open the Studio</a><a class="btn ghost" href="../introducing-m1/">Read: Introducing m1</a></div>
   </article>
 </div>
 

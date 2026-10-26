@@ -9,11 +9,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Tiny5&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../assets/kit.css?v=20261026c">
+<link rel="stylesheet" href="../assets/kit.css?v=20261026d">
 <script src="../config.js"></script>
 <script src="../assets/session.js"></script>
 <script>if (!Session.current()) location.replace("../login/?next=studio");</script>
-<script src="../assets/kit.js?v=20261026c" data-root="../"></script>
+<script src="../assets/kit.js?v=20261026d" data-root="../"></script>
+<script src="../assets/subscribe.js?v=20261026d"></script>
 <style>
   main { padding: 40px 0 90px; }
   .kicker { color: var(--blue); letter-spacing: 3px; font-size: 13px; margin: 0 0 10px; }
@@ -196,7 +197,9 @@
       return;
     }
     if (!link) {
-      hint.textContent = "Subscribed on Patreon? Link it and your plan switches on right away, then follows your membership (cancel there and you go back to Free).";
+      hint.textContent = u.patreon_auto
+        ? `Subscribed on Patreon with ${u.email || "this account's email"}? It links by itself within a few minutes. Used a different email on Patreon? Link it here.`
+        : "Subscribed on Patreon? Link it and your plan switches on right away, then follows your membership (cancel there and you go back to Free).";
       row.innerHTML = `<button class="btn small" id="pt-link" type="button" style="--c:#ff424d">Link Patreon</button><a class="btn small ghost" href="../pricing/">See plans</a>`;
       $("#pt-link").onclick = async () => {
         const r = await Session.api("/api/patreon/start", { method: "POST" });
@@ -205,23 +208,26 @@
       };
       return;
     }
-    hint.textContent = "Your plan follows this Patreon membership, rechecked every few hours.";
+    hint.textContent = link.auto ? "Linked automatically: your Patreon email matches this account. Your plan follows the membership."
+                                 : "Your plan follows this Patreon membership, rechecked every few hours.";
     row.innerHTML = `<div class="pt-linked" style="flex-basis:100%">Linked to <b>${esc(link.name || "your Patreon")}</b>${link.email ? ` (${esc(link.email)})` : ""}
         <small>${link.plan === "free" ? "No active membership yet" : `${PLAN[link.plan]}${link.trial ? " (free trial)" : ""}`} &middot; checked ${link.synced ? Kit.ago(link.synced) : "just now"}</small></div>
       <button class="btn small" id="pt-check" type="button" style="--c:#ff424d">Check again</button>
-      <button class="btn small ghost" id="pt-unlink" type="button">Unlink</button>`;
+      <a class="btn small ghost" href="../pricing/">Change plan</a>
+      ${u.plan !== "free" && u.plan_source === "patreon" ? `<button class="btn small ghost" type="button" data-subscribe="${u.plan}" data-mode="cancel">Cancel on Patreon</button>` : ""}
+      ${link.auto ? "" : `<button class="btn small ghost" id="pt-unlink" type="button">Unlink</button>`}`;
     $("#pt-check").onclick = async () => {
       const r = await Session.api("/api/patreon/refresh", { method: "POST" });
       if (!r.ok) return toast(Session.detail(r.data || {}));
       Object.assign(u, { patreon: r.data.patreon, plan: r.data.plan, quota: r.data.quota, features: r.data.features });
       fill(u); toast(r.data.plan === "free" ? "No active membership found." : `You're on ${PLAN[r.data.plan]}.`);
     };
-    $("#pt-unlink").onclick = async () => {
+    $("#pt-unlink")?.addEventListener("click", async () => {
       if (!await Kit.confirm("A plan that came from Patreon goes back to Free. You can link it again any time.", { title: "Unlink Patreon?", ok: "Unlink", danger: true })) return;
       const r = await Session.api("/api/patreon/unlink", { method: "POST" });
       if (!r.ok) return toast(Session.detail(r.data || {}));
       Object.assign(u, { patreon: null, plan: r.data.plan }); fill(u); toast("Unlinked.");
-    };
+    });
   }
   // back from Patreon's sign-in: say how it went
   (() => {

@@ -12,6 +12,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Tiny5&display=swap" rel="stylesheet">
 <script src="config.js"></script>
 <script src="assets/session.js"></script>
+<script src="assets/kit.js?v=20261026d" data-root=""></script>
+<script src="assets/subscribe.js?v=20261026d"></script>
 <style>
   :root {
     --bg: #000; --fg: #fff; --dim: #8a867b; --line: #2a2925; --panel: #0d0d0c;
@@ -371,20 +373,20 @@
         <div class="nm">Free</div><div class="price">$0</div><div class="per">15 <small>generations a day</small></div>
         <ul><li>m1 sprites</li><li>The Studio and the API</li><li>Personal use</li>
           <li class="no">Pro Studio</li><li class="no">v1 animated scenes</li></ul>
-        <div class="go"><a class="btn small" href="login/#signup" id="tier-free" style="--c:#b9b0c8">Start free</a></div>
+        <div class="go"><a class="btn small" href="login/#signup" id="tier-free" data-cta="free" style="--c:#b9b0c8">Start free</a></div>
       </div>
       <div class="tier notch artisan"><div class="stage" id="stage-artisan"></div>
         <div class="nm">Artisan</div><div class="price">$5 <small>/ month</small></div><div class="trial">Free trial available</div>
         <div class="per">250 <small>generations a day</small></div>
         <ul><li>Everything in Free</li><li>Pro Studio: exact creativity, fixed seeds</li><li>Batches of 4 sprites at once</li>
           <li>Commercial use: sell what you make</li><li>Priority in the queue</li></ul>
-        <div class="go"><a class="btn small" href="join/?tier=artisan" style="--c:var(--t)">Start free trial</a></div>
+        <div class="go"><a class="btn small" href="join/?tier=artisan" data-cta="artisan" data-subscribe="artisan" data-mode="join" style="--c:var(--t)">Start free trial</a></div>
       </div>
       <div class="tier notch atelier"><span class="ribbon">INCLUDES v1</span><div class="stage" id="stage-atelier"></div>
         <div class="nm">Atelier</div><div class="price">$15 <small>/ month</small></div><div class="per">500 <small>sprites + 50 clips a day</small></div>
         <ul><li>Everything in Artisan</li><li>50 v1 clips a day: 16:9 animated scenes</li><li>Batches of 8 sprites at once</li><li>Top priority in the queue</li>
           <li>Commercial use: sell what you make</li><li>New models first</li></ul>
-        <div class="go"><a class="btn small" href="join/?tier=atelier" style="--c:var(--t)">Join Atelier</a></div>
+        <div class="go"><a class="btn small" href="join/?tier=atelier" data-cta="atelier" data-subscribe="atelier" data-mode="join" style="--c:var(--t)">Join Atelier</a></div>
       </div>
     </div>
     <p class="plans-note">Plans run through <a href="https://www.patreon.com/Mosaic_ML" target="_blank" rel="noopener">Patreon</a>, which also handles the Artisan trial. Compare everything on the
@@ -490,7 +492,7 @@ curl <span id="code-url"></span>/api/generate \
   // signed in? the nav says who, and "get a key" goes straight to the portal
   const me = Session.current();
   if (me) { const a = $("#nav-me"); a.textContent = me.username; a.href = "studio/#mine"; a.classList.add("me"); $("#cta-key").href = "portal/";
-            $("#tier-free").textContent = "Open the Studio"; $("#tier-free").href = "studio/"; }
+            Subscribe.ctas(); }
 
   function tileBg(el, file, k, cols, rows) {
     el.style.backgroundImage = `url(assets/m1/${file})`;

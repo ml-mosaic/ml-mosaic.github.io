@@ -10,10 +10,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Tiny5&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../../assets/kit.css?v=20261026c">
+<link rel="stylesheet" href="../../assets/kit.css?v=20261026d">
 <script src="../../config.js"></script>
 <script src="../../assets/session.js"></script>
-<script src="../../assets/kit.js?v=20261026c" data-root="../../"></script>
+<script src="../../assets/kit.js?v=20261026d" data-root="../../"></script>
 <style>
   .progress { position: fixed; left: 0; top: 0; height: 4px; background: var(--orange); z-index: 40; width: 0; }
 
@@ -76,6 +76,8 @@
   td .good { color: var(--green); } td .meh { color: var(--yellow); } td .weak { color: var(--pink); }
   .sprites { display: flex; gap: 6px; }
   .sprites i { width: 40px; height: 40px; background: #111 no-repeat; image-rendering: pixelated; flex: none; }
+  .update { background: #1d1826; padding: 16px 20px; margin: 0 var(--u) 36px; --c: #e8913a; font-size: 16px; line-height: 1.6; color: #d8d2c4; }
+  .update b { color: #e8913a; font-weight: normal; letter-spacing: 1px; } .update a { color: #fff; }
   .callout { background: #0b1a12; padding: 20px 22px; margin: 30px var(--u); --c: var(--green); font-size: 16px; line-height: 1.6; }
   .callout b { color: var(--green); }
   .price { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin: 26px 0; }
@@ -128,6 +130,11 @@
     <li><a href="#good">Good at, not yet</a></li><li><a href="#try">Try it</a></li><li><a href="#animals">Field notes</a></li></ol></aside>
 
   <article>
+    <div class="update notch"><b>UPDATE, 26 OCTOBER 2026.</b> A lot of the "later" list below has happened since this post.
+      There are now <a href="../../pricing/">plans</a>: <b style="color:#fff">Artisan</b> and <b style="color:#fff">Atelier</b>
+      bring bigger allowances, a pro Studio with an exact creativity slider and batches, and commercial use. v1, our animated
+      model, is in preview for Atelier. And honest numbers: sprites now take about 20 to 30 seconds on our shared workers, not
+      the few seconds we measured at launch. Free is still free. <a href="../plans-and-the-pro-studio/">Read about the plans</a>.</div>
     <h2 id="meet"><span class="n">01</span>Meet m1</h2>
     <p>Making game art is slow, and pixel art is slower: every sprite is hundreds of hand-placed squares. We built m1 to do the
       first draft. Describe a <b>creature, an item, a plant, a building or a tile</b> and it draws one, at the size pixel
@@ -135,7 +142,7 @@
     <div class="stats">
       <div class="notch"><b>64&times;64</b><span>native canvas, crisp pixels</span></div>
       <div class="notch"><b>see-through</b><span>transparent background, ready to drop in</span></div>
-      <div class="notch"><b>a few sec</b><span>per sprite<sup><a href="#fn1">1</a></sup></span></div>
+      <div class="notch"><b>~30 sec</b><span>per sprite<sup><a href="#fn1">1</a></sup></span></div>
       <div class="notch"><b>15 / day</b><span>free during the preview</span></div>
     </div>
     <p>m1 is a <b>preview</b>. It's still learning, and it has clear gaps, which we list below. We'd rather show you an honest
@@ -159,12 +166,13 @@
     <h3>You're in charge of how loosely it listens</h3>
     <p><b>Creativity</b> has three settings. <i>Strict</i> sticks closely to your words, <i>classic</i> is the everyday middle,
       and <i>wild</i> takes liberties, which is great for ideas you haven't pinned down yet. Every sprite also has a <b>seed</b>:
-      send the same prompt, creativity and seed and you get the same sprite back, so you can find one you like and keep it.</p>
+      send the same prompt, creativity and seed and you get the same sprite back, so you can find one you like and keep it.
+      (On the Artisan and Atelier plans, the pro Studio swaps the three settings for an exact slider and lets you pick the seed.)</p>
     <p>When it's done, m1 tidies up like a pixel artist would: every pixel fully solid or fully see-through, a small palette, and
       everything lined up on the grid. No blur, no smudge.</p>
 
     <h2 id="care"><span class="n">03</span>Made with care</h2>
-    <p>m1 learned from our own dataset, made by our own artists. <b>No scraped artwork.</b></p>
+    <p>m1 learned from our own dataset, made in-house. <b>No scraped artwork.</b></p>
     <p>We also check every version of m1 to make sure it draws new sprites, not copies of what it learned from. A model that
       memorises can look impressive while doing nothing new; that's not what we want to hand you.</p>
     <p class="pull">Every sprite m1 gives you is a fresh drawing.</p>
@@ -178,21 +186,23 @@
 
     <h2 id="try"><span class="n">05</span>Try it</h2>
     <p>m1 is available today in preview. Make sprites in the <a href="../../studio/">Studio</a>, or call it from your own code with an
-      API key from the <a href="../../portal/keys/">dev portal</a>. The preview is free, with a daily allowance per account.</p>
+      API key from the <a href="../../portal/keys/">dev portal</a>. The preview is free, with a daily allowance per account, and
+      the <a href="../../pricing/">plans</a> give you more.</p>
     <div class="price">
-      <div class="tier notch on"><h4>PREVIEW</h4><div class="big">Free <small>for now</small></div>
+      <div class="tier notch on"><h4>FREE</h4><div class="big">Free <small>forever</small></div>
         <ul><li>15 sprites a day</li><li>Studio + API + playground</li><li>Download every sprite you make</li><li>Up to 10 API keys</li></ul></div>
-      <div class="tier notch"><h4>LATER</h4><div class="big">Soon<small>-ish</small></div>
-        <ul><li>Bigger allowances</li><li>More models in the menu</li><li>Animated sprites (we hope)</li><li>Your feedback decides</li></ul></div>
+      <div class="tier notch"><h4>NOW</h4><div class="big">Plans <small>from $5</small></div>
+        <ul><li>Up to 500 sprites a day</li><li>v1 animated scenes (Atelier)</li><li>Pro Studio and batches</li><li>Commercial use</li></ul></div>
     </div>
-    <div class="share"><a class="btn" href="../../studio/">Open the Studio</a><a class="btn ghost" href="../../status/">Check server status</a></div>
+    <div class="share"><a class="btn" href="../../studio/">Open the Studio</a><a class="btn ghost" href="../../pricing/">See plans</a><a class="btn ghost" href="../../status/">Check server status</a></div>
 
     <h2 id="animals"><span class="n">06</span>Field notes from the team</h2>
     <p>Our mascots helped test m1. Their reviews are, for legal reasons, entirely made up.</p>
     <div class="quotes" id="quotes"></div>
 
     <div class="foot" id="footnotes"><ol>
-      <li id="fn1">Measured in our playground: about 5 seconds from pressing Generate to a finished sprite.</li>
+      <li id="fn1">At launch we measured about 5 seconds in our playground. Today, on our shared workers, expect about 20 to 30
+        seconds from pressing Generate to a finished sprite, longer when it's busy (paid plans go first in the queue).</li>
     </ol></div>
   </article>
 </div>
