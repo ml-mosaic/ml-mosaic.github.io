@@ -186,7 +186,7 @@
   .ws-head::after { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .18;
                     background: repeating-linear-gradient(90deg, transparent 0 22px, rgba(0,0,0,.6) 22px 24px); }
   .ws-head .wrap { position: relative; z-index: 1; display: flex; align-items: center; gap: 18px; min-height: 92px; flex-wrap: wrap; padding-top: 10px; padding-bottom: 10px; }
-  .ws-mascot { width: 69px; height: 60px; flex: none; background: no-repeat center bottom / contain; image-rendering: pixelated; animation: ws-bob 2.4s steps(2) infinite; }
+  .ws-mascot { position: relative; width: 69px; height: 60px; flex: none; animation: ws-bob 2.4s steps(2) infinite; }
   @keyframes ws-bob { 50% { transform: translateY(-3px); } }
   .ws-title small { display: block; font-size: 11px; letter-spacing: 4px; color: var(--pro); margin-bottom: 4px; }
   .ws-title b { font-weight: normal; font-size: 26px; }
@@ -280,7 +280,7 @@
   .job .tile.pending .info { font-size: 11px; }
   .ws-empty { text-align: center; color: #8f86a0; padding: 60px 20px; }
   .ws-empty b { display: block; color: #fff; font-weight: normal; font-size: 22px; margin: 14px 0 8px; }
-  .ws-empty .ws-mascot { margin: 0 auto; width: 115px; height: 100px; }
+  .ws-empty .ws-mascot { margin: 0 auto; width: 105px; height: 95px; }
   #ws-lib .grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
 
   @media (max-width: 1000px) {
@@ -358,7 +358,7 @@
 <div class="ws-app" id="ws">
   <header class="ws-head">
     <div class="wrap">
-      <div class="ws-mascot" id="ws-mascot" role="img" aria-label="Your plan's mascot"></div>
+      <div class="ws-mascot" id="ws-mascot"></div>
       <div class="ws-title"><small id="ws-plan">STUDIO</small><b id="ws-hi">Your studio</b></div>
       <div class="ws-meters">
         <div class="wm" id="wm-img"><span>SPRITES TODAY</span><b>-</b><div class="mbar"><i class="held"></i><i class="used"></i></div></div>
@@ -670,7 +670,7 @@
     pro = u.features;
     tier = (u.profile?.badges || []).includes("Developer") ? "dev" : u.plan;
     document.body.classList.add("pro", "ws", tier);
-    document.querySelectorAll(".ws-mascot").forEach(m => m.style.backgroundImage = `url(../assets/scenes/${MASCOT[tier] || "mascot-free"}.png)`);
+    mascotInto($("#ws-mascot"), 3);
     $("#ws-plan").textContent = `STUDIO · ${TIERS[tier] || "PRO"}`;
     $("#ws-hi").textContent = `${me.username}'s ${HI[tier] || "studio"}`;
     $("#ws-lib").append($("#grid"), $("#more"));            // the library and the gallery reuse the classic grid
@@ -826,11 +826,23 @@
   }
 
   // ---- the queue panel
+  // the plan's mascot as a critter (its pupils follow the cursor, it talks when clicked), drawn P px per pixel
+  const extras = Kit.json("../assets/scenes/extras.json");
+  function mascotInto(box, P) {
+    extras.then(x => {
+      const a = x[MASCOT[tier]] || x["mascot-free"];
+      if (!a) return;
+      box.innerHTML = ""; box.style.width = a.w * P + "px"; box.style.height = a.h * P + "px";
+      Kit.critter(a, box, { left: "0px", bottom: "0px", P });
+    });
+  }
   function emptyQueue() {
-    const box = $("#ws-jobs"), none = !box.querySelector(".job");
-    box.querySelector(".ws-empty")?.remove();
-    if (none) box.insertAdjacentHTML("afterbegin", `<div class="ws-empty"><div class="ws-mascot" style="background-image:url(../assets/scenes/${MASCOT[tier] || "mascot-free"}.png)"></div>
+    const box = $("#ws-jobs"), none = !box.querySelector(".job"), shown = box.querySelector(".ws-empty");
+    if (!none) return shown?.remove();
+    if (shown) return;
+    box.insertAdjacentHTML("afterbegin", `<div class="ws-empty"><div class="ws-mascot"></div>
       <b>Nothing in the queue.</b>Write a prompt on the left${pro.queue_max > 1 ? " (or a few)" : ""} and press ${pro.queue_max > 1 ? "Queue" : "Create"}. Finished work lands in your Library.</div>`);
+    mascotInto(box.querySelector(".ws-empty .ws-mascot"), 5);
   }
   const LABEL = { queued: "IN LINE", drawing: "DRAWING", done: "DONE", failed: "DIDN'T DRAW", cancelled: "CANCELLED" };
   function renderJob(j) {
