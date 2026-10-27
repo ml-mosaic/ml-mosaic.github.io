@@ -121,24 +121,10 @@
   @keyframes fall { 0% { opacity: 0; transform: translateY(0); } 20% { opacity: 1; } 100% { opacity: 0; transform: translate(-14px, 62px) rotate(90deg); } }
   .mopt[disabled] { cursor: default; opacity: .45; }
 
-  /* ---------------------------------------------------------------- pro Studio (Artisan / Atelier / Developer) */
+  /* ---------------------------------------------------------------- pro plans: colours (the workspace is further down) */
   body.pro { --pro: #e8913a; --pro-2: #6b3a1c; }
   body.pro.atelier { --pro: #fce060; --pro-2: #2c3c74; }
   body.pro.dev { --pro: #6ee07a; --pro-2: #1d3a24; }
-  body.pro .banner::after { background: linear-gradient(90deg, rgba(0,0,0,.8) 0 34%, rgba(0,0,0,.15) 72%),
-                                        linear-gradient(0deg, var(--pro-2), transparent 70%); }
-  .planmark { display: inline-flex; align-items: center; gap: 8px; margin-top: 12px; align-self: flex-start; font-size: 12px; letter-spacing: 3px;
-              color: #000; background: var(--pro); padding: 4px 10px; }
-  .planmark i { width: 6px; height: 6px; background: #000; }
-  body.pro .sample { display: none; }
-  body.pro .box { --c: var(--pro-2); background: #0f0d14; }
-  body.pro .box:focus-within { --c: var(--pro); }
-  body.pro .tab[aria-selected="true"]::after { background: var(--pro); }
-  body.pro .seg button[aria-pressed="true"] { background: var(--pro); }
-  .pro-controls { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
-  .ctl { display: flex; align-items: center; gap: 8px; }
-  .ctl b { font-weight: normal; color: var(--pro); min-width: 34px; display: inline-block; }
-  .ctl input[type=range] { width: 130px; accent-color: var(--pro); }
   .seed { display: flex; gap: 4px; }
   .seed input { width: 104px; background: #1d1826; border: 0; color: #fff; padding: 7px 9px; font: inherit; font-size: 13px; }
   .seed input::placeholder { color: #6f6880; }
@@ -147,7 +133,6 @@
   .step { display: inline-flex; align-items: center; gap: 2px; }
   .step b { min-width: 28px; text-align: center; color: #fff; }
   .step button:disabled { opacity: .35; cursor: default; }
-  .tile.pending.pro canvas { filter: sepia(.4); }
   .chip.lic { background: #1d3a24; color: var(--green); }
   .dl { display: inline-flex; gap: 4px; }
 
@@ -190,6 +175,124 @@
   .profile-head .btn { margin-left: auto; }
   .sheet .grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; max-height: 52vh; overflow-y: auto; padding: 4px; }
 
+  /* ---------------------------------------------------------------- the pro workspace (replaces the classic page for pro plans)
+     A plan-coloured header band, a composer column (models, a list of prompts, settings) and a main panel with the
+     live queue, your library and the gallery. */
+  .ws-app { display: none; }
+  body.ws { padding-bottom: 0; background: #08070b; }
+  body.ws .banner, body.ws main.wrap, body.ws .composer { display: none; }
+  body.ws .ws-app { display: block; }
+  .ws-head { position: relative; overflow: hidden; background: linear-gradient(90deg, var(--pro-2) 0, #0d0b12 62%); box-shadow: 0 4px 0 0 var(--pro-2); }
+  .ws-head::after { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .18;
+                    background: repeating-linear-gradient(90deg, transparent 0 22px, rgba(0,0,0,.6) 22px 24px); }
+  .ws-head .wrap { position: relative; z-index: 1; display: flex; align-items: center; gap: 18px; min-height: 92px; flex-wrap: wrap; padding-top: 10px; padding-bottom: 10px; }
+  .ws-mascot { width: 69px; height: 60px; flex: none; background: no-repeat center bottom / contain; image-rendering: pixelated; animation: ws-bob 2.4s steps(2) infinite; }
+  @keyframes ws-bob { 50% { transform: translateY(-3px); } }
+  .ws-title small { display: block; font-size: 11px; letter-spacing: 4px; color: var(--pro); margin-bottom: 4px; }
+  .ws-title b { font-weight: normal; font-size: 26px; }
+  .ws-meters { margin-left: auto; display: flex; gap: 26px; flex-wrap: wrap; }
+  .wm { min-width: 150px; font-size: 13px; color: #d8d0e4; }
+  .wm span { color: #8f86a0; font-size: 11px; letter-spacing: 2px; display: block; margin-bottom: 5px; }
+  .wm .mbar { height: 6px; background: rgba(0,0,0,.45); margin-top: 6px; position: relative; }
+  .wm .mbar i { position: absolute; inset: 0 auto 0 0; background: var(--pro); }
+  .wm .mbar i.held { background: repeating-linear-gradient(45deg, var(--pro) 0 3px, transparent 3px 6px); opacity: .7; }
+  .wm.q b { font-weight: normal; color: var(--pro); }
+  .wm.q i.dot { display: inline-block; width: 7px; height: 7px; background: #4a4458; margin-right: 6px; vertical-align: 1px; }
+  .wm.q.busy i.dot { background: var(--pro); animation: pulse-dot 1s steps(2) infinite; }
+  @keyframes pulse-dot { 50% { opacity: .2; } }
+  .ws-body { display: grid; grid-template-columns: 360px minmax(0, 1fr); gap: 28px; padding-top: 26px; padding-bottom: 70px; align-items: start; }
+
+  /* composer column */
+  .ws-side { position: sticky; top: 84px; background: #0e0c13; padding: 18px; margin: var(--u); --c: #221d2c; max-height: calc(100vh - 104px); overflow-y: auto; }
+  .ws-sec + .ws-sec { margin-top: 22px; }
+  .ws-sec h3 { font-weight: normal; font-size: 11px; letter-spacing: 3px; color: #8f86a0; margin: 0 0 10px; display: flex; justify-content: space-between; gap: 8px; }
+  .ws-sec h3 em { font-style: normal; letter-spacing: 1px; color: #6f6880; }
+  .mcards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .mcard { position: relative; text-align: left; background: #17141e; border: 0; padding: 12px 12px 34px; cursor: pointer; overflow: hidden; color: #fff; }
+  .mcard::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 26px; background: var(--plate) left center / auto 100% repeat-x;
+                  image-rendering: pixelated; opacity: .5; transition: opacity .15s steps(2); }
+  .mcard:hover::after, .mcard[aria-pressed="true"]::after { opacity: 1; }
+  .mcard[aria-pressed="true"] { box-shadow: 0 0 0 3px var(--pro); }
+  .mcard b { display: block; font-weight: normal; font-size: 22px; }
+  .mcard span { color: #a69fb5; font-size: 12px; }
+  .mcard .ptag { position: absolute; top: 9px; right: 8px; font-size: 9px; letter-spacing: 1px; padding: 2px 5px; background: #24212b; color: #b9b0c8; }
+  .mcard .ptag.atelier { background: #2c3c74; color: #fce060; }
+  .mcard.locked { cursor: pointer; opacity: .5; } .mcard.locked:hover { opacity: .75; }
+  .plist { display: flex; flex-direction: column; gap: 8px; }
+  .prow { display: flex; align-items: flex-start; background: #17141e; animation: pop .2s steps(3); }
+  .prow:focus-within { box-shadow: 0 0 0 2px var(--pro); }
+  .prow .num { width: 30px; flex: none; text-align: center; color: var(--pro); padding: 11px 0 0; font-size: 13px; }
+  .prow textarea { flex: 1; min-width: 0; background: none; border: 0; outline: none; resize: none; padding: 9px 4px; font-size: 15px; line-height: 1.35;
+                   height: 42px; max-height: 130px; }
+  .prow textarea::placeholder { color: #57506a; }
+  .prow .x { background: none; border: 0; color: #6f6880; cursor: pointer; padding: 10px; font-size: 15px; }
+  .prow .x:hover { color: #fff; }
+  .padd { width: 100%; margin-top: 8px; background: none; border: 2px dashed #2e2838; color: #a69fb5; padding: 8px; cursor: pointer; font-size: 13px; }
+  .padd:hover { color: #fff; border-color: var(--pro); }
+  .pnote { color: #6f6880; font-size: 12px; margin: 8px 0 0; line-height: 1.5; }
+  .pnote a { color: #b9b0c8; }
+  .srow { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; font-size: 13px; color: #cfc8dc; }
+  .srow b { font-weight: normal; color: var(--pro); }
+  .ws-side input[type=range] { width: 100%; accent-color: var(--pro); margin: 0 0 14px; }
+  .ws-side .seed input { flex: 1; width: auto; min-width: 0; }
+  .ws-side .seed { flex: 1; }
+  .ws-go { margin-top: 20px; padding-top: 16px; border-top: 2px solid #1d1826; }
+  .ws-sum { color: #cfc8dc; font-size: 13px; margin: 0 0 10px; line-height: 1.5; }
+  .ws-sum b { font-weight: normal; color: var(--pro); }
+  .ws-sum.over, .ws-sum.over b { color: var(--bad); }
+  #ws-create { width: calc(100% - 8px); font-size: 17px; padding: 14px; }
+  .kbd { color: #57506a; font-size: 11px; margin: 10px 0 0; text-align: center; }
+
+  /* main panel */
+  .ws-tabs { display: flex; gap: 6px; align-items: center; margin: 0 0 18px; flex-wrap: wrap; }
+  .ws-tab { background: #17141e; border: 0; color: #a69fb5; padding: 9px 15px; cursor: pointer; font-size: 15px; }
+  .ws-tab:hover { color: #fff; }
+  .ws-tab[aria-selected="true"] { background: var(--pro); color: #000; }
+  .ws-tab .n { opacity: .65; margin-left: 6px; font-size: 12px; }
+  .ws-tools { margin-left: auto; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .ws-tools input { background: #17141e; border: 0; outline: none; padding: 8px 10px; font-size: 13px; width: 190px; }
+  .ws-tools input:focus { box-shadow: 0 0 0 2px var(--pro); }
+  .chipf { background: #17141e; border: 0; color: #a69fb5; padding: 7px 11px; cursor: pointer; font-size: 13px; }
+  .chipf[aria-pressed="true"] { background: #fff; color: #000; }
+  body.ws .sorts button[aria-pressed="true"] { background: #fff; }
+  .job { background: #0e0c13; padding: 14px 16px 16px; margin: var(--u) var(--u) 20px; --c: #1d1826; animation: pop .25s steps(3); }
+  .job.active { --c: var(--pro-2); }
+  .job-h { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .job-h .pr { flex: 1 1 220px; min-width: 0; font-size: 16px; color: #fff; overflow-wrap: anywhere; }
+  .jchip { font-size: 11px; padding: 3px 7px; background: #1d1826; color: #b9b0c8; white-space: nowrap; }
+  .jstate { font-size: 11px; letter-spacing: 1px; padding: 3px 8px; white-space: nowrap; background: #24212b; color: #b9b0c8; display: inline-flex; align-items: center; gap: 6px; }
+  .jstate.drawing { background: var(--pro); color: #000; }
+  .jstate.drawing::before { content: ""; width: 6px; height: 6px; background: #000; animation: pulse-dot 1s steps(2) infinite; }
+  .jstate.done { background: #1d3a24; color: var(--green); }
+  .jstate.failed { background: #3a1c1c; color: #ff8a80; }
+  .job-h .when { color: #6f6880; font-size: 12px; white-space: nowrap; }
+  .jbtn { background: none; border: 0; color: #a69fb5; cursor: pointer; font-size: 12px; padding: 4px 6px; text-decoration: underline; }
+  .jbtn:hover { color: #fff; }
+  .job .err { color: #ff8a80; font-size: 13px; margin: -4px 0 12px; }
+  .job-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 10px; }
+  .job.clips .job-grid { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); }
+  .job.clips .tile, .job.clips .slot { aspect-ratio: 16 / 9; }      /* v1 scenes are widescreen: show them whole */
+  .job.clips .tile img { object-fit: contain; }
+  .slot { aspect-ratio: 1; background: #17141e; display: grid; place-items: center; color: #6f6880; font-size: 12px; text-align: center; padding: 8px; }
+  .slot.failed { color: #ff8a80; background: #1f1316; }
+  .slot.cancelled { color: #4a4458; }
+  .slot.waiting { background: repeating-linear-gradient(135deg, #17141e 0 8px, #141119 8px 16px); }
+  .job .tile.pending .info { font-size: 11px; }
+  .ws-empty { text-align: center; color: #8f86a0; padding: 60px 20px; }
+  .ws-empty b { display: block; color: #fff; font-weight: normal; font-size: 22px; margin: 14px 0 8px; }
+  .ws-empty .ws-mascot { margin: 0 auto; width: 115px; height: 100px; }
+  #ws-lib .grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+
+  @media (max-width: 1000px) {
+    .ws-body { grid-template-columns: 1fr; }
+    .ws-side { position: static; max-height: none; }
+    .ws-meters { margin-left: 0; width: 100%; }
+  }
+  @media (max-width: 760px) {
+    .ws-tools { margin-left: 0; width: 100%; } .ws-tools input { flex: 1; width: auto; }
+    .wm { min-width: 0; flex: 1 1 130px; }
+  }
+
   @media (max-width: 760px) {
     .post { grid-template-columns: 1fr; }
     .banner { height: 170px; }
@@ -208,7 +311,6 @@
     <h1>Mosaic Studio</h1>
     <p id="greet">What are we drawing today?</p>
     <span class="sample" title="m1 is still learning: expect the odd surprise">m1 PREVIEW</span>
-    <span class="planmark" id="planmark" hidden></span>
     <a class="classic-note" id="classic-note" href="../settings/#studio" hidden>Classic Studio &middot; switch to pro in settings</a>
   </div>
 </header>
@@ -241,14 +343,6 @@
             <button type="button" data-v="classic" aria-pressed="true">Classic</button>
             <button type="button" data-v="wild" aria-pressed="false">Wild</button>
           </div>
-          <div class="pro-controls" id="pro-controls" hidden>
-            <label class="ctl" title="0 = follow your words closely, 1 = loosest"><span class="lbl">CREATIVITY</span>
-              <input type="range" id="cr" min="0" max="100" value="50" aria-label="Creativity"><b id="cr-out">0.50</b></label>
-            <div class="ctl" title="Same prompt + seed + creativity = the same sprite. Empty = a new one each time."><span class="lbl">SEED</span>
-              <span class="seed"><input id="seed" inputmode="numeric" maxlength="10" placeholder="random" aria-label="Seed"><button type="button" id="dice" title="Pick a random seed">roll</button></span></div>
-            <div class="ctl" id="batch-ctl" title="Sprites in one go (each counts as one)"><span class="lbl">BATCH</span>
-              <span class="step"><button type="button" id="b-minus" aria-label="Fewer">&minus;</button><b id="b-n">1</b><button type="button" id="b-plus" aria-label="More">+</button></span></div>
-          </div>
           <span class="spacer"></span>
           <span class="left" id="left" title="Generations left today (resets at 00:00 UTC)"></span>
           <button class="btn" id="create" type="button" style="--c:var(--pink)">Create</button>
@@ -257,6 +351,57 @@
       <div class="signin-cta" id="signin-cta" hidden><span>Sign in to make your own sprites, like, and follow people.</span>
         <a class="btn" href="../login/?next=studio" style="--c:var(--pink)">Sign in</a></div>
     </div>
+  </div>
+</div>
+
+<!-- the pro workspace (Artisan, Atelier, Developer): filled in by setupPro() -->
+<div class="ws-app" id="ws">
+  <header class="ws-head">
+    <div class="wrap">
+      <div class="ws-mascot" id="ws-mascot" role="img" aria-label="Your plan's mascot"></div>
+      <div class="ws-title"><small id="ws-plan">STUDIO</small><b id="ws-hi">Your studio</b></div>
+      <div class="ws-meters">
+        <div class="wm" id="wm-img"><span>SPRITES TODAY</span><b>-</b><div class="mbar"><i class="held"></i><i class="used"></i></div></div>
+        <div class="wm" id="wm-vid" hidden><span>CLIPS TODAY</span><b>-</b><div class="mbar"><i class="held"></i><i class="used"></i></div></div>
+        <div class="wm q" id="wm-q"><span>QUEUE</span><i class="dot"></i><b>idle</b></div>
+      </div>
+    </div>
+  </header>
+  <div class="wrap ws-body">
+    <aside class="ws-side notch" aria-label="Make something">
+      <section class="ws-sec"><h3>MODEL</h3><div class="mcards" id="ws-models"></div></section>
+      <section class="ws-sec"><h3>PROMPTS <em id="ws-pcount"></em></h3>
+        <div class="plist" id="ws-prompts"></div>
+        <button class="padd" id="ws-add" type="button">+ another prompt</button>
+        <p class="pnote" id="ws-pnote"></p></section>
+      <section class="ws-sec"><h3>SETTINGS</h3>
+        <div class="srow"><span title="0 = follow your words closely, 1 = loosest">Creativity</span><b id="ws-cr-out">0.50</b></div>
+        <input type="range" id="ws-cr" min="0" max="100" value="50" aria-label="Creativity">
+        <div class="srow"><span title="Same prompt + seed + creativity = the same result. Empty = new every time.">Seed</span>
+          <span class="seed"><input id="ws-seed" inputmode="numeric" maxlength="10" placeholder="random" aria-label="Seed"><button type="button" id="ws-dice" title="Pick a random seed">roll</button></span></div>
+        <div class="srow"><span id="ws-batch-lbl">Sprites per prompt</span>
+          <span class="step"><button type="button" id="ws-minus" aria-label="Fewer">&minus;</button><b id="ws-n">1</b><button type="button" id="ws-plus" aria-label="More">+</button></span></div>
+      </section>
+      <div class="ws-go">
+        <p class="ws-sum" id="ws-sum"></p>
+        <button class="btn" id="ws-create" type="button" style="--c:var(--pro)">Create</button>
+        <p class="kbd" id="ws-kbd">Enter to start</p>
+      </div>
+    </aside>
+    <section class="ws-main" aria-label="Your work">
+      <div class="ws-tabs" role="tablist">
+        <button class="ws-tab" role="tab" data-t="queue" aria-selected="true">Queue<span class="n" id="ws-qn"></span></button>
+        <button class="ws-tab" role="tab" data-t="mine" aria-selected="false">Library<span class="n" id="ws-ln"></span></button>
+        <button class="ws-tab" role="tab" data-t="explore" aria-selected="false">Explore</button>
+        <div class="ws-tools">
+          <span id="ws-filter" hidden><button class="chipf" type="button" data-k="all" aria-pressed="true">All</button><button class="chipf" type="button" data-k="image" aria-pressed="false">Sprites</button><button class="chipf" type="button" data-k="video" aria-pressed="false">Clips</button>
+            <input id="ws-search" type="search" placeholder="search your prompts" aria-label="Search your prompts"></span>
+          <span id="ws-sorts"></span>
+        </div>
+      </div>
+      <div id="ws-queue"><div id="ws-jobs"></div></div>
+      <div id="ws-lib" hidden></div>
+    </section>
   </div>
 </div>
 
@@ -299,7 +444,7 @@
   });
 
   function tileEl(p, { fresh = false } = {}) {
-    const b = document.createElement("button"); b.type = "button"; b.className = "tile" + (p.kind === "video" ? " video" : ""); b.setAttribute("aria-label", p.prompt);
+    const b = document.createElement("button"); b.type = "button"; b.className = "tile" + (p.kind === "video" ? " video" : ""); b.setAttribute("aria-label", p.prompt); b.dataset.kind = p.kind || "image";
     b.innerHTML = `<img src="${img(p.image)}" alt="" loading="lazy">${p.kind === "video" ? '<span class="badge clip">clip</span>' : ""}
       ${fresh ? '<span class="badge new">new!</span>' : (tab === "mine" && !p.shared ? '<span class="badge">private</span>' : "")}
       <span class="info"><img class="avatar" src="${pfp(p.author)}" alt=""><span class="n">${esc(p.author.display_name || p.author.username)}</span>
@@ -322,12 +467,13 @@
     const r = await api("/api/studio/mine");
     if (r.status === 401) return needSignIn();
     myPosts.length = 0; myPosts.push(...(r.data?.posts || []));
-    $("#mine-count").textContent = myPosts.length ? ` ${myPosts.length}` : "";
+    $("#mine-count").textContent = myPosts.length ? ` ${myPosts.length}` : ""; $("#ws-ln").textContent = myPosts.length || "";
     if (!myPosts.length) {
       $("#grid").innerHTML = `<div class="empty"><b>Nothing here yet.</b>Type something in the box below and press Create.</div>`;
       return;
     }
     myPosts.forEach(p => $("#grid").appendChild(tileEl(p)));
+    if (pro) libFilter();
   }
 
   // ---------------------------------------------------------------- post modal
@@ -469,8 +615,8 @@
   $("#model-btn").onclick = e => { e.stopPropagation(); const o = !modelBox.hasAttribute("open"); o ? modelBox.setAttribute("open", "") : closeMenu();
                                    $("#model-btn").setAttribute("aria-expanded", o); };
   addEventListener("click", e => { if (!modelBox.contains(e.target)) closeMenu(); });
-  api("/api/models", { auth: !!me }).then(r => {
-    const list = r.ok ? r.data : [{ id: "m1", name: "m1", tagline: "64×64 sprites", status: "preview", nameplate: "autumn", cost: 1, kind: "image" }];
+  const modelList = api("/api/models", { auth: !!me }).then(r => {
+    const list = r.ok ? r.data : [{ id: "m1", name: "m1", tagline: "64×64 sprites", status: "preview", nameplate: "autumn", cost: 1, kind: "image", tag: "ALL PLANS" }];
     list.forEach(m => models[m.id] = m);
     menu.innerHTML = list.map(m => `<button class="mopt ${m.nameplate || ""}" type="button" role="option" data-id="${m.id}" aria-selected="${m.id === model}">
         <span class="mk">${esc(m.name)}</span><span class="tx"><b>${esc(m.name)}</b><span>${esc(m.tagline)}${m.cost > 1 ? `<span class="cost">${m.cost} per go</span>` : ""}</span></span>
@@ -482,8 +628,9 @@
       model = o.dataset.id; $("#model-name").textContent = o.querySelector("b").textContent; closeMenu();
       menu.querySelectorAll(".mopt[data-id]").forEach(x => { x.setAttribute("aria-selected", x === o); x.querySelector(".tick").innerHTML = x === o ? "&#10003;" : ""; });
       $("#prompt").placeholder = placeholders[models[model].kind] || placeholders.image;
-      setBatch(batch); showQuota();             // clips and sprites have separate allowances
+      showQuota();                              // clips and sprites have separate allowances
     });
+    return list;
   });
   document.querySelectorAll("#creativity button").forEach(b => b.onclick = () => {
     creativity = b.dataset.v; document.querySelectorAll("#creativity button").forEach(x => x.setAttribute("aria-pressed", x === b));
@@ -504,32 +651,287 @@
   }
   if (me) Kit.whoami().then(u => { if (u) { showQuota(u.quota); setupPro(u); } });
 
-  // ---------------------------------------------------------------- pro Studio: Artisan, Atelier, Developer
-  let pro = null, batch = 1;
+  // ---------------------------------------------------------------- pro Studio: the workspace (Artisan, Atelier, Developer)
+  // Every prompt goes to the backend's queue as a job (POST /api/studio/jobs) and answers at once; the queue panel polls
+  // the jobs and fills in each sprite or clip as it lands. Atelier can line up several prompts (features.queue_max) and
+  // batch clips (features.clip_batch_max). Jobs live on the server, so a reload picks the queue back up.
+  let pro = null, tier = null, perPrompt = 1, held = { image: 0, video: 0 }, activeJobs = 0, wsTab = "queue", pollT = null;
+  const jobs = new Map();                                    // job id -> { el, states, stops, status }
   const TIERS = { artisan: "ARTISAN", atelier: "ATELIER", dev: "DEVELOPER" };
+  const MASCOT = { artisan: "mascot-artisan", atelier: "mascot-atelier", dev: "hardhat-cat" };
+  const HI = { artisan: "workshop", atelier: "atelier", dev: "test bench" };
+  const kindOf = () => models[model]?.kind || "image";
+  const ROW_HINT = { image: "a sleepy fox curled up in leaves", video: "snow falling on a pine forest" };
+  const left = kind => { const q = kind === "video" ? quota?.video : quota; return q ? Math.max(0, q.remaining - (held[kind] || 0)) : Infinity; };
+
   function setupPro(u) {
     if (!u.features?.pro_studio) return;
     if (u.profile?.studio === "classic") { $("#classic-note").hidden = false; return; }   // they prefer the classic look
     pro = u.features;
-    const tier = (u.profile?.badges || []).includes("Developer") ? "dev" : u.plan;
-    document.body.classList.add("pro", tier);
-    $("#planmark").innerHTML = `<i></i>STUDIO &middot; ${TIERS[tier] || "PRO"}`; $("#planmark").hidden = false;
-    $("#greet").textContent = `Hi ${me.username}! Your ${{ atelier: "atelier", artisan: "workshop", dev: "test bench" }[tier] || "studio"} is ready.`;
-    $("#cr-lbl").hidden = true; $("#creativity").hidden = true; $("#pro-controls").hidden = false;
-    $("#create").style.setProperty("--c", "var(--pro)");
-    $("#cr").oninput = () => $("#cr-out").textContent = (+$("#cr").value / 100).toFixed(2);
-    $("#dice").onclick = () => { $("#seed").value = Math.floor(Math.random() * 2 ** 31); };
-    $("#seed").oninput = () => { $("#seed").value = $("#seed").value.replace(/\D/g, "").slice(0, 10); };
-    $("#b-minus").onclick = () => setBatch(batch - 1); $("#b-plus").onclick = () => setBatch(batch + 1);
-    setBatch(1);
+    tier = (u.profile?.badges || []).includes("Developer") ? "dev" : u.plan;
+    document.body.classList.add("pro", "ws", tier);
+    document.querySelectorAll(".ws-mascot").forEach(m => m.style.backgroundImage = `url(../assets/scenes/${MASCOT[tier] || "mascot-free"}.png)`);
+    $("#ws-plan").textContent = `STUDIO · ${TIERS[tier] || "PRO"}`;
+    $("#ws-hi").textContent = `${me.username}'s ${HI[tier] || "studio"}`;
+    $("#ws-lib").append($("#grid"), $("#more"));            // the library and the gallery reuse the classic grid
+    $("#ws-sorts").append($("#sorts"));
+    // composer
+    $("#ws-cr").oninput = () => $("#ws-cr-out").textContent = (+$("#ws-cr").value / 100).toFixed(2);
+    $("#ws-dice").onclick = () => { $("#ws-seed").value = Math.floor(Math.random() * 2 ** 31); summary(); };
+    $("#ws-seed").oninput = () => { $("#ws-seed").value = $("#ws-seed").value.replace(/\D/g, "").slice(0, 10); };
+    $("#ws-minus").onclick = () => setPer(perPrompt - 1); $("#ws-plus").onclick = () => setPer(perPrompt + 1);
+    $("#ws-add").onclick = () => addRow("", true);
+    $("#ws-create").onclick = wsCreate;
+    const many = pro.queue_max > 1;
+    $("#ws-add").hidden = !many;
+    $("#ws-kbd").textContent = many ? "Enter to start · Shift+Enter for another prompt" : "Enter to start";
+    $("#ws-pnote").innerHTML = many ? `Up to ${pro.queue_max} prompts on the go at once. Paste a list to fill the rows.`
+      : `One prompt at a time. <a href="../pricing/">Atelier</a> lines up to 10 and makes clips in batches.`;
+    addRow("");
+    // tabs + library tools
+    document.querySelectorAll(".ws-tab").forEach(b => b.onclick = () => wsTabSet(b.dataset.t));
+    document.querySelectorAll(".chipf").forEach(b => b.onclick = () => {
+      document.querySelectorAll(".chipf").forEach(x => x.setAttribute("aria-pressed", x === b)); libFilter(); });
+    $("#ws-search").oninput = libFilter;
+    modelList.then(modelCards);
+    wsTabSet(location.hash === "#mine" ? "mine" : "queue");
+    refreshJobs();
   }
-  function setBatch(n) {
-    const sprites = models[model]?.kind !== "video", max = pro && sprites ? pro.batch_max : 1;
-    batch = Math.max(1, Math.min(max, n));
+
+  function wsTabSet(t) {
+    wsTab = t;
+    document.querySelectorAll(".ws-tab").forEach(b => b.setAttribute("aria-selected", b.dataset.t === t));
+    $("#ws-queue").hidden = t !== "queue"; $("#ws-lib").hidden = t === "queue"; $("#ws-filter").hidden = t !== "mine";
+    if (t === "queue") { $("#sorts").hidden = true; history.replaceState(null, "", location.pathname); emptyQueue(); }
+    else setTab(t);
+  }
+  function libFilter() {
+    const k = document.querySelector(".chipf[aria-pressed=true]")?.dataset.k || "all", q = $("#ws-search").value.trim().toLowerCase();
+    let shown = 0;
+    $("#grid").querySelectorAll(".tile").forEach(t => {
+      const on = (k === "all" || t.dataset.kind === k) && (!q || (t.getAttribute("aria-label") || "").toLowerCase().includes(q));
+      t.hidden = !on; shown += on;
+    });
+    $("#grid").querySelector(".nomatch")?.remove();
+    if (!shown && myPosts.length) $("#grid").insertAdjacentHTML("beforeend", `<div class="empty nomatch"><b>Nothing matches.</b>Try another word or filter.</div>`);
+  }
+
+  // model cards: what the plan can use, plus v1 shown locked for Artisan (with a way to see the plan)
+  function modelCards(list) {
+    const cards = list.map(m => ({ ...m, locked: false }));
+    if (!cards.some(m => m.id === "v1")) cards.push({ id: "v1", name: "v1", tagline: "16:9 animated scenes", nameplate: "snow", tag: "ATELIER", kind: "video", locked: true });
+    $("#ws-models").innerHTML = cards.map(m => `<button class="mcard${m.locked ? " locked" : ""}" type="button" data-id="${m.id}" aria-pressed="${m.id === model}"
+        style="--plate:url(../assets/scenes/nameplate-${esc(m.nameplate || "autumn")}.png)" ${m.locked ? 'title="Part of the Atelier plan"' : ""}>
+        <b>${esc(m.name)}</b><span>${esc(m.tagline)}</span>${m.tag ? `<span class="ptag ${m.tag.toLowerCase()}">${esc(m.tag)}</span>` : ""}</button>`).join("");
+    $("#ws-models").querySelectorAll(".mcard").forEach(c => c.onclick = () => {
+      if (c.classList.contains("locked")) return Kit.alert("v1 makes little animated scenes, and it comes with the Atelier plan (with clips in batches, too).", { title: "v1 is an Atelier thing", ok: "Okay" })
+        .then(() => {});
+      model = c.dataset.id;
+      $("#ws-models").querySelectorAll(".mcard").forEach(x => x.setAttribute("aria-pressed", x === c));
+      document.querySelectorAll("#ws-prompts textarea").forEach(t => t.placeholder = ROW_HINT[kindOf()]);
+      setPer(perPrompt);
+    });
+    setPer(1);
+  }
+  function setPer(n) {
+    const clip = kindOf() === "video", max = clip ? pro.clip_batch_max : pro.batch_max;
+    perPrompt = Math.max(1, Math.min(max, n));
+    $("#ws-n").textContent = perPrompt; $("#ws-minus").disabled = perPrompt <= 1; $("#ws-plus").disabled = perPrompt >= max;
+    $("#ws-batch-lbl").textContent = clip ? "Clips per prompt" : "Sprites per prompt";
+    $("#ws-batch-lbl").title = max > 1 ? `Up to ${max} in one go (each counts as one)` : "Clips in batches come with Atelier";
+    summary();
+  }
+
+  // the prompt rows
+  function addRow(text, focus = false) {
+    const rows = $("#ws-prompts").children.length;
+    if (rows >= pro.queue_max) return toast(`That's ${pro.queue_max} prompts: the most you can have going at once`);
+    const row = document.createElement("div"); row.className = "prow";
+    row.innerHTML = `<span class="num"></span><textarea rows="1" maxlength="300" aria-label="Prompt" placeholder="${ROW_HINT[kindOf()]}"></textarea>
+      <button class="x" type="button" aria-label="Remove this prompt">&times;</button>`;
+    const ta = row.querySelector("textarea"); ta.value = text;
+    const grow = () => { ta.style.height = "42px"; if (ta.value) ta.style.height = Math.min(130, ta.scrollHeight) + "px"; };   // (an empty one: the placeholder doesn't count)
+    ta.oninput = () => { grow(); summary(); };
+    ta.onkeydown = e => {
+      if (e.key !== "Enter") return;
+      e.preventDefault();
+      if (e.shiftKey && pro.queue_max > 1) addRow("", true); else wsCreate();
+    };
+    ta.onpaste = e => {                                    // a pasted list fills one row per line
+      const lines = (e.clipboardData?.getData("text") || "").split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+      if (lines.length < 2 || pro.queue_max < 2) return;
+      e.preventDefault();
+      ta.value = lines.shift().slice(0, 300); grow();
+      lines.slice(0, pro.queue_max - $("#ws-prompts").children.length).forEach(l => addRow(l.slice(0, 300)));
+      summary();
+    };
+    row.querySelector(".x").onclick = () => {
+      if ($("#ws-prompts").children.length === 1) { ta.value = ""; grow(); }
+      else row.remove();
+      numberRows(); summary();
+    };
+    $("#ws-prompts").appendChild(row); numberRows(); summary(); grow();
+    if (focus) ta.focus();
+    return row;
+  }
+  function numberRows() {
+    const rows = [...$("#ws-prompts").children];
+    rows.forEach((r, i) => { r.querySelector(".num").textContent = i + 1; r.querySelector(".x").hidden = rows.length === 1 && pro.queue_max === 1; });
+    $("#ws-pcount").textContent = pro.queue_max > 1 ? `${rows.length} / ${pro.queue_max}` : "";
+  }
+  const filled = () => [...$("#ws-prompts").children].filter(r => r.querySelector("textarea").value.trim());
+
+  function summary() {
     if (!pro) return;
-    $("#b-n").textContent = batch; $("#b-minus").disabled = batch <= 1; $("#b-plus").disabled = batch >= max;
-    $("#batch-ctl").title = sprites ? `Sprites in one go, up to ${max} (each counts as one)` : "Clips are made one at a time";
-    $("#create").textContent = batch > 1 ? `Create ×${batch}` : "Create";
+    const n = filled().length, kind = kindOf(), each = perPrompt * (models[model]?.cost || 1), total = n * each, room = left(kind);
+    const noun = kind === "video" ? ["clip", "clips"] : ["sprite", "sprites"], slots = pro.queue_max - activeJobs;
+    const el = $("#ws-sum");
+    el.classList.toggle("over", total > room || (n > slots && n > 0));
+    el.innerHTML = !n ? `Type a prompt to start.${room !== Infinity ? ` <b>${room.toLocaleString()}</b> ${noun[1]} left today.` : ""}`
+      : `${n > 1 ? `<b>${n}</b> prompts × ` : ""}<b>${perPrompt}</b> ${noun[perPrompt > 1 ? 1 : 0]}${n > 1 ? ` = <b>${total}</b>` : ""}`
+        + (room !== Infinity ? ` · ${Math.max(0, room - total).toLocaleString()} left after` : "")
+        + (n > slots ? `<br>${activeJobs} already on the go: room for ${Math.max(0, slots)} more.` : "")
+        + (total > room ? `<br>That's more than today's ${room.toLocaleString()} left.` : "");
+    $("#ws-create").textContent = n > 1 ? `Queue ${n} prompts` : perPrompt > 1 ? `Create ×${perPrompt}` : "Create";
+  }
+
+  async function wsCreate() {
+    const rows = filled(), kind = kindOf();
+    if (!rows.length) { $("#ws-prompts textarea")?.focus(); return toast(kind === "video" ? "Describe a scene first" : "Describe a sprite first"); }
+    const need = rows.length * perPrompt * (models[model]?.cost || 1), room = left(kind);
+    if (need > room) {
+      const back = quota ? new Date(quota.resets_at * 1000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "midnight";
+      return Kit.alert(room ? `That's ${need} ${kind === "video" ? "clips" : "sprites"} and you have ${room} left today (counting what's already in your queue).\nTry fewer, or come back after ${back} (midnight UTC).`
+                            : `Today's ${kind === "video" ? "clips are" : "sprites are"} all used or already in your queue.\nThey refill at ${back} (midnight UTC).`,
+                       { title: room ? "Not quite enough left" : "That's today's lot", ok: "Okay!" });
+    }
+    $("#ws-create").disabled = true;
+    const body = { model, creativity: "classic", creativity_value: +$("#ws-cr").value / 100 };
+    if ($("#ws-seed").value) body.seed = +$("#ws-seed").value % 2 ** 31;
+    if (perPrompt > 1) body.count = perPrompt;
+    let sent = 0;
+    for (const row of rows) {
+      const r = await api("/api/studio/jobs", { json: { ...body, prompt: row.querySelector("textarea").value.trim() } });
+      if (r.status === 401) return needSignIn();
+      if (!r.ok) { toast(Session.detail(r.data || {}), 4200); break; }
+      sent++; renderJob(r.data);
+      if ($("#ws-prompts").children.length > 1) row.remove(); else { row.querySelector("textarea").value = ""; row.querySelector("textarea").style.height = "42px"; }
+    }
+    $("#ws-create").disabled = false; numberRows();
+    if (sent) {
+      wsTabSet("queue"); refreshJobs(); toast(sent > 1 ? `${sent} prompts queued` : "Queued: watch it draw below", 2200);
+      if (innerWidth <= 1000) $(".ws-main").scrollIntoView({ behavior: Kit.reduce ? "auto" : "smooth" });   // one column: the queue is below
+    }
+    summary();
+  }
+
+  // ---- the queue panel
+  function emptyQueue() {
+    const box = $("#ws-jobs"), none = !box.querySelector(".job");
+    box.querySelector(".ws-empty")?.remove();
+    if (none) box.insertAdjacentHTML("afterbegin", `<div class="ws-empty"><div class="ws-mascot" style="background-image:url(../assets/scenes/${MASCOT[tier] || "mascot-free"}.png)"></div>
+      <b>Nothing in the queue.</b>Write a prompt on the left${pro.queue_max > 1 ? " (or a few)" : ""} and press ${pro.queue_max > 1 ? "Queue" : "Create"}. Finished work lands in your Library.</div>`);
+  }
+  const LABEL = { queued: "IN LINE", drawing: "DRAWING", done: "DONE", failed: "DIDN'T DRAW", cancelled: "CANCELLED" };
+  function renderJob(j) {
+    let rec = jobs.get(j.id);
+    const clips = j.kind === "video";
+    if (!rec) {
+      const el = document.createElement("article"); el.className = "job notch" + (clips ? " clips" : "");
+      el.innerHTML = `<div class="job-h"><span class="jstate"></span><span class="pr">${esc(j.prompt)}</span>
+          <span class="jchip">${esc(j.model)}</span><span class="jchip">creativity ${esc(j.creativity)}</span>${j.seed != null ? `<span class="jchip">seed ${j.seed}${j.count > 1 ? "+" : ""}</span>` : ""}
+          <span class="when"></span><button class="jbtn cancel" type="button">cancel</button><button class="jbtn again" type="button">use again</button></div>
+        <p class="err" hidden></p><div class="job-grid"></div>`;
+      el.querySelector(".cancel").onclick = async () => {
+        const r = await api(`/api/studio/jobs/${j.id}/cancel`, { method: "POST" });
+        if (!r.ok) return toast(Session.detail(r.data || {}));
+        renderJob(r.data); refreshJobs();
+      };
+      el.querySelector(".again").onclick = () => {
+        const card = $(`#ws-models .mcard[data-id="${j.model}"]`); if (card && !card.classList.contains("locked")) card.click();
+        const empty = [...$("#ws-prompts").children].find(r => !r.querySelector("textarea").value.trim());
+        const row = empty || addRow("");
+        if (row) { const ta = row.querySelector("textarea"); ta.value = j.prompt; ta.dispatchEvent(new Event("input")); ta.focus(); }
+      };
+      rec = { el, states: [], stops: [], status: null, created: j.created };
+      jobs.set(j.id, rec);
+      $("#ws-jobs").querySelector(".ws-empty")?.remove();
+      $("#ws-jobs").prepend(el);
+    }
+    const { el } = rec, grid = el.querySelector(".job-grid"), active = j.status === "queued" || j.status === "drawing";
+    el.classList.toggle("active", active);
+    const st = el.querySelector(".jstate"); st.className = `jstate ${j.status}`;
+    st.textContent = (j.status === "drawing" || j.status === "queued") && j.count > 1 ? `${LABEL[j.status]} ${j.done}/${j.count}`
+      : j.status === "cancelled" && j.done ? `${j.done} MADE · REST CANCELLED` : LABEL[j.status] || j.status.toUpperCase();
+    el.querySelector(".when").textContent = ago(j.created);
+    el.querySelector(".cancel").hidden = !active || !j.items.some(it => it.state === "waiting");
+    const err = el.querySelector(".err"); err.hidden = !(j.error && !active && j.status !== "done"); err.textContent = j.error || "";
+    j.items.forEach((it, i) => {
+      if (rec.states[i] === it.state) return;
+      rec.stops[i]?.(); rec.stops[i] = null;
+      let node;
+      if (it.state === "done") node = tileEl(it.post, { fresh: rec.status !== null });
+      else if (it.state === "drawing") { const p = pendingTile(j.prompt, clips); node = p.el; rec.stops[i] = p.stop; }
+      else {
+        node = document.createElement("div"); node.className = `slot ${it.state}`;
+        node.textContent = { waiting: "in line", failed: "didn't draw (not charged)", cancelled: "cancelled" }[it.state] || it.state;
+      }
+      if (grid.children[i]) grid.children[i].replaceWith(node); else grid.appendChild(node);
+      rec.states[i] = it.state;
+    });
+    if (rec.status && rec.status !== j.status && !active) {         // just finished
+      const made = j.items.filter(it => it.post).map(it => it.post);
+      myPosts.unshift(...made); $("#mine-count").textContent = ` ${myPosts.length}`; $("#ws-ln").textContent = myPosts.length;
+      if (made.length) {
+        const b = el.getBoundingClientRect(); if (b.top < innerHeight && b.bottom > 0) burst(b.left + 60, b.top + 30, "heart", 5);
+        toast(`"${j.prompt.slice(0, 40)}${j.prompt.length > 40 ? "..." : ""}" is done: ${made.length} ${clips ? (made.length > 1 ? "clips" : "clip") : (made.length > 1 ? "sprites" : "sprite")}`, 2600);
+      }
+    }
+    rec.status = j.status;
+    order();
+  }
+  // the queue reads like a line: what's on the go in the order it'll be drawn, then what's finished, newest first
+  function order() {
+    const live = r => r.status === "queued" || r.status === "drawing";
+    const list = [...jobs.values()].sort((a, b) => live(a) !== live(b) ? (live(a) ? -1 : 1) : live(a) ? a.created - b.created : b.created - a.created);
+    const box = $("#ws-jobs");
+    list.forEach((r, i) => { if (box.children[i] !== r.el) box.insertBefore(r.el, box.children[i] || null); });
+  }
+
+  async function refreshJobs() {
+    clearTimeout(pollT);
+    const r = await api("/api/studio/jobs");
+    if (r.status === 401) return needSignIn();
+    if (!r.ok) { pollT = setTimeout(refreshJobs, 5000); return; }
+    const seen = new Set(r.data.jobs.map(j => j.id));
+    r.data.jobs.slice().reverse().forEach(renderJob);              // oldest first: each new card goes on top
+    for (const [id, rec] of jobs)                                    // the server restarted: unfinished jobs are gone (uncharged)
+      if (!seen.has(id) && (rec.status === "queued" || rec.status === "drawing")) {
+        rec.stops.forEach(s => s?.()); rec.status = "failed"; rec.el.classList.remove("active");
+        rec.el.querySelector(".jstate").className = "jstate failed"; rec.el.querySelector(".jstate").textContent = "LOST";
+        rec.el.querySelector(".cancel").hidden = true;
+        const err = rec.el.querySelector(".err"); err.hidden = false; err.textContent = "The studio restarted while this was waiting: nothing unfinished was charged. Use it again to retry.";
+      }
+    quota = r.data.quota; held = r.data.held;
+    activeJobs = r.data.jobs.filter(j => j.status === "queued" || j.status === "drawing").length;
+    meters(r.data.jobs);
+    if (wsTab === "queue") emptyQueue();
+    summary();
+    if (activeJobs) pollT = setTimeout(refreshJobs, 1500);
+  }
+  function meters(list) {
+    const m = (id, q, h) => {
+      const el = $(id); el.hidden = !q || !q.limit; if (el.hidden) return;
+      el.querySelector("b").textContent = `${Math.max(0, q.remaining - h).toLocaleString()} of ${q.limit.toLocaleString()} left`;
+      el.querySelector(".used").style.width = `${Math.min(100, 100 * q.used / q.limit)}%`;
+      el.querySelector(".held").style.width = `${Math.min(100, 100 * (q.used + h) / q.limit)}%`;
+    };
+    m("#wm-img", quota, held.image); m("#wm-vid", quota.video, held.video);
+    const drawing = list.reduce((a, j) => a + j.items.filter(it => it.state === "drawing").length, 0),
+          waiting = list.reduce((a, j) => a + j.items.filter(it => it.state === "waiting").length, 0);
+    $("#wm-q").classList.toggle("busy", drawing + waiting > 0);
+    $("#wm-q b").textContent = drawing + waiting ? `${drawing} drawing · ${waiting} in line` : "idle";
+    $("#ws-qn").textContent = activeJobs || "";
   }
 
   // ---------------------------------------------------------------- composer: create
@@ -541,20 +943,15 @@
     const prompt = $("#prompt").value.trim();
     if (!prompt) { $("#prompt").focus(); return toast(models[model].kind === "video" ? "Describe a scene first" : "Describe a sprite first"); }
     if (busy) return;
-    const n = pro ? batch : 1;
+    const n = 1;
     if (quota && allowance().remaining < cost() * n) return outOfSprites(n);
     busy = true; $("#create").disabled = true;
     if (tab !== "mine") setTab("mine");
     await new Promise(r => setTimeout(r, 30));
     $("#grid").querySelector(".empty")?.remove();
     const pends = Array.from({ length: n }, () => pendingTile(prompt, models[model].kind === "video"));
-    pends.slice().reverse().forEach(p => { if (pro) p.el.classList.add("pro"); $("#grid").prepend(p.el); });
+    pends.slice().reverse().forEach(p => $("#grid").prepend(p.el));
     const body = { prompt, model, creativity };
-    if (pro) {
-      body.creativity_value = +$("#cr").value / 100;
-      if ($("#seed").value) body.seed = +$("#seed").value % 2 ** 31;
-      if (n > 1) body.count = n;
-    }
     const r = await api("/api/studio/create", { json: body });
     pends.forEach(p => p.stop()); busy = false; $("#create").disabled = false;
     const drop = () => pends.forEach(p => p.el.remove());

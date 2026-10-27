@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A new Studio, and a dashboard · Mosaic</title>
+<meta name="description" content="The pro Studio is now a full workspace with a live queue and a library. Atelier lines up to 10 prompts at once and makes v1 clips in batches. The dev portal is a dashboard.">
+<link rel="icon" type="image/svg+xml" sizes="any" href="../../assets/favicon.svg?v=2">
+<link rel="icon" type="image/png" sizes="64x64" href="../../assets/favicon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tiny5&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/kit.css?v=20261026f">
+<script src="../../config.js"></script>
+<script src="../../assets/session.js"></script>
+<script src="../../assets/kit.js?v=20261026f" data-root="../../"></script>
+<script src="../../assets/prices.js?v=20261026g"></script>
+<script src="../../assets/subscribe.js?v=20261026f"></script>
+<style>
+  .progress { position: fixed; left: 0; top: 0; height: 4px; background: var(--orange); z-index: 40; width: 0; }
+  .hero { padding: 64px 0 0; text-align: center; }
+  .hero .meta { display: inline-flex; gap: 12px; align-items: center; font-size: 13px; letter-spacing: 2px; color: var(--dim); }
+  .hero .meta .t { background: var(--orange); color: #000; padding: 3px 9px; }
+  .hero h1 { font-weight: normal; font-size: clamp(56px, 11vw, 140px); line-height: .9; margin: 26px 0 22px; }
+  .hero .dek { font-size: clamp(18px, 2.2vw, 22px); line-height: 1.5; color: #d8d2c4; max-width: 720px; margin: 0 auto 30px; }
+  .reel { max-width: 1100px; margin: 50px auto 0; padding: 0 24px; display: grid; grid-template-columns: 1.4fr 1fr; gap: 18px; }
+  .reel img { width: 100%; aspect-ratio: 16 / 9; image-rendering: pixelated; display: block; box-shadow: 0 0 0 4px #000, 0 0 0 8px #2a2925; }
+  .reel .side { display: grid; gap: 18px; }
+  .reel-l { text-align: center; color: #6f6b62; font-size: 13px; margin: 18px 0 0; }
+
+  .doc { display: grid; grid-template-columns: 220px minmax(0, 760px); gap: 64px; justify-content: center; padding: 80px 24px 60px; }
+  .toc { position: sticky; top: 92px; align-self: start; font-size: 14px; }
+  .toc p { color: var(--dim); font-size: 12px; letter-spacing: 2px; margin: 0 0 14px; }
+  .toc ol { list-style: none; margin: 0; padding: 0; counter-reset: t; }
+  .toc li { counter-increment: t; margin: 0 0 4px; }
+  .toc a { display: flex; gap: 10px; padding: 7px 10px; text-decoration: none; color: var(--dim); }
+  .toc a::before { content: counter(t, decimal-leading-zero); color: #4a4740; }
+  .toc a:hover { color: var(--fg); }
+  .toc a.on { color: #000; background: var(--orange); }
+  .toc a.on::before { color: #000; }
+  article { font-size: 18px; line-height: 1.7; color: #d8d2c4; min-width: 0; }
+  article h2 { font-weight: normal; font-size: clamp(32px, 4vw, 42px); color: #fff; margin: 84px 0 18px; line-height: 1.1; scroll-margin-top: 90px; }
+  article h2:first-child { margin-top: 0; }
+  article h2 .n { color: var(--orange); font-size: .55em; vertical-align: .45em; margin-right: 10px; }
+  article p { margin: 0 0 20px; }
+  article b { color: #fff; font-weight: normal; }
+  article a { color: var(--orange); }
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin: 34px 0; }
+  .stats div { background: var(--panel); padding: 16px; margin: var(--u); }
+  .stats b { display: block; font-size: 26px; color: #fff; }
+  .stats span { color: var(--dim); font-size: 13px; line-height: 1.3; display: block; margin-top: 4px; }
+  .clips { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 30px 0 10px; }
+  .clip { background: var(--panel); margin: var(--u); padding: 10px; }
+  .clip img { width: 100%; aspect-ratio: 16 / 9; image-rendering: pixelated; display: block; }
+  .clip b { display: block; font-size: 15px; margin: 10px 2px 2px; }
+  .clip span { display: block; color: var(--dim); font-size: 13px; line-height: 1.4; margin: 0 2px 2px; }
+  figcaption { color: #8a867b; font-size: 14px; line-height: 1.5; margin-top: 12px; }
+  .pull { font-size: clamp(24px, 3vw, 30px); line-height: 1.35; color: #fff; margin: 40px 0; padding-left: 22px; box-shadow: inset 6px 0 0 var(--orange); }
+  .callout { background: #0b1a12; padding: 20px 22px; margin: 30px var(--u); --c: var(--green); font-size: 16px; line-height: 1.6; }
+  .callout b { color: var(--green); }
+  ul.kinds { padding-left: 0; list-style: none; margin: 0 0 20px; }
+  ul.kinds li { padding: 6px 0 6px 24px; position: relative; }
+  ul.kinds li::before { content: ""; position: absolute; left: 0; top: 17px; width: 10px; height: 10px; background: var(--orange); }
+  .share { display: flex; gap: 10px; margin-top: 40px; flex-wrap: wrap; }
+  @media (max-width: 980px) { .doc { grid-template-columns: minmax(0, 1fr); gap: 0; padding-top: 50px; } .toc { display: none; }
+    .stats { grid-template-columns: repeat(2, 1fr); } .reel { grid-template-columns: 1fr; } }
+  @media (max-width: 640px) { .clips { grid-template-columns: 1fr 1fr; } }
+  .shot { margin: 34px 0 10px; }
+  .shot img { width: 100%; display: block; box-shadow: 0 0 0 4px #000, 0 0 0 8px #2a2925; }
+  .hero-shot { max-width: 1100px; margin: 50px auto 0; padding: 0 24px; }
+  .hero-shot img { width: 100%; display: block; box-shadow: 0 0 0 4px #000, 0 0 0 8px var(--yellow); }
+  .tiers2 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 30px 0; }
+  .tiers2 div { background: var(--panel); padding: 16px; margin: var(--u); --c: #2e2838; font-size: 14px; line-height: 1.5; color: var(--dim); }
+  .tiers2 .artisan { --c: #6b3a1c; } .tiers2 .atelier { --c: #2c3c74; }
+  .tiers2 b { display: block; font-size: 20px; margin-bottom: 6px; color: #fff; } .tiers2 .artisan b { color: #e8913a; } .tiers2 .atelier b { color: #fce060; }
+  @media (max-width: 640px) { .tiers2 { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+<nav class="topbar" style="--c:var(--orange)"></nav>
+
+<header class="hero">
+  <div class="wrap">
+    <span class="meta"><span class="t">ANNOUNCEMENT</span><span>OCTOBER 27, 2026</span></span>
+    <h1>A new Studio, and a dashboard</h1>
+    <p class="dek">The pro Studio is now a real workspace: line up prompts, watch them draw, keep everything in a library.
+      Atelier gets clips in batches and up to ten prompts at once. And the dev portal grew into a dashboard.</p>
+  </div>
+  <div class="hero-shot"><img src="queue.png" alt="The new pro Studio: a composer on the left with two prompts ready, and a queue on the right where three batches of dragons, potions and frogs are drawing or waiting their turn" width="1440" height="845"></div>
+  <p class="reel-l">The Atelier workspace, mid-queue. Screens are from a demo account; the sprites and scenes are real m1 and v1 output for these prompts.</p>
+</header>
+
+<div class="doc">
+  <aside class="toc"><p>CONTENTS</p><ol id="toc">
+    <li><a href="#workspace">A real workspace</a></li><li><a href="#queue">Line up your prompts</a></li>
+    <li><a href="#clips">Clips in batches</a></li><li><a href="#library">Your library</a></li>
+    <li><a href="#dashboard">The dev dashboard</a></li><li><a href="#who">Who gets what</a></li></ol></aside>
+
+  <article>
+    <h2 id="workspace"><span class="n">01</span>A real workspace</h2>
+    <p>Yesterday's pro Studio was the classic Studio with a new coat of paint and a few extra controls. We wanted more
+      than that, so we rebuilt it from the ground up for Artisan and Atelier.</p>
+    <ul class="kinds">
+      <li><b>The composer</b> sits on the left and stays put: pick a model from its card, write your prompts, set creativity,
+        a seed and how many you want of each.</li>
+      <li><b>The queue</b> fills the middle. Every prompt gets its own card that shows what's drawing, what's waiting its
+        turn and what's done, and each sprite drops in the moment it's finished.</li>
+      <li><b>The header</b> wears your plan's colours and mascot (the fox in her apron, the owl in his beret) and keeps
+        today's sprites, clips and the queue in view.</li>
+    </ul>
+    <p>Your queue lives on our side, not in your tab. Reload the page, close the laptop, come back: whatever was drawing
+      is still drawing, and it's all there when you return.</p>
+
+    <h2 id="queue"><span class="n">02</span>Line up your prompts</h2>
+    <p>On Atelier you no longer have to wait for one prompt to finish before starting the next. Write up to
+      <b>ten prompts</b>, one per row (press Shift+Enter for a new row, or paste a list and each line becomes a prompt),
+      and queue them all with one press. Keep writing while they draw: there's room for ten on the go at a time.</p>
+    <p>Each card has <b>use again</b>, to send its prompt back to the composer for another round, and <b>cancel</b>, which
+      stops whatever hasn't started yet. You're only ever charged for what's actually made: anything cancelled or
+      that fails along the way is handed straight back to today's allowance.</p>
+    <p class="pull">Queue a whole tileset, go make tea, come back to a finished batch.</p>
+    <p>A long queue never crowds anyone else out. Your prompts take turns with everyone's, so a free account
+      making one sprite still gets its turn promptly while your thirty sprites work through.</p>
+
+    <h2 id="clips"><span class="n">03</span>Clips in batches</h2>
+    <p>v1 clips used to be strictly one at a time. On Atelier you can now ask for up to <b>four clips per prompt</b>,
+      each on its own seed, and line up several scenes at once, just like sprites. Clips take a few minutes each, so they
+      draw one after another and each appears as soon as it's ready.</p>
+    <figure class="shot"><img src="clips.png" alt="Three v1 scenes queued in the workspace: a dragon over the sea is drawing, a crab in the snow and a windmill on a beach wait in line" loading="lazy" width="1440" height="845">
+      <figcaption>Three v1 scenes lined up: one drawing, two waiting their turn.</figcaption></figure>
+
+    <h2 id="library"><span class="n">04</span>Your library</h2>
+    <p>Everything you've made is one tab away. Filter to just sprites or just clips, or search your own prompts to find
+      the frog you made last Tuesday. Open anything for the full-size view, downloads (PNG up to 16&times;, MP4 or GIF for
+      clips) and sharing to the gallery. The community gallery is the third tab, Explore.</p>
+    <figure class="shot"><img src="library.png" alt="The Library tab: a grid of the account's clips and sprites, with All, Sprites and Clips filters and a search box" loading="lazy" width="1440" height="845">
+      <figcaption>The library, with filters for sprites and clips and a search over your prompts.</figcaption></figure>
+
+    <h2 id="dashboard"><span class="n">05</span>The dev dashboard</h2>
+    <p>If you call Mosaic from your own code, the <a href="../../portal/">dev portal</a> used to tell you very little. Now it's a
+      dashboard:</p>
+    <ul class="kinds">
+      <li><b>Today at a glance:</b> sprites and clips left, what you made in the last 30 days, and how many of your
+        recent API calls worked.</li>
+      <li><b>Made per day,</b> for the last 7, 30 or 60 days, split into what came from the API, the Studio and the
+        playground. Hover a day for its numbers, or open it as a table.</li>
+      <li><b>Every key,</b> with what it made today and this month, and when it was last used.</li>
+      <li><b>Recent calls:</b> your last requests with their prompt, result and time, so a script that's quietly
+        hitting its limit or sending a bad field shows up right away.</li>
+      <li><b>Live status</b> of the API, m1, v1 and the queue, refreshed every 30 seconds.</li>
+    </ul>
+    <figure class="shot"><img src="dashboard.png" alt="The dev portal dashboard: tiles for sprites and clips today, the last 30 days and API calls, then a stacked bar chart of what was made each day by API, Studio and playground" loading="lazy" width="1440" height="915">
+      <figcaption>Made per day, by where it came from. The numbers here are from a demo account.</figcaption></figure>
+    <figure class="shot"><img src="dashboard-2.png" alt="API keys with what each made today and in 30 days, next to a log of recent API calls with prompt, result code and time" loading="lazy" width="1440" height="700">
+      <figcaption>Each key's numbers, and the recent calls with their results.</figcaption></figure>
+    <p>The playground and the API reference are still there, underneath. Everything you run in the playground shows up on
+      the chart too.</p>
+
+    <h2 id="who"><span class="n">06</span>Who gets what</h2>
+    <div class="tiers2">
+      <div class="notch"><b>Free</b>The classic Studio, unchanged, and the new dashboard.</div>
+      <div class="notch artisan"><b>Artisan</b>The new workspace, batches of up to 4 sprites, one prompt at a time, and the dashboard.</div>
+      <div class="notch atelier"><b>Atelier</b>Everything in Artisan, plus up to 10 prompts at once, batches of 8 sprites and up to 4 v1 clips per prompt.</div>
+    </div>
+    <p>Prefer the classic Studio? It's one switch away in your <a href="../../settings/#studio">settings</a>, and your plan's
+      allowance and rights stay exactly the same. The full comparison is on the <a href="../../pricing/">pricing page</a>.</p>
+    <div class="share"><a class="btn" href="../../studio/">Open the Studio</a><a class="btn ghost" href="../../portal/">See your dashboard</a>
+      <a class="btn ghost" href="../../join/?tier=atelier" data-subscribe="atelier">Join Atelier</a></div>
+  </article>
+</div>
+
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  Kit.nav("Blog");
+  addEventListener("scroll", () => {
+    const h = document.documentElement, p = h.scrollTop / Math.max(1, h.scrollHeight - h.clientHeight);
+    $("#progress").style.width = p * 100 + "%";
+  }, { passive: true });
+  const links = [...document.querySelectorAll("#toc a")];
+  const spy = new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting) links.forEach(a => a.classList.toggle("on", a.getAttribute("href") === "#" + e.target.id));
+  }), { rootMargin: "-15% 0px -75% 0px" });
+  document.querySelectorAll("article h2").forEach(h => spy.observe(h));
+})();
+</script>
+</body>
+</html>

@@ -19,8 +19,10 @@ On `localhost` the site talks to the backend at `http://localhost:8000` automati
   (v1's card plays its latest real training samples, refreshed every checkpoint); the plans; the wish machine; the
   sticker book; the API.
 - `studio/`: Mosaic Studio. The community gallery (likes, follows, profiles) and your own creations, with a composer
-  for m1 and v1. Artisan and Atelier get the **pro Studio** (exact creativity, fixed seeds, batches, a look themed to
-  the plan) and more download formats; plan badges show next to names.
+  for m1 and v1. Artisan and Atelier get the **pro workspace** instead: a composer column (model cards, a list of
+  prompts, exact creativity, seeds, batches), a live queue fed by the backend's job queue (`/api/studio/jobs`, so it
+  survives a reload), a filterable library and the gallery, themed to the plan. Atelier lines up to 10 prompts and
+  batches v1 clips. Plan badges show next to names.
 - `pricing/`: Free, Artisan (S$5/month, free trial) and Atelier (S$15/month), each with its mascot. Prices are set in SGD and shown in each visitor's currency (`assets/prices.js`). Plan buttons adapt
   to the signed-in user's plan (start a trial, upgrade, downgrade, cancel).
 - `join/`: a direct link to the subscribe popup (`?tier=artisan|atelier&mode=join|upgrade|downgrade|cancel`).
@@ -28,7 +30,8 @@ On `localhost` the site talks to the backend at `http://localhost:8000` automati
 - `login/`: sign in / create account, with a random 8-bit scene whose animal watches the cursor.
 - `settings/`: profile (name, bio, website, banner, picture), plan and today's allowance, linking Patreon, the
   Studio look (pro or classic), two-step sign-in.
-- `portal/`, `portal/keys/`: the API: account, keys, today's allowance, a playground and the reference.
+- `portal/`, `portal/keys/`: the dev dashboard (live status, today's allowance, made per day by API / Studio /
+  playground from `/api/usage`, per-key numbers, recent calls), a playground and the API reference; and the keys.
 - `status/`: live checks of the API, the image workers, m1, v1, accounts and the Studio every 30 s, plus the incident
   history in `assets/status/incidents.json`.
 - `blog/`: posts. Keep posts about what the models do, never how they work inside (closed source).
