@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Terms and Conditions · Mosaic</title>
+<meta name="description" content="Mosaic now has formal Terms and Conditions covering accounts, plans, generated content, commercial use, Mosaic's own creative assets, and prohibited uses.">
+<meta property="og:title" content="Terms and Conditions"><meta property="og:description" content="Mosaic now has formal Terms and Conditions covering accounts, plans, generated content, commercial use, Mosaic's own creative assets, and prohibited uses."><meta property="og:image" content="https://ml-mosaic.github.io/blog/terms-and-conditions/cover.png">
+<link rel="icon" type="image/svg+xml" sizes="any" href="../../assets/favicon.svg?v=2">
+<link rel="icon" type="image/png" sizes="64x64" href="../../assets/favicon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tiny5&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/kit.css?v=20261031a">
+<script src="../../config.js"></script>
+<script src="../../assets/session.js"></script>
+<script src="../../assets/kit.js?v=20261031a" data-root="../../"></script>
+<style>
+  :root { --acc: #c8c4d8; }
+  .progress { position: fixed; left: 0; top: 0; height: 4px; background: var(--acc); z-index: 40; width: 0; }
+  .hero { padding: 64px 0 0; text-align: center; }
+  .hero .meta { display: inline-flex; gap: 12px; align-items: center; font-size: 13px; letter-spacing: 2px; color: var(--dim); flex-wrap: wrap; justify-content: center; }
+  .hero .meta .t { background: var(--acc); color: #000; padding: 3px 9px; }
+  .hero h1 { font-weight: normal; font-size: clamp(50px, 10vw, 128px); line-height: .92; margin: 26px 0 22px; }
+  .hero .dek { font-size: clamp(18px, 2.2vw, 22px); line-height: 1.5; color: #d8d2c4; max-width: 740px; margin: 0 auto 30px; }
+  .hero-shot { max-width: 1100px; margin: 44px auto 0; padding: 0 24px; }
+  .hero-shot img { width: 100%; height: auto; display: block; image-rendering: pixelated; box-shadow: 0 0 0 4px #000, 0 0 0 8px var(--acc); }
+  .reel-l { text-align: center; color: #6f6b62; font-size: 13px; margin: 18px 0 0; }
+  .doc { display: grid; grid-template-columns: 220px minmax(0, 760px); gap: 64px; justify-content: center; padding: 80px 24px 60px; }
+  .toc { position: sticky; top: 92px; align-self: start; font-size: 14px; }
+  .toc p { color: var(--dim); font-size: 12px; letter-spacing: 2px; margin: 0 0 14px; }
+  .toc ol { list-style: none; margin: 0; padding: 0; counter-reset: t; }
+  .toc li { counter-increment: t; margin: 0 0 4px; }
+  .toc a { display: flex; gap: 10px; padding: 7px 10px; text-decoration: none; color: var(--dim); }
+  .toc a::before { content: counter(t, decimal-leading-zero); color: #4a4740; }
+  .toc a:hover { color: var(--fg); } .toc a.on { color: #000; background: var(--acc); } .toc a.on::before { color: #000; }
+  article { font-size: 18px; line-height: 1.7; color: #d8d2c4; min-width: 0; }
+  article h2 { font-weight: normal; font-size: clamp(30px, 4vw, 42px); color: #fff; margin: 84px 0 18px; line-height: 1.1; scroll-margin-top: 90px; }
+  article h2:first-child { margin-top: 0; }
+  article h2 .n { color: var(--acc); font-size: .55em; vertical-align: .45em; margin-right: 10px; }
+  article h3 { font-weight: normal; font-size: 22px; color: #fff; margin: 34px 0 10px; }
+  article p { margin: 0 0 20px; } article b { color: #fff; font-weight: normal; } article a { color: var(--acc); }
+  ul.kinds, ol.steps { padding-left: 0; list-style: none; margin: 0 0 22px; }
+  ul.kinds li { padding: 6px 0 6px 24px; position: relative; }
+  ul.kinds li::before { content: ""; position: absolute; left: 0; top: 17px; width: 10px; height: 10px; background: var(--acc); }
+  ol.steps { counter-reset: s; } ol.steps li { counter-increment: s; display: flex; gap: 14px; margin-bottom: 14px; }
+  ol.steps li::before { content: counter(s); flex: none; width: 30px; height: 30px; display: grid; place-items: center; background: var(--acc); color: #000; font-size: 15px; margin-top: 2px; }
+  .pull { font-size: clamp(24px, 3vw, 30px); line-height: 1.35; color: #fff; margin: 40px 0; padding-left: 22px; box-shadow: inset 6px 0 0 var(--acc); }
+  .callout { background: #0b1a12; padding: 20px 22px; margin: 30px var(--u); --c: var(--green); font-size: 16px; line-height: 1.6; }
+  .callout b { color: var(--green); }
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin: 34px 0; }
+  .stats div { background: var(--panel); padding: 16px; margin: var(--u); }
+  .stats b { display: block; font-size: 26px; color: #fff; } .stats span { color: var(--dim); font-size: 13px; line-height: 1.3; display: block; margin-top: 4px; }
+  .sprites { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin: 30px 0 10px; }
+  .sprites figure { margin: var(--u); background: var(--panel); padding: 10px; }
+  .sprites .two { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .sprites img { width: 100%; aspect-ratio: 1; image-rendering: pixelated; display: block; background: #1a1622; }
+  .sprites figcaption, .clips figcaption { color: var(--dim); font-size: 13px; line-height: 1.4; margin: 10px 2px 2px; }
+  .clips { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin: 30px 0 10px; }
+  .clips figure { margin: var(--u); background: var(--panel); padding: 10px; }
+  .clips img { width: 100%; aspect-ratio: 16 / 9; image-rendering: pixelated; display: block; }
+  .shot { margin: 34px 0 10px; } .shot img { width: 100%; height: auto; display: block; image-rendering: pixelated; box-shadow: 0 0 0 4px #000, 0 0 0 8px #2a2925; }
+  figcaption { color: #8a867b; font-size: 14px; line-height: 1.5; margin-top: 12px; }
+  .share { display: flex; gap: 10px; margin-top: 40px; flex-wrap: wrap; }
+  .tiers2 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 30px 0; }
+  .tiers2 div { background: var(--panel); padding: 16px; margin: var(--u); --c: #2e2838; font-size: 14px; line-height: 1.5; color: var(--dim); }
+  .tiers2 .artisan { --c: #6b3a1c; } .tiers2 .atelier { --c: #2c3c74; }
+  .tiers2 b { display: block; font-size: 20px; margin-bottom: 6px; color: #fff; } .tiers2 .artisan b { color: #e8913a; } .tiers2 .atelier b { color: #fce060; }
+  /* the formal posts: plain, numbered, no jokes */
+  body.formal article { font-size: 17px; }
+  body.formal article h2 { font-size: clamp(26px, 3.2vw, 34px); margin-top: 64px; }
+  body.formal .clause { margin: 0 0 16px; padding-left: 44px; position: relative; }
+  body.formal .clause .no { position: absolute; left: 0; top: 0; color: var(--acc); font-size: 15px; }
+  body.formal .notice { background: #0f1418; padding: 18px 22px; margin: 26px var(--u); --c: var(--acc); font-size: 16px; line-height: 1.6; color: #e2e6ea; }
+  body.formal .notice b { color: var(--acc); }
+  body.formal .sig { color: var(--dim); font-size: 15px; margin-top: 40px; }
+  @media (max-width: 980px) { .doc { grid-template-columns: minmax(0, 1fr); gap: 0; padding-top: 50px; } .toc { display: none; }
+    .stats { grid-template-columns: repeat(2, 1fr); } .sprites { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 640px) { .tiers2, .clips { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body class="formal">
+<div class="progress" id="progress"></div>
+<nav class="topbar" style="--c:var(--acc)"></nav>
+
+<header class="hero">
+  <div class="wrap">
+    <span class="meta"><span class="t">POLICY</span><span>OCTOBER 31, 2026</span></span>
+    <h1>Terms and Conditions</h1>
+    <p class="dek">Mosaic now has formal Terms and Conditions. This notice summarises the principal points. The Terms themselves are the authoritative text.</p>
+  </div>
+  <div class="hero-shot"><img src="cover.png" alt="A pixel-art scroll with a wax seal and a quill" width="960" height="540"></div>
+  
+</header>
+
+<div class="doc">
+  <aside class="toc"><p>CONTENTS</p><ol id="toc"><li><a href="#why">Purpose</a></li><li><a href="#yours">Your creations</a></li><li><a href="#ours">Mosaic's own work</a></li><li><a href="#prohibited">Prohibited uses</a></li><li><a href="#plans">Plans, gifts and Express</a></li><li><a href="#enforcement">Enforcement and appeals</a></li></ol></aside>
+  <article>
+<h2 id="why"><span class="n">01</span>Purpose</h2>
+<p>As Mosaic has grown to include paid plans, gifting, a community forum and an API, it is appropriate to set out clearly the
+  rules that apply to everyone. The full <a href="../../terms/">Terms and Conditions</a> take effect on 31 October 2026 and apply to
+  all use of Mosaic from that date. By continuing to use Mosaic, you agree to them.</p>
+<div class="notice notch"><b>Please read the full Terms.</b> This summary is provided for convenience. Where it differs from the
+  Terms, the Terms prevail.</div><h2 id="yours"><span class="n">02</span>Your creations</h2><p class="clause"><span class="no">2.1</span>Images and clips you generate are yours to use within the rights of the plan on which they were made: personal use on Free, and commercial use on Artisan and Atelier. Rights recorded on a creation stay with it even if you later change plan.</p><p class="clause"><span class="no">2.2</span>When you share a creation made with commercial rights to the gallery, you may choose to allow anyone, including people without commercial rights, to use that creation commercially. This choice is shown on the creation and can be withdrawn for the future.</p><h2 id="ours"><span class="n">03</span>Mosaic's own work</h2><p class="clause"><span class="no">3.1</span>Mosaic's website code, graphics, mascots (including the fox, the owl and the cat), logos, wordmark, written text and other specific creative assets are protected by copyright and may not be copied, redistributed or imitated.</p><p class="clause"><span class="no">3.2</span>Pixel art as a medium, and a general pixel-art style, are not owned by Mosaic. You are free to make pixel art of any kind. What is not permitted is copying Mosaic's own distinctive design, mascots or assets, or presenting your work as Mosaic's.</p><p class="clause"><span class="no">3.3</span>The website's source code is viewable (browsers download it to run it), and is made available under the Mosaic Source-Available License for reference only. It may not be reused to build other services.</p><h2 id="prohibited"><span class="n">04</span>Prohibited uses</h2><p class="clause"><span class="no">4.1</span>Using Mosaic's output, or automated collection of it, to train, fine-tune, distil or evaluate any other machine-learning model.</p><p class="clause"><span class="no">4.2</span>Requesting or sharing sexual content, content involving minors in any harmful way, hateful or harassing content, or content that is illegal.</p><p class="clause"><span class="no">4.3</span>Attempting to circumvent rate limits, allowances, safety measures or plan restrictions, including by using multiple accounts or by sharing an account or a Patreon membership.</p><p class="clause"><span class="no">4.4</span>Attacking, overloading or probing Mosaic's servers without permission.</p><h2 id="plans"><span class="n">05</span>Plans, gifts and Express</h2><p class="clause"><span class="no">5.1</span>Plans are billed through Patreon. A Patreon account may be linked to one Mosaic account at a time.</p><p class="clause"><span class="no">5.2</span>Artisan and Atelier members may gift one week of their own plan. Creations made on a gifted plan use the giver's daily allowance and receive the gifted plan's rights. A gift ends if the giver's plan ends.</p><p class="clause"><span class="no">5.3</span>Express is a limited, best-effort service with a daily number of uses per plan. It may be unavailable at times, in which case requests are handled normally.</p><h2 id="enforcement"><span class="n">06</span>Enforcement and appeals</h2>
+<p>We may remove content, limit, suspend or ban accounts that breach the Terms. Suspended and banned accounts may appeal from the
+  sign-in page, and each appeal is reviewed by a person. The full Terms also cover liability, changes to the service, and how we
+  will notify you of changes to the Terms.</p>
+<div class="share"><a class="btn" href="../../terms/" style="--c:var(--acc)">Read the full Terms</a><a class="btn ghost" href="../../license/">The license page</a></div>
+<p class="sig">The Mosaic team &middot; 31 October 2026</p>
+  </article>
+</div>
+
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  Kit.nav("Blog");
+  addEventListener("scroll", () => {
+    const h = document.documentElement, p = h.scrollTop / Math.max(1, h.scrollHeight - h.clientHeight);
+    $("#progress").style.width = p * 100 + "%";
+  }, { passive: true });
+  const links = [...document.querySelectorAll("#toc a")];
+  const spy = new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting) links.forEach(a => a.classList.toggle("on", a.getAttribute("href") === "#" + e.target.id));
+  }), { rootMargin: "-15% 0px -75% 0px" });
+  document.querySelectorAll("article h2").forEach(h => spy.observe(h));
+
+})();
+</script>
+</body>
+</html>

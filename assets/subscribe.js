@@ -1,3 +1,5 @@
+/* Copyright (c) 2026 Mosaic. All rights reserved. Source-available under the Mosaic Source-Available License
+   (LICENSE.md): viewing only; no copying, reuse or redistribution of this code or its design. */
 // The subscribe popup, on every page that sells a plan: the cat at the cash register, what happens next, and the way
 // to Patreon. Any element with data-subscribe="artisan|atelier" (and data-mode="join|upgrade|downgrade|cancel") opens it.
 // Subscribe.ctas(user) turns the plan buttons (data-cta="free|artisan|atelier") into the right action for the
@@ -72,11 +74,12 @@ window.Subscribe = (() => {
       join: { title: tier === "artisan" ? "Start your Artisan trial" : "Join Atelier", price: tier === "artisan" ? `${t.price}, free trial first` : t.price,
               go: tier === "artisan" ? "Start the free trial on Patreon" : "Join Atelier on Patreon", url: CHECKOUT[tier], coins: true, say: "ka-ching!",
               steps: [tier === "artisan" ? "Subscribe on <b>Patreon</b>: the trial is free, and you can cancel there before it ends." : "Subscribe on <b>Patreon</b>, which handles the billing.",
-                      linking === "auto" ? `Use the <b>same email</b> on Patreon as on Mosaic (${email}): your plan switches on <b>by itself</b> in about a minute. Different email? Press <b>Link Patreon</b> in your <a href="${root}settings/#patreon">settings</a>.`
+                      u?.patreon ? `Your Patreon is linked to <b>@${esc(u.username)}</b>, so your plan switches on <b>by itself</b> within a minute of subscribing.`
+                      : linking === "auto" ? `Use the <b>same email</b> on Patreon as on Mosaic (${email}): your plan switches on <b>by itself</b> in about a minute. Different email? Press <b>Link Patreon</b> in your <a href="${root}settings/#patreon">settings</a>.`
                       : linking ? `Come back and press <b>Link Patreon</b> in your <a href="${root}settings/#patreon">settings</a>: your plan switches on right away.`
                               : "Use the <b>same email</b> on Patreon as on Mosaic, and we'll switch your plan on.",
                       `That's it: your <b>${t.name}</b> ${t.perks} show up in the Studio.`],
-              email: linking !== "auto" },
+              email: linking !== "auto" && !u?.patreon },
       upgrade: { title: `Upgrade to ${t.name}`, price: t.price, go: `Upgrade on Patreon`, url: CHECKOUT[tier], coins: true, say: "ka-ching!",
                  steps: [`On <b>Patreon</b>, switch your membership to <b>${t.name}</b>.`, `Then ${check}.`,
                          `Your <b>${t.name}</b> ${t.perks} switch on in the Studio.`], email: !linking },
@@ -92,11 +95,67 @@ window.Subscribe = (() => {
     return { t, m: M[mode] || M.join, email };
   }
 
+  // Step one, before any checkout: link a Patreon account (in a small window), so the plan lands on THIS Mosaic
+  // account. Mosaic notices the link by itself (the window tells us, and we also keep asking the server), then the
+  // usual checkout popup opens.
+  function linkFirst(tier, mode, u) {
+    const t = TIERS[tier] || TIERS.artisan;
+    const back = document.createElement("div");
+    back.className = "sub-back"; back.setAttribute("role", "dialog"); back.setAttribute("aria-modal", "true"); back.setAttribute("aria-label", "Link Patreon first");
+    back.innerHTML = `<div class="sub-card" style="--sub-b:${t.tb};--sub-f:${t.tf};--sub-c:#ff424d">
+      <button class="sub-x" type="button" aria-label="Close">&times;</button>
+      <div class="sub-stage"><div class="sub-reg" title="ka-ching!"></div></div>
+      <div class="sub-body"><span class="sub-tag">STEP 1 OF 2</span><h2>First, link your Patreon</h2>
+        <p class="sub-price">So your ${esc(t.name)} plan lands on @${esc(u.username)}, and only here.</p>
+        <ol class="sub-steps"><li><span>Press <b>Link Patreon</b>: a small Patreon window opens. Sign in there (or make an account) and allow Mosaic.</span></li>
+          <li><span>Come back here: we'll notice by ourselves, then open the <b>${esc(t.name)}</b> checkout.</span></li></ol>
+        <div class="sub-email" id="sub-wait" hidden>&#x23F3; Waiting for Patreon... finish in the Patreon window. (Closed it by accident? Press Link Patreon again.)</div>
+        <div class="sub-row"><button class="sub-btn" type="button" id="sub-link">Link Patreon</button>
+          <button class="sub-btn ghost" type="button" data-close>Not now</button></div>
+        <p class="sub-note">One Patreon account links to one Mosaic account at a time. Signed in as @${esc(u.username)}.</p></div></div>`;
+    document.body.appendChild(back);
+    let poll = null, win = null, done = false;
+    const close = () => { clearInterval(poll); removeEventListener("message", onMsg); removeEventListener("keydown", key); back.remove(); closeCurrent = null; };
+    const key = e => { if (e.key === "Escape") close(); };
+    addEventListener("keydown", key); closeCurrent = close;
+    back.addEventListener("click", e => { if (e.target === back || e.target.closest(".sub-x,[data-close]")) close(); });
+    const linked = async result => {
+      if (done) return;
+      if (result === "taken" || result === "cancelled" || result === "error" || result === "expired") {
+        back.querySelector("#sub-wait").hidden = false;
+        back.querySelector("#sub-wait").innerHTML = { taken: "That Patreon account is already linked to another Mosaic account. Unlink it there first, or use a different Patreon account.",
+          cancelled: "Patreon wasn't linked. Press Link Patreon to try again.", error: "Patreon didn't answer. Try again in a minute.",
+          expired: "That took a while: press Link Patreon again." }[result];
+        return;
+      }
+      done = true; close(); infoP = null;
+      if (window.Kit?.whoami) await Kit.whoami(true);
+      if (window.Kit?.toast) Kit.toast("Patreon linked! Now the checkout.", 2200);
+      open(tier, mode);
+    };
+    const onMsg = e => { if (e.origin === location.origin && e.data?.mosaic === "patreon") linked(e.data.result); };
+    addEventListener("message", onMsg);
+    back.querySelector("#sub-link").onclick = async () => {
+      win = window.open("", "mosaic-patreon", "width=520,height=720");            // opened now, so pop-up blockers allow it
+      const r = await Session.api("/api/patreon/start", { method: "POST" });
+      if (!r.ok) { win?.close(); back.querySelector("#sub-wait").hidden = false; back.querySelector("#sub-wait").textContent = Session.detail(r.data || {}); return; }
+      if (win) win.location.href = r.data.url; else location.href = r.data.url;
+      back.querySelector("#sub-wait").hidden = false;
+      clearInterval(poll);
+      poll = setInterval(async () => {                                         // also ask the server, in case the window can't tell us
+        const me = await Session.api("/api/me").then(x => x.ok ? x.data : null);
+        if (me?.patreon) linked("linked");
+      }, 2500);
+    };
+    back.querySelector("#sub-link").focus();
+  }
+
   let closeCurrent = null;
   async function open(tier, mode = "join") {
     if (closeCurrent) closeCurrent();
     if (window.Prices) await Prices.ready;
     const [u, linking] = await info();
+    if (u && linking && !u.patreon && (mode === "join" || mode === "upgrade")) return linkFirst(tier, mode, u);
     const { t, m, email } = content(tier, mode, u, linking);
     const tb = mode === "cancel" ? "#3a3446" : t.tb, tf = mode === "cancel" ? "#e8e4f0" : t.tf;
     const back = document.createElement("div");

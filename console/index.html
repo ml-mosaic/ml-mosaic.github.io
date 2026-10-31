@@ -10,10 +10,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Tiny5&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../assets/kit.css?v=20261026f">
+<link rel="stylesheet" href="../assets/kit.css?v=20261031a">
 <script src="../config.js"></script>
 <script src="../assets/session.js"></script>
-<script src="../assets/kit.js?v=20261026f" data-root="../"></script>
+<script src="../assets/kit.js?v=20261031a" data-root="../"></script>
 <style>
   /* Owner console. Hidden: not linked anywhere, not indexed, and for anyone but the owner the API answers 404 and
      this page shows "not found". The real protection is server-side (every /api/console call is checked). */
@@ -71,6 +71,21 @@
   .audit { display: flex; flex-direction: column; gap: 4px; }
   .audit div { display: grid; grid-template-columns: 150px 110px 1fr; gap: 12px; padding: 8px 10px; background: #0b0a0e; font-size: 14px; }
   .audit .w { color: var(--dim); }
+  .tabs { flex-wrap: wrap; } .tabs .n { background: var(--bad); color: #000; padding: 0 5px; margin-left: 6px; font-size: 11px; }
+  .rep { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 16px; padding: 14px; background: #0b0a0e; margin-bottom: 8px; }
+  .rep .pic { width: 120px; aspect-ratio: 1; background: #17141e; display: grid; place-items: center; color: var(--dim); font-size: 12px; text-align: center; }
+  .rep .pic img { width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; }
+  .rep h4 { font-weight: normal; font-size: 16px; margin: 0 0 6px; } .rep p { margin: 0 0 6px; color: #cfc8dc; font-size: 14px; line-height: 1.45; overflow-wrap: anywhere; }
+  .rep .w { color: var(--dim); font-size: 12px; } .rep .act { margin: 10px 0 0; }
+  .filter { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
+  .filter button { background: #0b0a0e; border: 0; color: var(--dim); padding: 6px 11px; cursor: pointer; font: inherit; font-size: 13px; }
+  .filter button[aria-pressed="true"] { background: #fff; color: #000; }
+  .stats4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 18px; }
+  .stats4 div { background: #0b0a0e; padding: 12px; } .stats4 b { display: block; font-weight: normal; font-size: 22px; } .stats4 span { color: var(--dim); font-size: 11px; letter-spacing: 1px; }
+  .tbl { display: flex; flex-direction: column; gap: 4px; margin-bottom: 18px; }
+  .tbl div { display: grid; grid-template-columns: 140px 120px 90px minmax(0, 1fr); gap: 10px; padding: 7px 10px; background: #0b0a0e; font-size: 13px; }
+  .tbl div span:last-child { overflow-wrap: anywhere; }
+  @media (max-width: 900px) { .rep { grid-template-columns: 1fr; } .stats4 { grid-template-columns: 1fr 1fr; } .tbl div { grid-template-columns: 1fr; } }
   @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } .facts { grid-template-columns: 1fr 1fr; } .audit div { grid-template-columns: 1fr; gap: 2px; } }
 </style>
 </head>
@@ -99,20 +114,133 @@
     Kit.nav(""); document.title = "Mosaic · Console";
     $("#app").innerHTML = `<main class="wrap">
       <div class="head"><h1>Console</h1><span class="who">signed in as @${esc(admin)} &middot; owner only</span>
-        <div class="tabs"><button type="button" data-t="users" aria-pressed="true">Accounts</button><button type="button" data-t="patreon" aria-pressed="false">Patreon</button><button type="button" data-t="audit" aria-pressed="false">Audit log</button></div></div>
+        <div class="tabs"><button type="button" data-t="users" aria-pressed="true">Accounts</button><button type="button" data-t="patreon" aria-pressed="false">Patreon</button><button type="button" data-t="reports" aria-pressed="false">Reports<span class="n" id="n-rep" hidden></span></button><button type="button" data-t="appeals" aria-pressed="false">Appeals<span class="n" id="n-app" hidden></span></button><button type="button" data-t="safety" aria-pressed="false">Safety</button><button type="button" data-t="audit" aria-pressed="false">Audit log</button></div></div>
       <div id="users" class="layout">
         <section class="card notch"><div class="search"><input id="q" placeholder="Search username or email" autocomplete="off"></div>
           <div class="list" id="list"></div></section>
         <section class="card notch detail" id="detail"><div class="empty">Pick an account.</div></section></div>
       <section id="patreon" class="card notch" hidden><div id="pt"></div></section>
+      <section id="reports" class="card notch" hidden><div class="filter" id="rep-f"></div><div id="rep-list"></div></section>
+      <section id="appeals" class="card notch" hidden><div class="filter" id="app-f"></div><div id="app-list"></div></section>
+      <section id="safety" class="card notch" hidden><div id="safe"></div></section>
       <section id="audit" class="card notch" hidden><div class="audit" id="audit-list"></div></section></main>`;
     document.body.classList.add("ready");
     document.querySelectorAll(".tabs button").forEach(b => b.onclick = () => {
       document.querySelectorAll(".tabs button").forEach(x => x.setAttribute("aria-pressed", x === b));
-      $("#users").hidden = b.dataset.t !== "users"; $("#audit").hidden = b.dataset.t !== "audit"; $("#patreon").hidden = b.dataset.t !== "patreon";
+      for (const t of ["users", "audit", "patreon", "reports", "appeals", "safety"]) $("#" + t).hidden = b.dataset.t !== t;
+      history.replaceState(null, "", "#" + b.dataset.t);
       if (b.dataset.t === "audit") loadAudit();
       if (b.dataset.t === "patreon") loadPatreon(false);
+      if (b.dataset.t === "reports") loadReports("open");
+      if (b.dataset.t === "appeals") loadAppeals("open");
+      if (b.dataset.t === "safety") loadSafety();
     });
+    // the email links land on a tab (console/#reports, #appeals, #safety)
+    const startTab = location.hash.slice(1);
+    setTimeout(() => document.querySelector(`.tabs button[data-t="${startTab}"]`)?.click(), 0);
+    const counts = async () => {
+      const [a, b] = await Promise.all([api("/api/console/reports"), api("/api/console/appeals")]);
+      const set = (id, n) => { $(id).hidden = !n; $(id).textContent = n; };
+      if (a.ok) set("#n-rep", a.data.open); if (b.ok) set("#n-app", b.data.open);
+    };
+    counts();
+
+    const when = t => new Date(t * 1000).toLocaleString([], { dateStyle: "short", timeStyle: "short" });
+    function filters(box, states, cur, load) {
+      $(box).innerHTML = states.map(s => `<button type="button" data-s="${s}" aria-pressed="${s === cur}">${s}</button>`).join("");
+      $(box).querySelectorAll("button").forEach(b => b.onclick = () => load(b.dataset.s));
+    }
+    async function loadReports(status) {
+      filters("#rep-f", ["open", "resolved", "dismissed", "all"], status, loadReports);
+      const r = await api(`/api/console/reports?status=${status}`);
+      if (!r.ok) return toast(Session.detail(r.data || {}));
+      const R = r.data.reasons;
+      $("#rep-list").innerHTML = r.data.reports.length ? r.data.reports.map(x => {
+        const s = x.snapshot || {}, what = x.kind === "post" ? `${esc(s.model || "")} by @${esc(s.author || "?")}: &ldquo;${esc(s.prompt || "")}&rdquo;`
+          : x.kind === "user" ? `profile of @${esc(x.target)}${s.bio ? ` &middot; bio: ${esc(s.bio)}` : ""}`
+          : `forum post by @${esc(s.author || "?")} in &ldquo;${esc(s.title || "")}&rdquo;: ${esc(s.body || "")}`;
+        const who = x.kind === "post" ? s.author : x.kind === "user" ? x.target : s.author;
+        return `<div class="rep"><div class="pic">${x.image ? `<img src="${MOSAIC.backend}${x.image}" alt="" data-auth>` : esc(x.kind)}</div><div>
+          <h4>${esc(R[x.reason] || x.reason)} <span class="chip ${x.status === "open" ? "suspended" : ""}">${esc(x.status)}</span></h4>
+          <p>${what}</p>${x.details ? `<p>&ldquo;${esc(x.details)}&rdquo;</p>` : ""}
+          <p class="w">reported by @${esc(x.by)} &middot; ${when(x.at)}${x.resolved ? ` &middot; ${esc(x.status)} by @${esc(x.resolved.by)}${x.resolved.note ? `: ${esc(x.resolved.note)}` : ""}` : ""}</p>
+          <div class="act">${x.status === "open" ? `<input placeholder="note (optional)" data-note="${esc(x.id)}" maxlength="300">
+            <button class="btn small" type="button" data-res="${esc(x.id)}" data-st="resolved" style="--c:var(--green)">Resolved</button>
+            <button class="btn small ghost" type="button" data-res="${esc(x.id)}" data-st="dismissed">Dismiss</button>` : `<button class="btn small ghost" type="button" data-res="${esc(x.id)}" data-st="open">Reopen</button>`}
+            ${x.kind === "post" ? `<button class="btn small" type="button" data-delpost="${esc(x.target)}" style="--c:var(--bad)">Delete the post</button>` : ""}
+            ${who ? `<button class="btn small ghost" type="button" data-open="${esc(who)}">Open @${esc(who)}</button>` : ""}</div></div></div>`;
+      }).join("") : `<div class="empty">No ${status === "all" ? "" : status} reports.</div>`;
+      $("#rep-list").querySelectorAll("img[data-auth]").forEach(async im => {              // console images need the session
+        const res = await fetch(im.src, { headers: { authorization: "Bearer " + Session.current().session } });
+        if (res.ok) im.src = URL.createObjectURL(await res.blob()); else im.replaceWith("gone");
+      });
+      $("#rep-list").querySelectorAll("[data-res]").forEach(b => b.onclick = async () => {
+        const note = $(`[data-note="${b.dataset.res}"]`)?.value || "";
+        const r2 = await api(`/api/console/reports/${b.dataset.res}`, { json: { status: b.dataset.st, note } });
+        if (!r2.ok) return toast(Session.detail(r2.data || {}));
+        toast(`Report ${b.dataset.st}`); loadReports(status); counts();
+      });
+      $("#rep-list").querySelectorAll("[data-delpost]").forEach(b => b.onclick = async () => {
+        if (!await Kit.confirm("The post and its image are deleted for good.", { title: "Delete this post?", ok: "Delete", danger: true })) return;
+        const r2 = await api(`/api/console/posts/${b.dataset.delpost}/delete`, { json: { reason: "reported" } });
+        toast(r2.ok ? "Post deleted" : Session.detail(r2.data || {}));
+      });
+      $("#rep-list").querySelectorAll("[data-open]").forEach(b => b.onclick = () => {
+        document.querySelector('.tabs button[data-t="users"]').click(); $("#q").value = b.dataset.open; loadUsers().then(() => open(b.dataset.open));
+      });
+    }
+    async function loadAppeals(status) {
+      filters("#app-f", ["open", "accepted", "rejected", "all"], status, loadAppeals);
+      const r = await api(`/api/console/appeals?status=${status}`);
+      if (!r.ok) return toast(Session.detail(r.data || {}));
+      $("#app-list").innerHTML = r.data.appeals.length ? r.data.appeals.map(a => `<div class="rep" style="grid-template-columns:1fr"><div>
+          <h4>@${esc(a.user)} <span class="chip ${a.standing?.status || ""}">${esc(a.standing?.status || "")}</span> <span class="chip">${esc(a.status)}</span></h4>
+          <p class="w">Reason given: ${esc(a.standing?.reason || "-")}${a.standing?.until ? ` &middot; until ${when(a.standing.until)}` : ""} &middot; appealed ${when(a.at)}${a.contact ? ` &middot; contact ${esc(a.contact)}` : ""}</p>
+          <p>&ldquo;${esc(a.message)}&rdquo;</p>
+          ${a.decision ? `<p class="w">${esc(a.status)} by @${esc(a.decision.by)} ${when(a.decision.at)}${a.decision.note ? `: ${esc(a.decision.note)}` : ""}</p>` : ""}
+          ${a.status === "open" ? `<div class="act"><input placeholder="note to them (emailed)" data-anote="${esc(a.id)}" maxlength="600">
+            <button class="btn small" type="button" data-dec="${esc(a.id)}" data-acc="1" style="--c:var(--green)">Accept: restore the account</button>
+            <button class="btn small" type="button" data-dec="${esc(a.id)}" data-acc="0" style="--c:var(--bad)">Reject</button>
+            <button class="btn small ghost" type="button" data-open="${esc(a.user)}">Open @${esc(a.user)}</button></div>` : ""}</div></div>`).join("")
+        : `<div class="empty">No ${status === "all" ? "" : status} appeals.</div>`;
+      $("#app-list").querySelectorAll("[data-dec]").forEach(b => b.onclick = async () => {
+        const accept = b.dataset.acc === "1";
+        if (!await Kit.confirm(accept ? "Their account is restored and they're emailed." : "They're emailed that the decision stands.", { title: accept ? "Accept this appeal?" : "Reject this appeal?", ok: accept ? "Accept" : "Reject", danger: !accept })) return;
+        const r2 = await api(`/api/console/appeals/${b.dataset.dec}`, { json: { accept, note: $(`[data-anote="${b.dataset.dec}"]`)?.value || "" } });
+        if (!r2.ok) return toast(Session.detail(r2.data || {}));
+        toast(accept ? "Accepted: account restored" : "Rejected"); loadAppeals(status); counts();
+      });
+      $("#app-list").querySelectorAll("[data-open]").forEach(b => b.onclick = () => {
+        document.querySelector('.tabs button[data-t="users"]').click(); $("#q").value = b.dataset.open; loadUsers().then(() => open(b.dataset.open));
+      });
+    }
+    async function loadSafety() {
+      const r = await api("/api/console/safety");
+      if (!r.ok) return toast(Session.detail(r.data || {}));
+      const d = r.data, x = d.express;
+      $("#safe").innerHTML = `<div class="stats4">
+          <div><b>${d.flags.length}</b><span>REFUSED PROMPTS (RECENT)</span></div><div><b>${d.distill.length}</b><span>API ACCOUNTS FLAGGED</span></div>
+          <div><b>${d.votes.up} / ${d.votes.down}</b><span>THUMBS UP / DOWN</span></div>
+          <div><b>${x ? `${x.gpu_s.toFixed(0)}s / ${x.budget_s}s` : "off"}</b><span>EXPRESS GPU TODAY${x ? ` &middot; ${x.uses} USES` : ""}${d.express_up ? "" : " &middot; DOWN"}</span></div></div>
+        <div class="sec"><h3>API ACCOUNTS FLAGGED AS POSSIBLE HARVESTING (SLOWED UNTIL CLEARED)</h3><div class="tbl">${d.distill.length ? d.distill.map(f =>
+          `<div><span>${when(f.at)}</span><span>@${esc(f.user)}</span><span>score ${f.score}</span><span>${esc(f.why.join("; "))} <button class="btn small ghost" type="button" data-clear="${esc(f.user)}">Clear</button></span></div>`).join("")
+          : `<div class="empty" style="display:block">Nobody flagged.</div>`}</div></div>
+        <div class="sec"><h3>KEEPS TRYING (3+ REFUSED PROMPTS IN 7 DAYS)</h3><div class="tbl">${d.repeat.length ? d.repeat.map(u =>
+          `<div><span>${when(u.last)}</span><span>@${esc(u.user)}</span><span>${u.refused}x</span><span><button class="btn small ghost" type="button" data-open="${esc(u.user)}">Open account</button></span></div>`).join("")
+          : `<div class="empty" style="display:block">Nobody.</div>`}</div></div>
+        <div class="sec"><h3>REFUSED PROMPTS</h3><div class="tbl">${d.flags.length ? d.flags.slice(0, 60).map(f =>
+          `<div><span>${when(f.at)}</span><span>${f.user ? "@" + esc(f.user) : esc(f.ip)}</span><span>${esc(f.where)}</span><span>${esc(f.text)}</span></div>`).join("")
+          : `<div class="empty" style="display:block">None.</div>`}</div></div>
+        <div class="sec"><h3>IPS BLOCKED FOR HAMMERING THE SERVER</h3><div class="tbl">${d.blocks.length ? d.blocks.map(b =>
+          `<div><span>until ${when(b.until)}</span><span>${esc(b.ip)}</span><span></span><span></span></div>`).join("") : `<div class="empty" style="display:block">None right now.</div>`}</div></div>`;
+      $("#safe").querySelectorAll("[data-clear]").forEach(b => b.onclick = async () => {
+        const r2 = await api(`/api/console/safety/distill/${b.dataset.clear}/clear`, { method: "POST" });
+        toast(r2.ok ? "Cleared: back to normal speed" : Session.detail(r2.data || {})); loadSafety();
+      });
+      $("#safe").querySelectorAll("[data-open]").forEach(b => b.onclick = () => {
+        document.querySelector('.tabs button[data-t="users"]').click(); $("#q").value = b.dataset.open; loadUsers().then(() => open(b.dataset.open));
+      });
+    }
     let timer = null, current = null;
     $("#q").oninput = () => { clearTimeout(timer); timer = setTimeout(loadUsers, 200); };
     loadUsers();

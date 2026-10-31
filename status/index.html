@@ -9,10 +9,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Tiny5&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../assets/kit.css?v=20261026f">
+<link rel="stylesheet" href="../assets/kit.css?v=20261031a">
 <script src="../config.js"></script>
 <script src="../assets/session.js"></script>
-<script src="../assets/kit.js?v=20261026f" data-root="../"></script>
+<script src="../assets/kit.js?v=20261031a" data-root="../"></script>
 <style>
   :root { --ok: #6ee07a; --warn: #fcc030; --down: #ff5a4e; --maint: #5cacfc; }
   .tape { height: 14px; background: repeating-linear-gradient(45deg, #fcc030 0 14px, #111 14px 28px); image-rendering: pixelated; }
@@ -163,7 +163,7 @@
     { id: "model", name: "m1", desc: "64×64 sprites", check: async ctx => !ctx.health.reached ? { state: "down", ms: null }
         : { state: (ctx.health.body?.models?.m1 ?? ctx.health.body?.model_loaded) ? "ok" : "degraded", ms: null,
             note: (ctx.health.body?.models?.m1 ?? ctx.health.body?.model_loaded) ? "ready" : "starting up" } },
-    { id: "v1", name: "v1", desc: "16:9 animated scenes, preview for Atelier", check: async ctx => !ctx.health.reached ? { state: "down", ms: null }
+    { id: "v1", name: "v1", desc: "16:9 animated scenes, for Atelier", check: async ctx => !ctx.health.reached ? { state: "down", ms: null }
         : { state: ctx.health.body?.models?.v1 ? "ok" : "degraded", ms: null, note: ctx.health.body?.models?.v1 ? "ready" : "starting up" } },
     { id: "accounts", name: "Accounts", desc: "sign-in and sessions", check: async () => { const r = await probe("/api/logout", { method: "POST" }); return { state: r.reached && r.status === 200 ? "ok" : r.reached ? "degraded" : "down", ms: r.ms }; } },
     { id: "studio", name: "Studio", desc: "gallery, likes and creations", check: async () => { const r = await probe("/api/studio/feed?limit=1"); return { state: r.reached && r.status === 200 ? "ok" : r.reached ? "degraded" : "down", ms: r.ms }; } },

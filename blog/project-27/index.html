@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Project 27 · Mosaic</title>
+<meta name="description" content="Project 27 is Mosaic's security programme, started on 27 October 2026: content safety, protection against model distillation, and stronger server defences.">
+<meta property="og:title" content="Project 27"><meta property="og:description" content="Project 27 is Mosaic's security programme, started on 27 October 2026: content safety, protection against model distillation, and stronger server defences."><meta property="og:image" content="https://ml-mosaic.github.io/blog/project-27/cover.png">
+<link rel="icon" type="image/svg+xml" sizes="any" href="../../assets/favicon.svg?v=2">
+<link rel="icon" type="image/png" sizes="64x64" href="../../assets/favicon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tiny5&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/kit.css?v=20261031a">
+<script src="../../config.js"></script>
+<script src="../../assets/session.js"></script>
+<script src="../../assets/kit.js?v=20261031a" data-root="../../"></script>
+<style>
+  :root { --acc: #7fd0ff; }
+  .progress { position: fixed; left: 0; top: 0; height: 4px; background: var(--acc); z-index: 40; width: 0; }
+  .hero { padding: 64px 0 0; text-align: center; }
+  .hero .meta { display: inline-flex; gap: 12px; align-items: center; font-size: 13px; letter-spacing: 2px; color: var(--dim); flex-wrap: wrap; justify-content: center; }
+  .hero .meta .t { background: var(--acc); color: #000; padding: 3px 9px; }
+  .hero h1 { font-weight: normal; font-size: clamp(50px, 10vw, 128px); line-height: .92; margin: 26px 0 22px; }
+  .hero .dek { font-size: clamp(18px, 2.2vw, 22px); line-height: 1.5; color: #d8d2c4; max-width: 740px; margin: 0 auto 30px; }
+  .hero-shot { max-width: 1100px; margin: 44px auto 0; padding: 0 24px; }
+  .hero-shot img { width: 100%; height: auto; display: block; image-rendering: pixelated; box-shadow: 0 0 0 4px #000, 0 0 0 8px var(--acc); }
+  .reel-l { text-align: center; color: #6f6b62; font-size: 13px; margin: 18px 0 0; }
+  .doc { display: grid; grid-template-columns: 220px minmax(0, 760px); gap: 64px; justify-content: center; padding: 80px 24px 60px; }
+  .toc { position: sticky; top: 92px; align-self: start; font-size: 14px; }
+  .toc p { color: var(--dim); font-size: 12px; letter-spacing: 2px; margin: 0 0 14px; }
+  .toc ol { list-style: none; margin: 0; padding: 0; counter-reset: t; }
+  .toc li { counter-increment: t; margin: 0 0 4px; }
+  .toc a { display: flex; gap: 10px; padding: 7px 10px; text-decoration: none; color: var(--dim); }
+  .toc a::before { content: counter(t, decimal-leading-zero); color: #4a4740; }
+  .toc a:hover { color: var(--fg); } .toc a.on { color: #000; background: var(--acc); } .toc a.on::before { color: #000; }
+  article { font-size: 18px; line-height: 1.7; color: #d8d2c4; min-width: 0; }
+  article h2 { font-weight: normal; font-size: clamp(30px, 4vw, 42px); color: #fff; margin: 84px 0 18px; line-height: 1.1; scroll-margin-top: 90px; }
+  article h2:first-child { margin-top: 0; }
+  article h2 .n { color: var(--acc); font-size: .55em; vertical-align: .45em; margin-right: 10px; }
+  article h3 { font-weight: normal; font-size: 22px; color: #fff; margin: 34px 0 10px; }
+  article p { margin: 0 0 20px; } article b { color: #fff; font-weight: normal; } article a { color: var(--acc); }
+  ul.kinds, ol.steps { padding-left: 0; list-style: none; margin: 0 0 22px; }
+  ul.kinds li { padding: 6px 0 6px 24px; position: relative; }
+  ul.kinds li::before { content: ""; position: absolute; left: 0; top: 17px; width: 10px; height: 10px; background: var(--acc); }
+  ol.steps { counter-reset: s; } ol.steps li { counter-increment: s; display: flex; gap: 14px; margin-bottom: 14px; }
+  ol.steps li::before { content: counter(s); flex: none; width: 30px; height: 30px; display: grid; place-items: center; background: var(--acc); color: #000; font-size: 15px; margin-top: 2px; }
+  .pull { font-size: clamp(24px, 3vw, 30px); line-height: 1.35; color: #fff; margin: 40px 0; padding-left: 22px; box-shadow: inset 6px 0 0 var(--acc); }
+  .callout { background: #0b1a12; padding: 20px 22px; margin: 30px var(--u); --c: var(--green); font-size: 16px; line-height: 1.6; }
+  .callout b { color: var(--green); }
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin: 34px 0; }
+  .stats div { background: var(--panel); padding: 16px; margin: var(--u); }
+  .stats b { display: block; font-size: 26px; color: #fff; } .stats span { color: var(--dim); font-size: 13px; line-height: 1.3; display: block; margin-top: 4px; }
+  .sprites { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin: 30px 0 10px; }
+  .sprites figure { margin: var(--u); background: var(--panel); padding: 10px; }
+  .sprites .two { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .sprites img { width: 100%; aspect-ratio: 1; image-rendering: pixelated; display: block; background: #1a1622; }
+  .sprites figcaption, .clips figcaption { color: var(--dim); font-size: 13px; line-height: 1.4; margin: 10px 2px 2px; }
+  .clips { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin: 30px 0 10px; }
+  .clips figure { margin: var(--u); background: var(--panel); padding: 10px; }
+  .clips img { width: 100%; aspect-ratio: 16 / 9; image-rendering: pixelated; display: block; }
+  .shot { margin: 34px 0 10px; } .shot img { width: 100%; height: auto; display: block; image-rendering: pixelated; box-shadow: 0 0 0 4px #000, 0 0 0 8px #2a2925; }
+  figcaption { color: #8a867b; font-size: 14px; line-height: 1.5; margin-top: 12px; }
+  .share { display: flex; gap: 10px; margin-top: 40px; flex-wrap: wrap; }
+  .tiers2 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 30px 0; }
+  .tiers2 div { background: var(--panel); padding: 16px; margin: var(--u); --c: #2e2838; font-size: 14px; line-height: 1.5; color: var(--dim); }
+  .tiers2 .artisan { --c: #6b3a1c; } .tiers2 .atelier { --c: #2c3c74; }
+  .tiers2 b { display: block; font-size: 20px; margin-bottom: 6px; color: #fff; } .tiers2 .artisan b { color: #e8913a; } .tiers2 .atelier b { color: #fce060; }
+  /* the formal posts: plain, numbered, no jokes */
+  body.formal article { font-size: 17px; }
+  body.formal article h2 { font-size: clamp(26px, 3.2vw, 34px); margin-top: 64px; }
+  body.formal .clause { margin: 0 0 16px; padding-left: 44px; position: relative; }
+  body.formal .clause .no { position: absolute; left: 0; top: 0; color: var(--acc); font-size: 15px; }
+  body.formal .notice { background: #0f1418; padding: 18px 22px; margin: 26px var(--u); --c: var(--acc); font-size: 16px; line-height: 1.6; color: #e2e6ea; }
+  body.formal .notice b { color: var(--acc); }
+  body.formal .sig { color: var(--dim); font-size: 15px; margin-top: 40px; }
+  @media (max-width: 980px) { .doc { grid-template-columns: minmax(0, 1fr); gap: 0; padding-top: 50px; } .toc { display: none; }
+    .stats { grid-template-columns: repeat(2, 1fr); } .sprites { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 640px) { .tiers2, .clips { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body class="formal">
+<div class="progress" id="progress"></div>
+<nav class="topbar" style="--c:var(--acc)"></nav>
+
+<header class="hero">
+  <div class="wrap">
+    <span class="meta"><span class="t">SECURITY</span><span>OCTOBER 31, 2026</span></span>
+    <h1>Project 27</h1>
+    <p class="dek">Project 27 is a programme of security and safety work that began on 27 October 2026. This notice explains what has changed, why, and what it means for your account.</p>
+  </div>
+  <div class="hero-shot"><img src="cover.png" alt="A pixel-art padlock on a dark teal background" width="960" height="540"></div>
+  
+</header>
+
+<div class="doc">
+  <aside class="toc"><p>CONTENTS</p><ol id="toc"><li><a href="#summary">Summary</a></li><li><a href="#distillation">Protection against model distillation</a></li><li><a href="#content">Content safety</a></li><li><a href="#server">Server protections</a></li><li><a href="#notices">Account notifications</a></li><li><a href="#status">Status and contact</a></li></ol></aside>
+  <article>
+<h2 id="summary"><span class="n">01</span>Summary</h2>
+<div class="notice notch"><b>Your account has not been compromised.</b> Project 27 is not a response to any breach or incident. No
+  account data, passwords, API keys or payment details have been exposed. This is a proactive initiative to strengthen
+  Mosaic before problems arise.</div>
+<p>Project 27 began on 27 October 2026. It covers four areas: the safety of what Mosaic generates, the protection of the
+  in-house data our models learned from, the defences of our servers, and the information we give you about your own
+  account. The measures described below are now in effect.</p>
+<p>These measures still require additional testing, and we will continue to adjust them. They are, however, a substantial
+  improvement on what was in place before.</p><h2 id="distillation"><span class="n">02</span>Protection against model distillation</h2>
+<p>This is the most important part of Project 27.</p>
+<p>The data that m1 and v1 learned from was <b>made in-house</b> by Mosaic. It was not scraped from the internet or taken from
+  artists. That data, and the models trained on it, represent a considerable amount of original, copyrighted work.</p>
+<p>&ldquo;Distillation&rdquo; is the practice of collecting large numbers of a model's outputs in order to train a different model
+  to imitate it. Doing this to Mosaic would amount to extracting our in-house work through the back door: a third party
+  would obtain the benefit of our copyrighted data without having created it, and without permission.</p>
+<p>We have therefore introduced the following:</p>
+<p class="clause"><span class="no">2.1</span><b>Usage monitoring.</b> API traffic is monitored for patterns consistent with systematic output collection, such as unusual volume, automated sweeps across prompt templates, and machine-regular timing. The specific thresholds are not published.</p><p class="clause"><span class="no">2.2</span><b>Rate shaping.</b> Accounts whose usage matches these patterns are slowed to a limited number of requests per minute while a person reviews the activity. Nothing is deleted and no account is banned automatically.</p><p class="clause"><span class="no">2.3</span><b>Provenance marks.</b> Images produced through the API carry an invisible, account-specific mark, which allows us to establish where an image came from. The mark does not alter any visible pixel.</p><p class="clause"><span class="no">2.4</span><b>Contractual terms.</b> Our <a href="../terms-and-conditions/">Terms</a> prohibit using Mosaic's output to train, fine-tune or evaluate other machine-learning models, and prohibit automated collection of output, regardless of plan. Commercial rights to your creations do not extend to this use.</p>
+<p>Ordinary use, including heavy use of the Studio and the API for games and other projects, is unaffected.</p><h2 id="content"><span class="n">03</span>Content safety</h2><p class="clause"><span class="no">3.1</span><b>Prompt screening.</b> Requests for sexual content are now refused before anything is generated. This applies in the Studio, the API, profile pictures, gift notes and the community forum. Repeated attempts are recorded and reviewed.</p><p class="clause"><span class="no">3.2</span><b>Reporting.</b> Every creation, profile and forum post can now be reported. Reports go directly to the Mosaic team and are reviewed by a person. The person you report is not told who reported them.</p><p class="clause"><span class="no">3.3</span><b>Appeals.</b> Accounts that are suspended or banned may now appeal from the sign-in page. Each appeal is read by a person and the outcome is sent by email.</p><h2 id="server"><span class="n">04</span>Server protections</h2><p class="clause"><span class="no">4.1</span>Security headers are applied to every response, including protections against framing, content-type confusion and cross-origin misuse.</p><p class="clause"><span class="no">4.2</span>Request size is capped, and each network address has a request budget. Addresses that repeatedly exceed it are temporarily blocked.</p><p class="clause"><span class="no">4.3</span>Sign-in attempts are limited both per network address and per account, so that a password cannot be guessed by spreading attempts across many addresses.</p><p class="clause"><span class="no">4.4</span>Each Patreon account can be linked to only one Mosaic account at a time. If it is unlinked, it may be linked to another account, and any plan that came from it ends on the previous account.</p><h2 id="notices"><span class="n">05</span>Account notifications</h2>
+<p>We now send an email for every change to the security or privacy of your account, including: changing or resetting
+  your password, turning two-step sign-in on or off, creating or revoking an API key, linking or unlinking Patreon, and
+  deleting your account. Each notice says when the change happened and roughly where from. These notices cannot be turned off.</p>
+<p>If you receive a notice for a change you did not make, reset your password immediately, review your API keys, and reply to the email.</p>
+<p>A password can now also be changed from your <a href="../../settings/">settings</a> while signed in.</p><h2 id="status"><span class="n">06</span>Status and contact</h2>
+<p>Project 27 is ongoing. The measures above still require additional testing, and some will be tuned as we learn how they
+  behave in practice. They are better than what was there before, and we will publish further updates as the work continues.</p>
+<p>If you believe you have found a security issue in Mosaic, please report it to us privately by replying to any Mosaic email
+  rather than posting it publicly. Questions about these changes can be sent the same way.</p>
+<p class="sig">The Mosaic team &middot; 31 October 2026</p>
+  </article>
+</div>
+
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  Kit.nav("Blog");
+  addEventListener("scroll", () => {
+    const h = document.documentElement, p = h.scrollTop / Math.max(1, h.scrollHeight - h.clientHeight);
+    $("#progress").style.width = p * 100 + "%";
+  }, { passive: true });
+  const links = [...document.querySelectorAll("#toc a")];
+  const spy = new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting) links.forEach(a => a.classList.toggle("on", a.getAttribute("href") === "#" + e.target.id));
+  }), { rootMargin: "-15% 0px -75% 0px" });
+  document.querySelectorAll("article h2").forEach(h => spy.observe(h));
+
+})();
+</script>
+</body>
+</html>

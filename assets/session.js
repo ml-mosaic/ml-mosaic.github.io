@@ -1,3 +1,5 @@
+/* Copyright (c) 2026 Mosaic. All rights reserved. Source-available under the Mosaic Source-Available License
+   (LICENSE.md): viewing only; no copying, reuse or redistribution of this code or its design. */
 // Sign-in state for the static site. The backend issues a session token at sign-in; it's kept here (localStorage
 // with "remember me", else sessionStorage, which ends with the tab) and sent as `Authorization: Bearer ...`.
 window.Session = (() => {

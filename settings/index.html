@@ -9,13 +9,13 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Tiny5&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../assets/kit.css?v=20261026f">
+<link rel="stylesheet" href="../assets/kit.css?v=20261031a">
 <script src="../config.js"></script>
 <script src="../assets/session.js"></script>
 <script>if (!Session.current()) location.replace("../login/?next=studio");</script>
-<script src="../assets/kit.js?v=20261026f" data-root="../"></script>
+<script src="../assets/kit.js?v=20261031a" data-root="../"></script>
 <script src="../assets/prices.js?v=20261026g"></script>
-<script src="../assets/subscribe.js?v=20261026f"></script>
+<script src="../assets/subscribe.js?v=20261031a"></script>
 <style>
   main { padding: 40px 0 90px; }
   .kicker { color: var(--blue); letter-spacing: 3px; font-size: 13px; margin: 0 0 10px; }
@@ -139,6 +139,25 @@
           <button type="button" data-v="classic" aria-pressed="false">Classic<small>the original Studio</small></button></div>
       </section>
 
+      <section class="card notch tf" id="express" hidden>
+        <h2>Express<span class="state" id="xp-state">OFF</span></h2>
+        <p class="hint" id="xp-hint">Super-fast generations on a big GPU, a few a day.</p>
+        <div class="row"><button class="btn" type="button" id="xp-sw" style="--c:var(--yellow)">Turn it on</button></div>
+      </section>
+
+      <form class="card notch" id="pw" autocomplete="off">
+        <h2>Password</h2>
+        <p class="hint">Changing it signs out every other device. Your API keys keep working. We'll email you to confirm, as we do for
+          every change to your sign-in, keys, linked accounts and privacy.</p>
+        <label class="l" for="pw-cur"><span>CURRENT PASSWORD</span></label>
+        <div class="field notch"><input id="pw-cur" type="password" autocomplete="current-password"></div>
+        <label class="l" for="pw-new"><span>NEW PASSWORD (8+ CHARACTERS)</span></label>
+        <div class="field notch"><input id="pw-new" type="password" autocomplete="new-password" minlength="8"></div>
+        <label class="l" for="pw-new2"><span>NEW PASSWORD AGAIN</span></label>
+        <div class="field notch"><input id="pw-new2" type="password" autocomplete="new-password"></div>
+        <div class="savebar"><button class="btn" type="submit" style="--c:var(--blue)">Change password</button></div>
+      </form>
+
       <form class="card notch tf" id="tf" autocomplete="off">
         <h2>Two-step sign-in<span class="state" id="tf-state">OFF</span></h2>
         <p class="hint" id="tf-hint"></p>
@@ -186,7 +205,7 @@
     $("#a-user").textContent = "@" + u.username; $("#a-email").textContent = u.email || "(none)";
     $("#a-plan").textContent = { artisan: "Artisan · 250 sprites a day, pro Studio, priority, commercial use", atelier: "Atelier · 500 sprites + 50 v1 clips a day, pro Studio, top priority, commercial use" }[u.plan]
                                || "Free · 15 generations a day, personal use";
-    showQuota(u.quota); showPic(p); preview(); counts(); dirty(); showTwoFactor(u.two_factor); showStudio(u); showPatreon(u);
+    showQuota(u.quota); showPic(p); preview(); counts(); dirty(); showTwoFactor(u.two_factor); showStudio(u); showPatreon(u); showExpress(u.express);
   }
   // Patreon: link it once and the plan follows the membership (rechecked every few hours)
   const PLAN = { free: "Free", artisan: "Artisan", atelier: "Atelier" };
@@ -216,7 +235,7 @@
       <button class="btn small" id="pt-check" type="button" style="--c:#ff424d">Check again</button>
       <a class="btn small ghost" href="../pricing/">Change plan</a>
       ${u.plan !== "free" && u.plan_source === "patreon" ? `<button class="btn small ghost" type="button" data-subscribe="${u.plan}" data-mode="cancel">Cancel on Patreon</button>` : ""}
-      ${link.auto ? "" : `<button class="btn small ghost" id="pt-unlink" type="button">Unlink</button>`}`;
+      <button class="btn small ghost" id="pt-unlink" type="button">Unlink</button>`;
     $("#pt-check").onclick = async () => {
       const r = await Session.api("/api/patreon/refresh", { method: "POST" });
       if (!r.ok) return toast(Session.detail(r.data || {}));
@@ -224,16 +243,25 @@
       fill(u); toast(r.data.plan === "free" ? "No active membership found." : `You're on ${PLAN[r.data.plan]}.`);
     };
     $("#pt-unlink")?.addEventListener("click", async () => {
-      if (!await Kit.confirm("A plan that came from Patreon goes back to Free. You can link it again any time.", { title: "Unlink Patreon?", ok: "Unlink", danger: true })) return;
+      if (!await Kit.confirm("Your plan from Patreon ends on this account right away. That Patreon account can then be linked to a different Mosaic account (one at a time)." + (link.auto ? " It won't link back here by itself: press Link Patreon to relink." : ""), { title: "Unlink Patreon?", ok: "Unlink", danger: true })) return;
       const r = await Session.api("/api/patreon/unlink", { method: "POST" });
       if (!r.ok) return toast(Session.detail(r.data || {}));
       Object.assign(u, { patreon: null, plan: r.data.plan }); fill(u); toast("Unlinked.");
     });
   }
-  // back from Patreon's sign-in: say how it went
+  // back from Patreon's sign-in: say how it went. Opened as a popup by the subscribe window (link first, then checkout)?
+  // Tell it, and close.
   (() => {
     const res = new URLSearchParams(location.search).get("patreon");
     if (!res) return;
+    try {
+      if (window.opener && window.opener.location.origin === location.origin) {
+        window.opener.postMessage({ mosaic: "patreon", result: res }, location.origin);
+        document.body.innerHTML = `<p style="font-family:Tiny5,monospace;color:#fff;text-align:center;margin-top:30vh;font-size:20px">${res === "taken" ? "That Patreon account is linked to another Mosaic account." : "Done! You can close this window."}</p>`;
+        setTimeout(() => window.close(), res === "taken" ? 4000 : 900);
+        return;
+      }
+    } catch (_) {}
     history.replaceState(null, "", location.pathname + "#patreon");
     const msg = { artisan: ["You're on Artisan!", "Patreon is linked. Your pro Studio, badge and 250 sprites a day are switched on."],
                   atelier: ["You're on Atelier!", "Patreon is linked. v1, your pro Studio, badge and 500 sprites + 50 clips a day are switched on."],
@@ -248,6 +276,35 @@
       $("#patreon").scrollIntoView({ block: "center" });
     }, 400);
   })();
+
+  // Express: Artisan 5 a day, Atelier 15 (the switch is the same one as in the Studio)
+  function showExpress(x) {
+    if (!x || !x.allowed) return;
+    $("#express").hidden = false;
+    const paint = () => {
+      $("#xp-state").textContent = x.on ? "ON" : "OFF"; $("#xp-state").classList.toggle("on", x.on);
+      $("#xp-sw").textContent = x.on ? "Turn it off" : "Turn it on"; $("#xp-sw").classList.toggle("ghost", x.on);
+      $("#xp-hint").textContent = `Super-fast generations on a big GPU: ${x.limit} a day on your plan, ${x.remaining} left today.` +
+        (x.resting ? " It's resting right now, so everything goes through the regular line until it's back." : " When they run out, you're back in the regular line.");
+    };
+    $("#xp-sw").onclick = async () => {
+      const r = await Session.api("/api/express", { json: { on: !x.on } });
+      if (!r.ok) return toast(Session.detail(r.data || {}));
+      x = r.data; paint(); toast(x.on ? "Express is on" : "Express is off");
+    };
+    paint();
+  }
+  $("#pw").addEventListener("submit", async e => {
+    e.preventDefault();
+    const cur = $("#pw-cur").value, nw = $("#pw-new").value;
+    if (!cur) return toast("Type your current password");
+    if (nw.length < 8) return toast("The new password needs at least 8 characters");
+    if (nw !== $("#pw-new2").value) return toast("The new passwords don't match");
+    const r = await Session.api("/api/account/password", { json: { current: cur, new: nw } });
+    if (!r.ok) return toast(Session.detail(r.data || {}));
+    ["#pw-cur", "#pw-new", "#pw-new2"].forEach(i => $(i).value = "");
+    Kit.alert("Your password is changed. Every other device was signed out, and we've emailed you a note about it.", { title: "Done!", ok: "Okay" });
+  });
 
   // paid plans: pro or classic Studio (saved on the account, so it follows them to every device)
   function showStudio(u) {

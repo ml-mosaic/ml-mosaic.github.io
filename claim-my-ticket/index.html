@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mosaic · Claim your ticket</title>
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/svg+xml" sizes="any" href="../assets/favicon.svg?v=2">
+<link rel="icon" type="image/png" sizes="64x64" href="../assets/favicon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tiny5&display=swap" rel="stylesheet">
+<script src="../config.js"></script>
+<script src="../assets/session.js"></script>
+<script src="../assets/kit.js?v=20261031a" data-root="../"></script>
+<style>
+  :root { --u: 4px; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #0c0c2c; color: #fff; }
+  body { font-family: "Tiny5", ui-monospace, monospace; -webkit-font-smoothing: none; user-select: none; -webkit-user-select: none; }
+  #sky { position: fixed; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; }
+  .home { position: fixed; top: 18px; left: 20px; z-index: 10; display: block; }
+  .home img { height: 16px; display: block; }
+  .me { position: fixed; top: 14px; right: 18px; z-index: 10; }
+  .me img { width: 44px; height: 44px; image-rendering: pixelated; display: block; cursor: default;
+            box-shadow: 0 -4px 0 0 #fff, 0 4px 0 0 #fff, -4px 0 0 0 #fff, 4px 0 0 0 #fff; }
+  .me .nm { position: absolute; right: 0; top: calc(100% + 12px); white-space: nowrap; background: #fff; color: #000; padding: 5px 10px; font-size: 14px;
+            opacity: 0; transform: translateY(-4px); transition: all .12s steps(2); pointer-events: none; }
+  .me .nm::before { content: ""; position: absolute; right: 16px; top: -6px; width: 6px; height: 6px; background: #fff; }
+  .me:hover .nm, .me:focus-within .nm { opacity: 1; transform: none; }
+  .stage { position: fixed; inset: 0; display: grid; place-items: center; z-index: 2; perspective: 1100px; }
+  .say { position: fixed; left: 50%; top: 12%; transform: translateX(-50%); z-index: 6; text-align: center; width: min(640px, 92vw); pointer-events: none; }
+  .say h1 { font-weight: normal; font-size: clamp(26px, 5vw, 44px); margin: 0 0 8px; text-shadow: 4px 4px 0 rgba(0,0,0,.45); }
+  .say p { margin: 0; color: #d8d4ec; font-size: 17px; text-shadow: 2px 2px 0 rgba(0,0,0,.5); }
+  .say .blink { animation: blink 1.2s steps(2) infinite; } @keyframes blink { 50% { opacity: .35; } }
+
+  /* the envelope: back, the ticket tucked inside, the front pocket, the flap (it swings open) */
+  .env { position: relative; width: min(480px, 84vw); aspect-ratio: 96 / 64; cursor: pointer; transform-style: preserve-3d;
+         animation: float 3s steps(6) infinite; filter: drop-shadow(10px 12px 0 rgba(0,0,0,.35)); }
+  @keyframes float { 50% { transform: translateY(-8px) rotate(-1deg); } }
+  .env.open { animation: none; cursor: default; }
+  .env canvas { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; }
+  .env .back { z-index: 1; } .env .front { z-index: 4; pointer-events: none; }
+  .env .flap { z-index: 5; transform-origin: 50% 0; transition: transform .7s steps(7); }
+  .env.open .flap { transform: rotateX(180deg); z-index: 0; }
+  .env .addr { position: absolute; z-index: 6; left: 9%; bottom: 13%; color: #3a2a20; font-size: clamp(13px, 2.4vw, 19px); line-height: 1.35; pointer-events: none; }
+  .env .addr b { font-weight: normal; color: #1a120c; }
+  .env .stamp { position: absolute; z-index: 6; right: 7%; bottom: 12%; width: 18%; aspect-ratio: 1; image-rendering: pixelated; pointer-events: none;
+                background: var(--sb) center / 70% no-repeat, var(--sc); box-shadow: 0 0 0 3px #f4ead8, 0 0 0 5px var(--sc); }
+  .env .peek { position: absolute; z-index: 2; left: 8%; right: 8%; top: 10%; height: 64%; background: var(--tk) center / 100% auto no-repeat; image-rendering: pixelated;
+               transition: transform .9s steps(9), opacity .3s steps(2); }
+  .env.open .peek { transform: translateY(-62%); }
+  .env.gone { transition: transform .6s steps(6), opacity .6s steps(6); transform: translateY(70vh) rotate(8deg); opacity: 0; }
+  .tap { position: absolute; z-index: 7; left: 50%; top: -38px; transform: translateX(-50%); background: #fff; color: #000; font-size: 15px; padding: 5px 12px; white-space: nowrap;
+         animation: bob 1s steps(2) infinite; }
+  .tap::after { content: ""; position: absolute; left: 50%; bottom: -6px; width: 6px; height: 6px; transform: translateX(-50%); background: #fff; }
+  @keyframes bob { 50% { transform: translate(-50%, -4px); } }
+  .env.open .tap { display: none; }
+
+  /* the ticket, in 3D: drag it around, it springs back to facing you */
+  .tk { position: fixed; left: 50%; top: 50%; width: min(600px, 90vw); aspect-ratio: 150 / 66; transform-style: preserve-3d; z-index: 8; cursor: grab;
+        transform: translate(-50%, -50%) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) scale(var(--s, 1)); touch-action: none; opacity: 0; }
+  .tk.on { opacity: 1; transition: opacity .3s steps(3); }
+  .tk.grab { cursor: grabbing; }
+  .tk .face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; background: var(--img) center / 100% 100% no-repeat;
+              image-rendering: pixelated; filter: drop-shadow(var(--sx, 8px) var(--sy, 10px) 0 rgba(0,0,0,.4)); }
+  .tk .face.b { transform: rotateY(180deg); }
+  .tk .shine { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; pointer-events: none; mix-blend-mode: screen; opacity: .55;
+               background: linear-gradient(var(--sa, 110deg), transparent 30%, rgba(255,255,255,.55) 45%, transparent 52%, transparent 60%, rgba(255,255,255,.25) 66%, transparent 72%);
+               -webkit-mask: var(--img) center / 100% 100% no-repeat; mask: var(--img) center / 100% 100% no-repeat; }
+  .tk .layer { position: absolute; inset: 0; transform: translateZ(18px); backface-visibility: hidden; -webkit-backface-visibility: hidden; pointer-events: none; }
+  .hint { position: fixed; left: 50%; bottom: calc(50% - min(132px, 20vw) - 70px); transform: translateX(-50%); z-index: 9; color: #d8d4ec; font-size: 14px; opacity: 0;
+          transition: opacity .3s steps(3); white-space: nowrap; }
+  .hint.on { opacity: 1; }
+  .claim { position: fixed; left: 50%; bottom: 9vh; transform: translate(-50%, 30px); z-index: 9; opacity: 0; pointer-events: none; transition: all .35s steps(5);
+           border: 0; cursor: pointer; padding: 15px 30px; font: inherit; font-size: 20px; letter-spacing: 1px; color: #000; background: var(--c, #fce060);
+           box-shadow: 0 -4px 0 0 var(--c, #fce060), 0 4px 0 0 var(--c, #fce060), -4px 0 0 0 var(--c, #fce060), 4px 0 0 0 var(--c, #fce060), inset 0 -5px 0 0 rgba(0,0,0,.3); }
+  .claim.on { opacity: 1; pointer-events: auto; transform: translate(-50%, 0); }
+  .claim:hover { filter: brightness(1.1); } .claim[disabled] { filter: saturate(.3) brightness(.7); cursor: wait; }
+  .msg { position: fixed; left: 50%; bottom: calc(9vh + 70px); transform: translateX(-50%); z-index: 9; color: #ff8a7a; font-size: 15px; text-align: center; width: min(560px, 92vw); }
+  .ground { position: fixed; left: 0; right: 0; bottom: 0; height: 0; z-index: 3; }
+  .critter { position: absolute; border: 0; padding: 0; background: transparent no-repeat 0 0 / 100% 100%; image-rendering: pixelated; cursor: pointer; }
+  .critter .eye { position: absolute; overflow: hidden; pointer-events: none; } .critter .pupil { position: absolute; background: #14121a; }
+  .critter .lid { position: absolute; inset: 0; display: none; } .critter.blink .pupil { display: none; } .critter.blink .lid { display: block; }
+  .kit-say { position: fixed; z-index: 90; background: #fff; color: #000; font-size: 15px; padding: 4px 10px; white-space: nowrap; transform: translate(-50%, -100%); pointer-events: none; animation: ksay 1.5s steps(4) forwards; }
+  @keyframes ksay { 0% { opacity: 0; } 12%, 80% { opacity: 1; } 100% { opacity: 0; } }
+  .kit-float { position: fixed; z-index: 89; pointer-events: none; image-rendering: pixelated; }
+  .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: #fff; color: #000; padding: 10px 16px; z-index: 95; opacity: 0; }
+  .toast.show { opacity: 1; }
+  .empty-btn { display: inline-block; margin-top: 22px; pointer-events: auto; text-decoration: none; color: #000; background: #fff; padding: 11px 20px; font-size: 16px; }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<canvas id="sky"></canvas>
+<a class="home" href="../" aria-label="Mosaic home"><img src="../assets/logo-wordmark.png" alt="Mosaic"></a>
+<div class="me" id="me" hidden tabindex="0"><img id="me-pic" alt="Your profile picture"><span class="nm" id="me-name"></span></div>
+<div class="say" id="say"><h1>&nbsp;</h1></div>
+<div class="stage" id="stage"></div>
+<div class="ground" id="ground"></div>
+<button class="claim" id="claim" type="button">Claim my ticket</button>
+<div class="hint" id="hint">drag the ticket around &middot; flip it over</div>
+<div class="msg" id="msg"></div>
+<script>
+(() => {
+  const $ = s => document.querySelector(s), reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (!Session.current()) { location.replace("../login/?next=claim"); return; }
+  const esc = Kit.esc, PLAN = Kit.PLAN;
+
+  // ---------------------------------------------------------------- the night sky: bands, twinkling stars, hills (drawn small, scaled up)
+  const sky = $("#sky"), g = sky.getContext("2d"), S = 4;
+  let stars = [];
+  function drawSky(t = 0) {
+    const W = Math.ceil(innerWidth / S), H = Math.ceil(innerHeight / S);
+    if (sky.width !== W || sky.height !== H) {
+      sky.width = W; sky.height = H;
+      stars = Array.from({ length: Math.round(W * H / 160) }, () => ({ x: Math.random() * W | 0, y: Math.random() * H * .62 | 0, p: Math.random() * 6, c: Math.random() < .75 }));
+    }
+    const bands = ["#0c0c2c", "#121844", "#18205a", "#1c2c5c", "#2c3c74", "#3a4c8c"], horizon = Math.round(H * .78);
+    bands.forEach((c, i) => { g.fillStyle = c; g.fillRect(0, Math.round(i * horizon / bands.length), W, Math.ceil(horizon / bands.length) + 1); });
+    for (const s of stars) {
+      const on = Math.sin(t / 600 + s.p) > -.6;
+      if (!on) continue;
+      g.fillStyle = s.c ? "#fcfcfc" : "#fce8a0"; g.fillRect(s.x, s.y, 1, 1);
+      if (Math.sin(t / 400 + s.p * 3) > .96) { g.fillRect(s.x - 1, s.y, 3, 1); g.fillRect(s.x, s.y - 1, 1, 3); }
+    }
+    for (let y = -6; y <= 6; y++) for (let x = -6; x <= 6; x++) {                  // a little crescent moon
+      if (x * x + y * y <= 36 && (x - 3) * (x - 3) + (y + 2) * (y + 2) > 25) { g.fillStyle = "#fcf4d8"; g.fillRect(W - 40 + x, 20 + y, 1, 1); }
+    }
+    g.fillStyle = "#141c44";
+    for (let x = 0; x < W; x++) { const h = 6 + Math.round(4 * Math.sin(x / 17) + 3 * Math.sin(x / 7 + 1)); g.fillRect(x, horizon - h, 1, h); }
+    g.fillStyle = "#3a4c8c"; g.fillRect(0, horizon, W, 1); g.fillStyle = "#24305c"; g.fillRect(0, horizon + 1, W, 2); g.fillStyle = "#141c44"; g.fillRect(0, horizon + 3, W, H);
+  }
+  (function loop(t) { drawSky(t); if (!reduce) requestAnimationFrame(loop); })(0);
+  addEventListener("resize", () => drawSky(performance.now()));
+
+  // ---------------------------------------------------------------- the envelope, in pixel art (96 x 64, three layers)
+  function paint(cv, fn) { cv.width = 96; cv.height = 64; const c = cv.getContext("2d"); fn(c); return cv; }
+  const PAPER = "#f4ead8", SHADE = "#e2d2b4", EDGE = "#8c6a4a", INSIDE = "#c9b28c";
+  function poly(c, pts, fill) { c.fillStyle = fill; for (let y = 0; y < 64; y++) for (let x = 0; x < 96; x++) if (inside(x + .5, y + .5, pts)) c.fillRect(x, y, 1, 1); }
+  function inside(x, y, p) { let o = false; for (let i = 0, j = p.length - 1; i < p.length; j = i++) if ((p[i][1] > y) !== (p[j][1] > y) && x < (p[j][0] - p[i][0]) * (y - p[i][1]) / (p[j][1] - p[i][1]) + p[i][0]) o = !o; return o; }
+  function outline(c, pts) { c.fillStyle = EDGE; for (let i = 0; i < pts.length; i++) { const a = pts[i], b = pts[(i + 1) % pts.length], n = Math.max(Math.abs(b[0] - a[0]), Math.abs(b[1] - a[1]));
+    for (let k = 0; k <= n; k++) c.fillRect(Math.min(95, Math.round(a[0] + (b[0] - a[0]) * k / n)), Math.min(63, Math.round(a[1] + (b[1] - a[1]) * k / n)), 1, 1); } }
+  const back = c => { c.fillStyle = EDGE; c.fillRect(0, 0, 96, 64); c.fillStyle = INSIDE; c.fillRect(1, 1, 94, 62); };
+  const front = c => {
+    const p = [[0, 4], [48, 36], [96, 4], [96, 64], [0, 64]];
+    poly(c, p, PAPER);
+    poly(c, [[0, 64], [48, 34], [96, 64]], SHADE);                     // the bottom flap, a shade darker
+    outline(c, [[0, 4], [48, 36], [96, 4]]); outline(c, [[0, 63], [48, 34], [95, 63]]);
+    c.fillStyle = EDGE; c.fillRect(0, 4, 1, 60); c.fillRect(95, 4, 1, 60); c.fillRect(0, 63, 96, 1);
+  };
+  const flap = c => {
+    poly(c, [[0, 0], [96, 0], [48, 38]], PAPER); outline(c, [[0, 0], [95, 0], [48, 38]]);
+    c.fillStyle = "#d84a5a"; [[45, 32, 6, 4], [44, 33, 8, 3], [46, 36, 4, 2]].forEach(r => c.fillRect(...r));     // the wax seal
+    c.fillStyle = "#f07888"; c.fillRect(46, 33, 2, 1);
+  };
+
+  // ---------------------------------------------------------------- the 3D ticket (drag to turn it; it springs back)
+  function ticket3d(plan) {
+    const el = document.createElement("div"); el.className = "tk";
+    el.innerHTML = `<div class="face" style="--img:url(../assets/tickets/ticket-${plan}.png)"></div><div class="shine" style="--img:url(../assets/tickets/ticket-${plan}.png)"></div>
+      <div class="face b" style="--img:url(../assets/tickets/back-${plan}.png)"></div>`;
+    document.body.appendChild(el);
+    let rx = 0, ry = 0, vx = 0, vy = 0, drag = null, hover = { x: 0, y: 0 }, spin = 540;
+    el.addEventListener("pointerdown", e => { drag = { x: e.clientX, y: e.clientY, rx, ry }; el.setPointerCapture(e.pointerId); el.classList.add("grab"); });
+    el.addEventListener("pointermove", e => {
+      if (!drag) return;
+      const nry = drag.ry + (e.clientX - drag.x) * .5, nrx = drag.rx - (e.clientY - drag.y) * .4;
+      vy = nry - ry; vx = nrx - rx; ry = nry; rx = Math.max(-70, Math.min(70, nrx));
+    });
+    const up = () => { drag = null; el.classList.remove("grab"); };
+    el.addEventListener("pointerup", up); el.addEventListener("pointercancel", up);
+    addEventListener("pointermove", e => { hover = { x: e.clientX / innerWidth - .5, y: e.clientY / innerHeight - .5 }; });
+    (function frame() {
+      if (!el.isConnected) return;
+      if (spin > 0) { ry += Math.min(18, spin * .08); spin -= Math.min(18, spin * .08); if (spin < 1) { spin = 0; ry = Math.round(ry / 360) * 360; } }
+      else if (!drag) {
+        ry += vy; rx += vx; vy *= .9; vx *= .9;                                   // a little momentum, then home
+        const home = Math.round(ry / 180) * 180;                                  // settles on whichever side is nearest
+        ry += (home + hover.x * 24 - ry) * .08; rx += (-hover.y * 18 - rx) * .08;
+      }
+      el.style.setProperty("--rx", rx.toFixed(2) + "deg"); el.style.setProperty("--ry", ry.toFixed(2) + "deg");
+      el.style.setProperty("--sa", (110 + ry * .6).toFixed(1) + "deg");
+      el.style.setProperty("--sx", (8 - ry % 360 / 12).toFixed(1) + "px"); el.style.setProperty("--sy", (10 + rx / 6).toFixed(1) + "px");
+      requestAnimationFrame(frame);
+    })();
+    requestAnimationFrame(() => el.classList.add("on"));
+    return el;
+  }
+
+  // ---------------------------------------------------------------- the visit
+  const toast = Kit.toast;
+  Promise.all([Session.api("/api/tickets"), Kit.json("../assets/scenes/scenes.json").catch(() => []), Kit.json("../assets/scenes/extras.json").catch(() => ({}))]).then(([r, scenes, extras]) => {
+    if (r.status === 401) return location.replace("../login/?next=claim");
+    if (!r.ok) return $("#say").innerHTML = `<h1>Hmm, the mailbox is stuck.</h1><p>Couldn't reach Mosaic. Try again in a minute.</p>`;
+    const me = r.data.me, t = r.data.tickets[0];
+    $("#me").hidden = false; $("#me-pic").src = Kit.pfp({ username: me.username, avatar: me.avatar }); $("#me-name").textContent = `@${me.username}`;
+    const greeter = name => {
+      const a = scenes.find(s => s.animal.name === name)?.animal || extras[name] || scenes[0]?.animal;
+      if (!a) return;
+      const P = innerWidth < 600 ? 4 : 6, c = Kit.critter(a, $("#ground"), { left: `calc(50% - ${a.w * P / 2}px)`, bottom: `${Math.round(innerHeight * .22) - 4}px`, P });
+      return c;
+    };
+    if (!t) {
+      $("#say").innerHTML = `<h1>You don't have any tickets.</h1><p>When someone gifts you a week of Artisan or Atelier, it arrives here in an envelope.</p>
+        <a class="empty-btn" href="../studio/">Go to the Studio</a>`;
+      const c = greeter("penguin");
+      if (c) { c.a.words = ["Hi there!", "No mail today...", "Check back soon!", "*waddles*"]; setTimeout(() => { Kit.talk(c.el, "Hi there!", 1800); Kit.hop(c.el); }, 700); }
+      return;
+    }
+    const plan = PLAN[t.plan] ? t.plan : "artisan", P = PLAN[plan], from = t.from || {};
+    document.documentElement.style.setProperty("--c", P.c);
+    $("#claim").style.setProperty("--c", P.c);
+    $("#say").innerHTML = `<h1>You've got mail!</h1><p class="blink">click the envelope to open it</p>`;
+    const env = document.createElement("div"); env.className = "env"; env.setAttribute("role", "button"); env.setAttribute("aria-label", "Open the envelope"); env.tabIndex = 0;
+    env.innerHTML = `<span class="tap">click me!</span><canvas class="back"></canvas><div class="peek" style="--tk:url(../assets/tickets/ticket-${plan}.png)"></div><canvas class="front"></canvas><canvas class="flap"></canvas>
+      <div class="addr">To: <b>@${esc(me.username)}</b><br>From: <b>@${esc(from.username || "a friend")}</b><br><span style="color:#8c6a4a">one week of ${esc(P.name)}</span></div>
+      <div class="stamp" style="--sc:${P.b};--sb:url(../assets/scenes/${P.mascot}.png)"></div>`;
+    paint(env.querySelector(".back"), back); paint(env.querySelector(".front"), front); paint(env.querySelector(".flap"), flap);
+    $("#stage").appendChild(env);
+    let opened = false;
+    const openIt = () => {
+      if (opened) return; opened = true;
+      env.classList.add("open");
+      $("#say").innerHTML = `<h1>A ticket from @${esc(from.username || "a friend")}!</h1><p>${t.message ? `&ldquo;${esc(t.message)}&rdquo;` : `a whole week of ${esc(P.name)}, just for you`}</p>`;
+      setTimeout(() => {
+        env.classList.add("gone");
+        const tk = ticket3d(plan);
+        Kit.confetti([P.c, "#ffffff", "#f87898", "#6ee07a", P.b], 2600);
+        setTimeout(() => $("#hint").classList.add("on"), 900);
+        setTimeout(() => $("#claim").classList.add("on"), 3200);                       // a few seconds to admire it first
+      }, reduce ? 50 : 1100);
+    };
+    env.addEventListener("click", openIt);
+    env.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openIt(); } });
+    $("#claim").onclick = async () => {
+      $("#claim").disabled = true; $("#msg").textContent = "";
+      const c = await Session.api(`/api/tickets/${t.id}/claim`, { method: "POST" });
+      if (!c.ok) { $("#claim").disabled = false; $("#msg").textContent = Session.detail(c.data || {}); return; }
+      Kit.confetti([P.c, "#ffffff", "#f87898", "#6ee07a", "#5cacfc"], 2400);
+      $("#claim").textContent = "Claimed!"; $("#hint").classList.remove("on");
+      $("#say").innerHTML = `<h1>Enjoy your week of ${esc(P.name)}!</h1><p>Taking you to the Studio...</p>`;
+      setTimeout(() => location.href = "../studio/", 1900);
+    };
+  });
+})();
+</script>
+</body>
+</html>

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Mosaic · pixel art from a sentence</title>
-<meta name="description" content="Mosaic turns a sentence into pixel art: 64x64 sprites with m1, and little animated 16:9 scenes with v1 (preview).">
+<meta name="description" content="Mosaic turns a sentence into pixel art: 64x64 sprites with m1, and little animated 16:9 scenes with v1.">
 <link rel="icon" type="image/svg+xml" sizes="any" href="assets/favicon.svg?v=2">
 <link rel="icon" type="image/png" sizes="64x64" href="assets/favicon.png?v=2">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -12,9 +12,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Tiny5&display=swap" rel="stylesheet">
 <script src="config.js"></script>
 <script src="assets/session.js"></script>
-<script src="assets/kit.js?v=20261026f" data-root=""></script>
+<script src="assets/kit.js?v=20261031a" data-root=""></script>
 <script src="assets/prices.js?v=20261026g"></script>
-<script src="assets/subscribe.js?v=20261026f"></script>
+<script src="assets/subscribe.js?v=20261031a"></script>
 <style>
   :root {
     --bg: #000; --fg: #fff; --dim: #8a867b; --line: #2a2925; --panel: #0d0d0c;
@@ -56,6 +56,10 @@
   nav .links a:hover { color: var(--fg); animation: hop .4s steps(3); }
   @keyframes hop { 50% { transform: translateY(-5px); } }
   nav .links a.me { color: var(--green); }
+  .grad { display: block; background: #fce060; color: #000; text-decoration: none; font-size: 14px; letter-spacing: 1px; padding: 9px 0; position: relative; z-index: 29; }
+  .grad .wrap { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .grad b { font-weight: normal; background: #000; color: #fce060; padding: 2px 7px; }
+  .grad .go { margin-left: auto; } .grad:hover .go { text-decoration: underline; }
 
   /* ---------------------------------------------------------------- hero: a little world */
   .world { position: relative; overflow: hidden; min-height: 660px;
@@ -284,6 +288,7 @@
       <a class="opt" href="#explore">Wish machine</a>
       <a class="opt" href="#gallery">Sticker book</a>
       <a href="studio/">Studio</a>
+      <a class="opt" href="forum/">Forum</a>
       <a class="opt" href="blog/">Blog</a>
       <a class="opt" href="portal/">Dev portal</a>
       <a class="opt" href="status/">Status</a>
@@ -291,6 +296,9 @@
     </div>
   </div>
 </nav>
+
+<a class="grad" href="blog/m1-is-out-of-school/"><span class="wrap"><b>NEW</b> m1 and v1 have finished school: out of preview, for real now
+  <span class="go">read all about it &rarr;</span></span></a>
 
 <header class="world" id="top">
   <div class="sun"></div>
@@ -301,8 +309,8 @@
   <div class="wrap">
     <div class="hello">
       <h1>Mosaic draws<br><span class="what" id="what">frogs</span></h1>
-      <p>Tell it what you want, in plain words. <b>m1</b> turns it into a tiny 64&times;64 sprite; <b>v1</b>, our new
-        preview, turns it into a little animated scene. Pixel art, no smudges.</p>
+      <p>Tell it what you want, in plain words. <b>m1</b> turns it into a tiny 64&times;64 sprite; <b>v1</b> turns it into a
+        little animated scene. Both just finished school. Pixel art, no smudges.</p>
       <div class="cta">
         <a class="btn" href="#models">Meet the models</a>
         <a class="btn ghost" href="login/#signup" id="cta-key">Get an API key</a>
@@ -322,7 +330,7 @@
 
 <div class="hud">
   <div class="wrap">
-    <div class="stat">MODE<div class="xp"><div class="track"><div class="fill" id="xp-fill" style="width:0"></div></div><span>PREVIEW &middot; still learning</span></div></div>
+    <div class="stat">MODE<div class="xp"><div class="track"><div class="fill" id="xp-fill" style="width:0"></div></div><span>GRADUATED &middot; out of school</span></div></div>
     <div class="stat">MODELS<b>m1 + v1</b></div>
     <div class="stat">SPRITES<b>64&times;64</b></div>
     <div class="stat">SCENES<b>16:9 &middot; 12 fps</b></div>
@@ -339,24 +347,25 @@
       <div class="mcard notch m1">
         <div class="plate"><b>m1</b></div>
         <div class="body">
-          <div class="kind">Sprites<span class="state">AVAILABLE</span></div>
+          <div class="kind">Sprites<span class="state">RELEASED</span></div>
           <div class="show px"><div id="m1-show"></div><small>real m1 output</small></div>
           <ul><li>A 64&times;64 sprite on a see-through background</li>
             <li>Critters, items, plants, buildings and tiles</li>
             <li>1 generation each: 15 a day free, more with a plan</li></ul>
           <div class="go"><a class="btn small" href="studio/" style="--c:var(--orange)">Try it in the Studio</a>
+            <a class="btn small ghost" href="blog/m1-is-out-of-school/">Read: m1 is out of school</a>
             <a class="btn small ghost" href="#explore">Make a wish</a></div>
         </div>
       </div>
       <div class="mcard notch v1">
         <div class="plate"><b>v1</b></div>
         <div class="body">
-          <div class="kind">Animated scenes<span class="state">ATELIER PREVIEW</span></div>
+          <div class="kind">Animated scenes<span class="state">RELEASED &middot; ATELIER</span></div>
           <div class="show px"><img id="v1-show" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="A campfire crackling at night under the stars"><small id="v1-cap">from v1's training set &middot; not v1 output (yet)</small></div>
           <ul><li>A 2-second, 16:9 clip: 24 frames at 12 fps, made to loop</li>
             <li>Walks, weather, campfires, rolling seas, spinning pickups</li>
-            <li>50 clips a day on the Atelier plan while it learns</li></ul>
-          <div class="go"><a class="btn small" href="blog/a-first-look-at-v1/" style="--c:#c4d4f0">Read: A first look at v1</a></div>
+            <li>50 clips a day on the Atelier plan</li></ul>
+          <div class="go"><a class="btn small" href="blog/v1-is-out-of-school/" style="--c:#c4d4f0">Read: v1 is out of school</a></div>
         </div>
       </div>
     </div>
@@ -493,7 +502,8 @@ curl <span id="code-url"></span>/api/generate \
 
   // signed in? the nav says who, and "get a key" goes straight to the portal
   const me = Session.current();
-  if (me) { const a = $("#nav-me"); a.textContent = me.username; a.href = "studio/#mine"; a.classList.add("me"); $("#cta-key").href = "portal/";
+  if (me) { const a = $("#nav-me"); a.textContent = me.username; a.href = "settings/"; a.classList.add("me"); $("#cta-key").href = "portal/";
+            const box = document.createElement("span"); a.replaceWith(box); box.appendChild(a); Kit.profileMenu(box);   // Settings, Gift, Sign out
             Subscribe.ctas(); }
 
   function tileBg(el, file, k, cols, rows) {
@@ -629,7 +639,7 @@ curl <span id="code-url"></span>/api/generate \
 
   /* ================================================================ HUD */
   function hud(M) {
-    const pct = 62, fill = $("#xp-fill");      // just a friendly "preview" bar
+    const pct = 100, fill = $("#xp-fill");     // a full bar: both models have finished training
     $("#foot-step").textContent = "every sprite here is real m1 output";
     new IntersectionObserver((es, o) => es.forEach(e => {
       if (!e.isIntersecting) return; o.disconnect();

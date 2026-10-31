@@ -1,3 +1,5 @@
+/* Copyright (c) 2026 Mosaic. All rights reserved. Source-available under the Mosaic Source-Available License
+   (LICENSE.md): viewing only; no copying, reuse or redistribution of this code or its design. */
 // Plan prices in the visitor's own currency. The plans are priced in BASE on Patreon (which charges each patron in
 // their own currency); here every element with data-price="free|artisan|atelier" shows the price converted, as an
 // estimate ("≈ US$3.86"), from a free exchange-rate feed remembered for 12 hours. If the rates can't load, BASE shows.

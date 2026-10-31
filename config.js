@@ -1,3 +1,5 @@
+/* Copyright (c) 2026 Mosaic. All rights reserved. Source-available under the Mosaic Source-Available License
+   (LICENSE.md): viewing only; no copying, reuse or redistribution of this code or its design. */
 // Site settings. Every page loads this first.
 window.MOSAIC = {
   // The m1 backend (website_backend). Pages on GitHub are served over HTTPS, so this must be an https:// address

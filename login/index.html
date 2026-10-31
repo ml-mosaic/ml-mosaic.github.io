@@ -192,6 +192,7 @@
         </div>
         <button class="btn" type="submit"><span class="label">Sign in</span></button>
         <p class="switch">New here? <button type="button" data-go="signup">Create an account</button></p>
+        <p class="switch" style="margin-top:6px">Banned or suspended? <button type="button" id="appeal-open">Appeal</button></p>
       </form>
 
       <form id="signup" novalidate hidden>
@@ -297,11 +298,84 @@
   </section>
 </div>
 <div class="toast" id="toast" role="status"></div>
+<style>
+  /* the appeal popup: a suspended or banned account asks a person to take another look */
+  .ap-back { position: fixed; inset: 0; z-index: 120; display: grid; place-items: center; padding: 18px; background: rgba(0,0,0,.82); overflow-y: auto; }
+  .ap-card { position: relative; width: min(540px, 100%); background: #120f17; padding: 24px 24px 22px;
+             box-shadow: 0 -4px 0 0 #3a2430, 0 4px 0 0 #3a2430, -4px 0 0 0 #3a2430, 4px 0 0 0 #3a2430; animation: ap-in .2s steps(4); }
+  @keyframes ap-in { from { transform: translateY(14px); opacity: 0; } }
+  .ap-card .x { position: absolute; top: 8px; right: 10px; background: none; border: 0; color: #8a867b; font-size: 22px; cursor: pointer; }
+  .ap-tag { display: inline-block; font-size: 11px; letter-spacing: 2px; padding: 4px 9px; background: #3a2430; color: #ff8a7a; }
+  .ap-card h2 { font-weight: normal; font-size: 28px; margin: 10px 0 8px; }
+  .ap-card p { color: #b9b0c8; line-height: 1.55; margin: 0 0 12px; font-size: 15px; }
+  .ap-card .why { background: #1d1826; padding: 10px 12px; color: #e8e4f0; font-size: 14px; }
+  .ap-card label { display: block; font-size: 12px; letter-spacing: 2px; color: #8f86a0; margin: 14px 0 6px; }
+  .ap-card input, .ap-card textarea { width: 100%; background: #1d1826; border: 0; outline: none; color: #fff; padding: 10px 12px; font-size: 15px; }
+  .ap-card textarea { min-height: 120px; resize: vertical; line-height: 1.45; }
+  .ap-card input:focus, .ap-card textarea:focus { box-shadow: 0 0 0 2px #ff8a7a; }
+  .ap-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+  .ap-btn { border: 0; cursor: pointer; padding: 12px 20px; font-size: 16px; letter-spacing: 1px; background: #ff8a7a; color: #000; box-shadow: inset 0 -4px 0 0 rgba(0,0,0,.3); }
+  .ap-btn.ghost { background: transparent; color: #fff; box-shadow: inset 0 0 0 3px #3a3446; }
+  .ap-btn[disabled] { filter: saturate(.3) brightness(.7); cursor: wait; }
+  .ap-err { color: #ff8a7a; font-size: 14px; min-height: 1em; margin: 10px 0 0; }
+  .ap-note { color: #8f86a0; font-size: 12px; line-height: 1.5; margin: 12px 0 0; } .ap-note a { color: #e8e4f0; }
+  .ap-state { display: flex; gap: 10px; align-items: center; background: #1d1826; padding: 10px 12px; font-size: 14px; color: #e8e4f0; }
+  .ap-state i { width: 10px; height: 10px; flex: none; background: #fce060; }
+  .ap-state.rejected i { background: #ff5a4e; }
+</style>
+<script>
+// Banned or suspended: what happened, and a form to ask a person to take another look (POST /api/appeals).
+function appealBox(d, identifier = "", password = "") {
+  document.querySelector(".ap-back")?.remove();
+  const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const banned = d?.standing === "banned", a = d?.appeal;
+  const until = d?.until ? new Date(d.until * 1000).toLocaleString([], { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" }) : null;
+  const back = document.createElement("div"); back.className = "ap-back"; back.setAttribute("role", "dialog"); back.setAttribute("aria-modal", "true");
+  const known = !!d;
+  back.innerHTML = `<div class="ap-card"><button class="x" type="button" aria-label="Close">&times;</button>
+    <span class="ap-tag">${known ? (banned ? "ACCOUNT BANNED" : "ACCOUNT SUSPENDED") : "APPEAL"}</span>
+    <h2>${known ? (banned ? "This account is banned" : "This account is suspended") : "Appeal a ban or suspension"}</h2>
+    ${known ? `<p>${banned ? "It can't sign in or use the API, and what it made is hidden." : `It can't sign in or use the API until <b style="color:#fff;font-weight:normal">${esc(until || "further notice")}</b>.`}</p>
+      ${d.reason ? `<p class="why">Reason: ${esc(d.reason)}</p>` : ""}` : `<p>Sign in details first, so we know it's your account.</p>`}
+    ${a && a.status === "open" ? `<div class="ap-state"><i></i>Your appeal is waiting for a person to look at it. We'll email you the decision.</div>`
+      : `${a && a.status === "rejected" ? `<div class="ap-state rejected"><i></i>Your last appeal was looked at and the decision stood.${a.note ? " " + esc(a.note) : ""} You can appeal again with new information.</div>` : ""}
+      <p style="margin-top:14px">Think we got it wrong? Tell us what happened. A real person reads every appeal and decides; we'll email you either way.</p>
+      ${known && password ? "" : `<label for="ap-id">USERNAME OR EMAIL</label><input id="ap-id" autocomplete="username" value="${esc(identifier)}">
+        <label for="ap-pw">PASSWORD</label><input id="ap-pw" type="password" autocomplete="current-password">`}
+      <label for="ap-msg">YOUR APPEAL</label><textarea id="ap-msg" maxlength="2000" placeholder="What happened, and why the decision should change (at least 20 characters)"></textarea>
+      <label for="ap-contact">ANOTHER EMAIL TO REACH YOU (OPTIONAL)</label><input id="ap-contact" type="email" maxlength="254" placeholder="if you can't read the account's email">
+      <p class="ap-err" id="ap-err"></p>
+      <div class="ap-row"><button class="ap-btn" type="button" id="ap-send">Send my appeal</button><button class="ap-btn ghost" type="button" data-close>Not now</button></div>`}
+    <p class="ap-note">Appeals are handled under the <a href="../terms/">Mosaic Terms</a>. Please send one appeal at a time: more don't speed it up.</p></div>`;
+  document.body.appendChild(back);
+  const close = () => back.remove();
+  back.addEventListener("click", e => { if (e.target === back || e.target.closest(".x,[data-close]")) close(); });
+  addEventListener("keydown", function k(e) { if (e.key === "Escape") { close(); removeEventListener("keydown", k); } });
+  const send = back.querySelector("#ap-send");
+  if (!send) return;
+  back.querySelector("#ap-msg").focus();
+  send.onclick = async () => {
+    const id = back.querySelector("#ap-id")?.value.trim() || identifier, pw = back.querySelector("#ap-pw")?.value || password;
+    const message = back.querySelector("#ap-msg").value.trim(), err = back.querySelector("#ap-err");
+    if (!id || !pw) return err.textContent = "Fill in your username (or email) and password.";
+    if (message.length < 20) return err.textContent = "Tell us a little more (at least 20 characters).";
+    send.disabled = true; err.textContent = "";
+    const r = await Session.api("/api/appeals", { json: { identifier: id, password: pw, message, contact: back.querySelector("#ap-contact").value.trim() }, auth: false });
+    send.disabled = false;
+    if (!r.ok) return err.textContent = (typeof r.data?.detail === "string" ? r.data.detail : r.data?.detail?.message) || "Couldn't send that: try again in a minute.";
+    back.querySelector(".ap-card").innerHTML = `<span class="ap-tag">APPEAL SENT</span><h2>Got it. Thank you.</h2>
+      <p>Your appeal is in the queue. A person will read it and we'll email you the decision. You don't need to do anything else.</p>
+      <div class="ap-row"><button class="ap-btn" type="button" data-close>Okay</button></div>`;
+  };
+}
+if (new URLSearchParams(location.search).get("appeal") === "1") addEventListener("DOMContentLoaded", () => appealBox(null));
+</script>
 
 <script>
 (() => {
   // where to go after signing in: the studio, unless ?next=portal|home|status says otherwise
-  const NEXT = { home: "../", portal: "../portal/", status: "../status/" }[new URLSearchParams(location.search).get("next")] || "../studio/";
+  const NEXT = { home: "../", portal: "../portal/", status: "../status/", claim: "../claim-my-ticket/", forum: "../forum/", settings: "../settings/",
+                 studio: "../studio/" }[new URLSearchParams(location.search).get("next")] || "../studio/";
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const $ = s => document.querySelector(s), rand = (a, b) => a + Math.random() * (b - a);
   const ACCENT = { autumn: "#e8913a", beach: "#3c9cfc", sunset: "#f87858", snow: "#9cc4fc" };
@@ -584,6 +658,7 @@
     const remember = $("#remember").checked;
     const r = await send(f, "/api/login", { identifier, password, remember });
     if (r.status === 403 && r.data.detail?.verify) return startVerify(identifier, r.data.detail.email, remember, false);
+    if (r.status === 403 && r.data.detail?.standing) { fail(f, "oh no..."); return appealBox(r.data.detail, identifier, password); }
     if (r.ok && r.data.two_factor) {                                  // two-step sign-in: the emailed code is next
       try { if (remember) localStorage.setItem("mosaic-user", identifier); else localStorage.removeItem("mosaic-user"); } catch (_) {}
       return startVerify(identifier, r.data.email, remember, false, { username: r.data.username, ticket: r.data.ticket, password });
@@ -599,6 +674,7 @@
     setTimeout(() => location.href = NEXT, 1300);
   });
   try { const u = localStorage.getItem("mosaic-user"); if (u) $("#in-id").value = u; } catch (_) {}
+  $("#appeal-open").addEventListener("click", () => appealBox(null, $("#in-id").value.trim()));
 
   forms.signup.addEventListener("submit", async e => {
     e.preventDefault();

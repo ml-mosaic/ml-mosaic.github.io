@@ -9,10 +9,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Tiny5&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../assets/kit.css?v=20261026f">
+<link rel="stylesheet" href="../assets/kit.css?v=20261031a">
 <script src="../config.js"></script>
 <script src="../assets/session.js"></script>
-<script src="../assets/kit.js?v=20261026f" data-root="../"></script>
+<script src="../assets/kit.js?v=20261031a" data-root="../"></script>
 <style>
   body { padding-bottom: 210px; }
 
@@ -53,6 +53,33 @@
   .tile .badge.clip { left: auto; right: 7px; background: #1c2c5c; color: #c4d4f0; }
   .tile.pending { cursor: default; }
   .tile.pending canvas { width: 100%; height: 100%; image-rendering: pixelated; display: block; }
+  .tile.pending.video { aspect-ratio: 16 / 9; }                    /* clips: widescreen static, not a stretched square */
+  .tile .votes { position: absolute; top: 6px; right: 6px; display: flex; gap: 4px; opacity: 0; transition: opacity .12s steps(2); z-index: 2; }
+  .tile:hover .votes, .tile:focus-within .votes, .tile .votes.set { opacity: 1; }
+  .tile.video .votes { top: auto; bottom: 30px; }
+  .vbtn { display: inline-grid; place-items: center; width: 26px; height: 24px; border: 0; padding: 0; cursor: pointer; background: rgba(0,0,0,.72); }
+  .vbtn i { width: 14px; height: 14px; background: var(--ic) 0 0 / 100% 100%; image-rendering: pixelated; filter: grayscale(1) brightness(.85); }
+  .vbtn:hover i { filter: none; }
+  .vbtn[aria-pressed="true"] { background: #fff; } .vbtn[aria-pressed="true"] i { filter: none; }
+  .vbtn.up i { --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 7 7' shape-rendering='crispEdges'%3E%3Cpath fill='%236ee07a' d='M3 0h1v2h3v3h-1v2h-4v-4h1zM0 3h1v4h-1z'/%3E%3C/svg%3E"); }
+  .vbtn.down i { --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 7 7' shape-rendering='crispEdges'%3E%3Cpath fill='%23ff8a7a' d='M3 7h1v-2h3v-3h-1v-2h-4v4h1zM0 0h1v4h-1z'/%3E%3C/svg%3E"); }
+  .actions .vbtn { width: 38px; height: 34px; background: #1d1826; } .actions .vbtn i { width: 18px; height: 18px; }
+  .actions .vbtn[aria-pressed="true"] { background: #fff; }
+  .rate { display: inline-flex; align-items: center; gap: 4px; margin-right: 6px; } .rate small { color: var(--dim); font-size: 11px; margin-right: 4px; }
+  .report-b { background: none; border: 0; color: #6f6880; cursor: pointer; font-size: 12px; text-decoration: underline; padding: 6px 4px; }
+  .report-b:hover { color: #ff8a7a; }
+  .openc { display: flex; align-items: flex-start; gap: 10px; margin: 14px 0 0; padding: 10px 12px; background: #141119; font-size: 13px; color: #cfc8dc; line-height: 1.45; cursor: pointer; }
+  .openc input { accent-color: var(--green); margin-top: 3px; } .openc small { display: block; color: #8f86a0; font-size: 12px; }
+  .chip.open { background: #1d3a24; color: var(--green); }
+  .xp { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; background: #17141e; margin-top: 4px; }
+  .xp b { font-weight: normal; color: #fff; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+  .xp b i { width: 12px; height: 14px; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 6 7' shape-rendering='crispEdges'%3E%3Cpath fill='%23fce060' d='M3 0h2l-1 3h2l-4 4 1-3h-2z'/%3E%3C/svg%3E") 0 0 / 100% 100%; image-rendering: pixelated; }
+  .xp small { display: block; color: #8f86a0; font-size: 11px; margin-top: 3px; }
+  .xp.on { box-shadow: 0 0 0 2px var(--yellow); }
+  .switch { position: relative; width: 44px; height: 24px; flex: none; background: #2e2838; border: 0; cursor: pointer; padding: 0; }
+  .switch::after { content: ""; position: absolute; top: 4px; left: 4px; width: 16px; height: 16px; background: #8f86a0; transition: left .12s steps(2); }
+  .switch[aria-checked="true"] { background: var(--yellow); } .switch[aria-checked="true"]::after { left: 24px; background: #000; }
+  .xpc { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: #a69fb5; }
   .tile.pending .info { opacity: 1; background: rgba(0,0,0,.55); inset: auto 0 0 0; }
   .empty { grid-column: 1 / -1; text-align: center; color: var(--dim); padding: 60px 20px; position: relative; }
   .empty b { display: block; color: var(--fg); font-weight: normal; font-size: 22px; margin-bottom: 8px; }
@@ -283,12 +310,14 @@
   .ws-empty .ws-mascot { margin: 0 auto; width: 105px; height: 95px; }
   #ws-lib .grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
 
-  @media (max-width: 1000px) {
-    .ws-body { grid-template-columns: 1fr; }
-    .ws-side { position: static; max-height: none; }
+  /* the composer column stays put while the work scrolls (sticky), down to tablet widths; on phones it stacks */
+  @media (max-width: 1100px) {
+    .ws-body { grid-template-columns: 310px minmax(0, 1fr); gap: 18px; }
     .ws-meters { margin-left: 0; width: 100%; }
   }
   @media (max-width: 760px) {
+    .ws-body { grid-template-columns: 1fr; }
+    .ws-side { position: static; max-height: none; }
     .ws-tools { margin-left: 0; width: 100%; } .ws-tools input { flex: 1; width: auto; }
     .wm { min-width: 0; flex: 1 1 130px; }
   }
@@ -310,7 +339,7 @@
   <div class="wrap">
     <h1>Mosaic Studio</h1>
     <p id="greet">What are we drawing today?</p>
-    <span class="sample" title="m1 is still learning: expect the odd surprise">m1 PREVIEW</span>
+    <span class="sample">m1 + v1 &middot; OUT OF SCHOOL</span>
     <a class="classic-note" id="classic-note" href="../settings/#studio" hidden>Classic Studio &middot; switch to pro in settings</a>
   </div>
 </header>
@@ -344,6 +373,7 @@
             <button type="button" data-v="wild" aria-pressed="false">Wild</button>
           </div>
           <span class="spacer"></span>
+          <span class="xpc" id="xpc" hidden>Express <button class="switch" type="button" role="switch" aria-checked="false" id="xpc-sw" aria-label="Express"></button></span>
           <span class="left" id="left" title="Generations left today (resets at 00:00 UTC)"></span>
           <button class="btn" id="create" type="button" style="--c:var(--pink)">Create</button>
         </div>
@@ -381,6 +411,8 @@
           <span class="seed"><input id="ws-seed" inputmode="numeric" maxlength="10" placeholder="random" aria-label="Seed"><button type="button" id="ws-dice" title="Pick a random seed">roll</button></span></div>
         <div class="srow"><span id="ws-batch-lbl">Sprites per prompt</span>
           <span class="step"><button type="button" id="ws-minus" aria-label="Fewer">&minus;</button><b id="ws-n">1</b><button type="button" id="ws-plus" aria-label="More">+</button></span></div>
+        <div class="xp" id="ws-xp" hidden><div><b><i></i>Express</b><small id="ws-xp-n">super-fast, on a big GPU</small></div>
+          <button class="switch" type="button" role="switch" aria-checked="false" id="ws-xp-sw" aria-label="Express"></button></div>
       </section>
       <div class="ws-go">
         <p class="ws-sum" id="ws-sum"></p>
@@ -449,8 +481,29 @@
       ${fresh ? '<span class="badge new">new!</span>' : (tab === "mine" && !p.shared ? '<span class="badge">private</span>' : "")}
       <span class="info"><img class="avatar" src="${pfp(p.author)}" alt=""><span class="n">${esc(p.author.display_name || p.author.username)}</span>
       <span class="h">&hearts; ${p.likes}</span></span>`;
-    b.onclick = () => openPost(p);
+    if (me) b.appendChild(voteBox(p, "votes"));
+    b.onclick = e => { if (!e.target.closest(".vbtn")) openPost(p); };
     return b;
+  }
+  // thumbs up / down: how a creation turned out (kept as feedback for our next models). On tiles and in the post view.
+  function voteBox(p, cls) {
+    const box = document.createElement("span"); box.className = cls;
+    const mine = () => p.votes?.mine || 0;
+    box.innerHTML = `<button class="vbtn up" type="button" title="This came out well" aria-label="Thumbs up"><i></i></button>
+                     <button class="vbtn down" type="button" title="This didn't come out right" aria-label="Thumbs down"><i></i></button>`;
+    const paint = () => { box.querySelector(".up").setAttribute("aria-pressed", mine() === 1); box.querySelector(".down").setAttribute("aria-pressed", mine() === -1);
+                          box.classList.toggle("set", mine() !== 0); };
+    box.querySelectorAll(".vbtn").forEach(btn => btn.onclick = async e => {
+      e.stopPropagation(); e.preventDefault();
+      const v = btn.classList.contains("up") ? 1 : -1, next = mine() === v ? 0 : v;
+      const r = await api(`/api/studio/posts/${p.id}/vote`, { json: { vote: next } });
+      if (!r.ok) return toast(Session.detail(r.data));
+      p.votes = r.data; paint();
+      document.querySelectorAll(`[data-pid="${p.id}"]`).forEach(o => o !== box && o._paint?.());
+      if (next) { const b = btn.getBoundingClientRect(); burst(b.left + b.width / 2, b.top, next > 0 ? "heart" : "drop", 3, { size: 3, rise: 40, spread: 20 }); toast(next > 0 ? "Thanks! Noted as a good one." : "Thanks! Noted: that one missed.", 1800); }
+    });
+    box.dataset.pid = p.id; box._paint = paint; paint();
+    return box;
   }
   async function loadFeed(reset) {
     if (reset) { offset = 0; $("#grid").innerHTML = ""; }
@@ -490,11 +543,13 @@
           <p class="prompt">&ldquo;${esc(p.prompt)}&rdquo;</p>
           <div class="chips"><span class="chip ${video ? "v1" : "m1"}">model ${esc(p.model)}</span><span class="chip">${p.creativity}</span><span class="chip">seed ${p.seed}</span>
             <span class="chip">${ago(p.created)}</span>${mine ? `<span class="chip">${p.shared ? "in the gallery" : "private"}</span>` : ""}
-            ${mine ? `<a class="chip ${p.license === "commercial" ? "lic" : ""}" href="../license/" title="What you may do with it">${p.license === "commercial" ? "commercial use OK" : "personal use"}</a>` : ""}</div>
+            ${mine ? `<a class="chip ${p.license === "commercial" ? "lic" : ""}" href="../license/" title="What you may do with it">${p.license === "commercial" ? "commercial use OK" : "personal use"}</a>` : ""}
+            ${p.open_commercial ? `<a class="chip open" href="../license/#open" title="The maker lets anyone use this commercially">free for commercial use</a>` : ""}</div>
           <div class="person"><img class="avatar" src="${pfp(p.author)}" alt="">
             <button class="who-b" type="button" id="to-profile"><b>${esc(p.author.display_name || p.author.username)}${mine ? " (you)" : ""}${tags(p.author)}</b><span>@${esc(p.author.username)} &middot; ${p.author.followers} followers</span></button>
             ${mine ? "" : `<button class="btn small ${p.author.following ? "ghost" : ""}" id="follow" type="button" style="--c:var(--blue)">${p.author.following ? "Following" : "Follow"}</button>`}</div>
           <div class="actions">
+            ${me ? `<span class="rate" id="rate"><small>HOW DID IT COME OUT?</small></span>` : ""}
             <button class="btn small ghost like" id="like" type="button" aria-pressed="${p.liked}"><span class="ht"></span><span id="like-n">${p.likes}</span></button>
             <button class="btn small ghost" id="reuse" type="button">Use this prompt</button>
             ${pro ? `<span class="dl">${(video ? [["mp4", 8, "MP4"], ["gif", 1, "GIF"], ["gif", 8, "GIF 8×"]]
@@ -503,12 +558,22 @@
                   : `<button class="btn small ghost" type="button" data-fmt="${video ? "mp4" : "png"}" data-scale="${video ? 8 : 1}">${video ? "Download MP4" : "Download"}</button>`}
             ${mine ? `<button class="btn small" id="share" type="button" style="--c:var(--green)">${p.shared ? "Take out of gallery" : "Share to gallery"}</button>
                       <button class="btn small ghost" id="delete" type="button">Delete</button>` : ""}
+            ${me && !mine ? `<button class="report-b" id="report" type="button">Report</button>` : ""}
           </div>
+          ${mine && p.license === "commercial" ? `<label class="openc"><input type="checkbox" id="openc" ${p.open_commercial ? "checked" : ""}>
+            <span>Let anyone use this commercially<small>Including people whose plan doesn't have commercial rights. Shown as &ldquo;free for commercial use&rdquo; in the gallery.${p.shared ? "" : " (Share it to the gallery for others to see it.)"}</small></span></label>` : ""}
           <p class="meta">${video ? "Made with v1 &middot; 96&times;54, 24 frames at 12 fps, crisp-pixel upscale"
                                   : `Made with ${esc(p.model)} &middot; 64&times;64, crisp-pixel upscale`}</p>
         </div>
       </div>`;
     const sheet = $("#post-sheet");
+    sheet.querySelector("#rate")?.appendChild(voteBox(p, "rate-b"));
+    sheet.querySelector("#report")?.addEventListener("click", () => Kit.report({ kind: "post", target: p.id, what: "this creation" }));
+    sheet.querySelector("#openc")?.addEventListener("change", async e => {
+      const r = await api(`/api/studio/posts/${p.id}/share`, { json: { open_commercial: e.target.checked } });
+      if (!r.ok) { e.target.checked = !e.target.checked; return toast(Session.detail(r.data)); }
+      Object.assign(p, r.data); toast(p.open_commercial ? "Anyone may use this one commercially now" : "Back to your commercial rights only");
+    });
     sheet.querySelectorAll("[data-fmt]").forEach(b => b.onclick = () => download(p, b.dataset.fmt, +b.dataset.scale, b));
     sheet.querySelector(".close").onclick = () => postModal.classList.remove("open");
     sheet.querySelector("#to-profile").onclick = () => openProfile(p.author.username);
@@ -587,10 +652,12 @@
           <p>${esc(u.bio || "No bio yet.")}</p>
           <div class="stats"><span><b id="pf-followers">${u.followers}</b>followers</span><span><b>${u.following_count}</b>following</span>
             <span><b>${u.posts.length}</b>sprites</span><span><b>${u.likes_received}</b>likes</span></div></div>
-        ${u.is_me ? `<a class="btn ghost" href="../settings/">Edit profile</a>` : `<button class="btn ${u.following ? "ghost" : ""}" id="pf-follow" type="button" style="--c:var(--blue)">${u.following ? "Following" : "Follow"}</button>`}</div>
+        ${u.is_me ? `<a class="btn ghost" href="../settings/">Edit profile</a>` : `<button class="btn ${u.following ? "ghost" : ""}" id="pf-follow" type="button" style="--c:var(--blue)">${u.following ? "Following" : "Follow"}</button>
+          ${me ? `<button class="report-b" id="pf-report" type="button">Report profile</button>` : ""}`}</div>
       <div class="grid" id="pf-grid">${u.posts.length ? "" : '<div class="empty"><b>No sprites yet.</b></div>'}</div>`;
     const sheet = $("#profile-sheet");
     sheet.querySelector(".close").onclick = () => profileModal.classList.remove("open");
+    sheet.querySelector("#pf-report")?.addEventListener("click", () => Kit.report({ kind: "user", target: u.username, what: `@${u.username}'s profile` }));
     u.posts.forEach(p => { const t = tileEl(p); t.onclick = () => { profileModal.classList.remove("open"); openPost(p); }; sheet.querySelector("#pf-grid").appendChild(t); });
     sheet.querySelector("#pf-follow")?.addEventListener("click", async e => {
       if (!me) return needSignIn();
@@ -616,7 +683,7 @@
                                    $("#model-btn").setAttribute("aria-expanded", o); };
   addEventListener("click", e => { if (!modelBox.contains(e.target)) closeMenu(); });
   const modelList = api("/api/models", { auth: !!me }).then(r => {
-    const list = r.ok ? r.data : [{ id: "m1", name: "m1", tagline: "64×64 sprites", status: "preview", nameplate: "autumn", cost: 1, kind: "image", tag: "ALL PLANS" }];
+    const list = r.ok ? r.data : [{ id: "m1", name: "m1", tagline: "64×64 sprites", status: "released", nameplate: "autumn", cost: 1, kind: "image", tag: "ALL PLANS" }];
     list.forEach(m => models[m.id] = m);
     menu.innerHTML = list.map(m => `<button class="mopt ${m.nameplate || ""}" type="button" role="option" data-id="${m.id}" aria-selected="${m.id === model}">
         <span class="mk">${esc(m.name)}</span><span class="tx"><b>${esc(m.name)}</b><span>${esc(m.tagline)}${m.cost > 1 ? `<span class="cost">${m.cost} per go</span>` : ""}</span></span>
@@ -649,7 +716,32 @@
     el.innerHTML = a.limit > 30 ? `${a.remaining.toLocaleString()} / ${a.limit.toLocaleString()} ${label}`   // big allowances: no pips
       : `<span class="pips">${Array.from({ length: a.limit }, (_, i) => `<i class="${i < a.used ? "used" : ""}"></i>`).join("")}</span>${a.remaining} / ${a.limit} ${label}`;
   }
-  if (me) Kit.whoami().then(u => { if (u) { showQuota(u.quota); setupPro(u); } });
+  if (me) Kit.whoami().then(u => { if (u) { showQuota(u.quota); setupPro(u); setupExpress(u.express); } });
+
+  // ---------------------------------------------------------------- Express: the fast lane (Artisan 5 a day, Atelier 15)
+  let xp = null;
+  function setupExpress(x) {
+    if (!x || !x.allowed) return;
+    xp = x;
+    const box = pro ? $("#ws-xp") : $("#xpc"), sw = pro ? $("#ws-xp-sw") : $("#xpc-sw");
+    box.hidden = false;
+    sw.onclick = async () => {
+      const r = await api("/api/express", { json: { on: !xp.on } });
+      if (!r.ok) return toast(Session.detail(r.data));
+      xp = r.data; paintExpress();
+      toast(xp.on ? (xp.remaining ? `Express on: your next ${xp.remaining} go${xp.remaining > 1 ? "es" : ""} today skip the line` : "Express is on, but today's goes are used up") : "Express off: back to the regular line", 2600);
+    };
+    paintExpress();
+  }
+  function paintExpress() {
+    if (!xp) return;
+    const sw = pro ? $("#ws-xp-sw") : $("#xpc-sw");
+    sw.setAttribute("aria-checked", xp.on);
+    if (pro) {
+      $("#ws-xp").classList.toggle("on", xp.on);
+      $("#ws-xp-n").textContent = xp.resting ? "resting until tomorrow: the regular line is on" : `${xp.remaining} of ${xp.limit} super-fast goes left today`;
+    } else sw.title = `${xp.remaining} of ${xp.limit} Express goes left today`;
+  }
 
   // ---------------------------------------------------------------- pro Studio: the workspace (Artisan, Atelier, Developer)
   // Every prompt goes to the backend's queue as a job (POST /api/studio/jobs) and answers at once; the queue panel polls
@@ -925,6 +1017,7 @@
         const err = rec.el.querySelector(".err"); err.hidden = false; err.textContent = "The studio restarted while this was waiting: nothing unfinished was charged. Use it again to retry.";
       }
     quota = r.data.quota; held = r.data.held;
+    if (r.data.express && xp) { xp = { ...xp, ...r.data.express }; paintExpress(); }
     activeJobs = r.data.jobs.filter(j => j.status === "queued" || j.status === "drawing").length;
     meters(r.data.jobs);
     if (wsTab === "queue") emptyQueue();
@@ -995,9 +1088,10 @@
   }
   // while m1 "thinks": a tile of animated static
   function pendingTile(prompt, video) {
-    const el = document.createElement("div"); el.className = "tile pending";
-    el.innerHTML = `<canvas width="32" height="32"></canvas><span class="info"><span class="n">${esc(prompt)}</span><span>${video ? "animating... (a few minutes)" : "drawing..."}</span></span>`;
-    const g = el.querySelector("canvas").getContext("2d"), d = g.createImageData(32, 32);
+    const el = document.createElement("div"); el.className = "tile pending" + (video ? " video" : "");
+    const W = video ? 48 : 32, H = video ? 27 : 32;                 // the static has the shape of what's coming
+    el.innerHTML = `<canvas width="${W}" height="${H}"></canvas><span class="info"><span class="n">${esc(prompt)}</span><span>${video ? (xp?.on && xp.remaining ? "animating on Express..." : "animating... (a few minutes)") : "drawing..."}</span></span>`;
+    const g = el.querySelector("canvas").getContext("2d"), d = g.createImageData(W, H);
     let on = true;
     (function noise() {
       for (let i = 0; i < d.data.length; i += 4) { const v = Math.random() * 255; d.data[i] = v * Math.random(); d.data[i + 1] = v * Math.random(); d.data[i + 2] = v; d.data[i + 3] = 255; }

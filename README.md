@@ -1,58 +1,44 @@
-# Mosaic website
+# Mosaic: Website Source
 
-The static site for Mosaic (m1 sprites, v1 animated scenes), served by GitHub Pages at
-[ml-mosaic.github.io](https://ml-mosaic.github.io). Everything live (accounts, the Studio, generation, plans) comes
-from the Mosaic backend, which the pages call over HTTPS (`config.js` → `MOSAIC.backend`).
+> [!WARNING]
+> **Copying Mosaic's design is not permitted.** The design of this website, its pixel-art graphics, the Mosaic mascots
+> (the fox, the owl, the cat and every other character), the logos and wordmark, the page layouts and the written text are
+> the copyrighted property of Mosaic. They may not be copied, adapted, imitated or reused, in whole or in part, in any other
+> website, application or product. See [LICENSE.md](LICENSE.md).
 
-## Develop locally
+## Notice
 
-```bash
-python3 -m http.server 3000                                                    # this folder
-cd ../website_backend && HOME_URL=http://localhost:3000 uvicorn app:app --port 8000
-```
+You are viewing the source of the Mosaic website, which is published here for transparency only. If you are not a
+member of the Mosaic team, you should not be here for any purpose other than reading.
 
-On `localhost` the site talks to the backend at `http://localhost:8000` automatically.
+This repository is **source-available, not open source**. Its contents are licensed solely under the
+[Mosaic Source-Available License](LICENSE.md), which permits viewing the code for reference and for responsibly reporting
+security issues, and prohibits copying, redistributing, modifying or reusing any part of it, including its design and
+assets. All rights not expressly granted are reserved.
 
-## Pages
+## Why this code is visible
 
-- `index.html`: the home page. A pixel world where m1 draws live and finished sprites join a parade; the two models
-  (v1's card plays its latest real training samples, refreshed every checkpoint); the plans; the wish machine; the
-  sticker book; the API.
-- `studio/`: Mosaic Studio. The community gallery (likes, follows, profiles) and your own creations, with a composer
-  for m1 and v1. Artisan and Atelier get the **pro workspace** instead: a composer column (model cards, a list of
-  prompts, exact creativity, seeds, batches), a live queue fed by the backend's job queue (`/api/studio/jobs`, so it
-  survives a reload), a filterable library and the gallery, themed to the plan. Atelier lines up to 10 prompts and
-  batches v1 clips. Plan badges show next to names.
-- `pricing/`: Free, Artisan (S$5/month, free trial) and Atelier (S$15/month), each with its mascot. Prices are set in SGD and shown in each visitor's currency (`assets/prices.js`). Plan buttons adapt
-  to the signed-in user's plan (start a trial, upgrade, downgrade, cancel).
-- `join/`: a direct link to the subscribe popup (`?tier=artisan|atelier&mode=join|upgrade|downgrade|cancel`).
-- `license/`: what you can do with what you make (personal vs commercial use).
-- `login/`: sign in / create account, with a random 8-bit scene whose animal watches the cursor.
-- `settings/`: profile (name, bio, website, banner, picture), plan and today's allowance, linking Patreon, the
-  Studio look (pro or classic), two-step sign-in.
-- `portal/`, `portal/keys/`: the dev dashboard (live status, today's allowance, made per day by API / Studio /
-  playground from `/api/usage`, per-key numbers, recent calls), a playground and the API reference; and the keys.
-- `status/`: live checks of the API, the image workers, m1, v1, accounts and the Studio every 30 s, plus the incident
-  history in `assets/status/incidents.json`.
-- `blog/`: posts. Keep posts about what the models do, never how they work inside (closed source).
+The Mosaic website is built with standard HTML, CSS and JavaScript. Every visitor's browser downloads this code in order
+to display the site, so it is visible to anyone in any case. Publishing it here does not grant any right to use it.
+Mosaic's services, models and data are not part of this repository and are not available.
 
-## Shared pieces
+## What is and is not protected
 
-- `assets/kit.js` / `kit.css`: the top bar, pixel avatars, badges, critters whose eyes follow the cursor, toasts and
-  pixel dialogs (the site never uses the browser's own).
-- `assets/session.js`: keeps the sign-in session and calls the backend with it.
-- `assets/subscribe.js`: the subscribe popup (a cat at a cash register) that every plan button opens, and the
-  plan-aware buttons.
-- `assets/prices.js`: plan prices converted from SGD to the visitor's currency (rates cached 12 h).
-- Pages load `kit.css`, `kit.js`, `prices.js` and `subscribe.js` with a `?v=` version: bump it when they change so browsers
-  pick up the new copy.
+Pixel art as a medium, and general pixel-art styles and techniques, are not owned by Mosaic and are not restricted by
+this repository's license. Anyone is free to create original pixel art in any style.
 
-## Art
+What is protected is Mosaic's own work: this website's code, its specific graphics and animations, the Mosaic mascots and
+characters, the logos and wordmark, and the distinctive design and text of these pages. Copying that work, or imitating
+Mosaic's identity in a way that could be mistaken for Mosaic, is not permitted.
 
-```bash
-python3 tools/draw_scenes.py      # the 8-bit scenes and animals, plan mascots, nameplates, the cash register
-```
+## Generated content
 
-The m1 sprites in `assets/m1/` come from a private tool outside this folder (`assets/m1/showcase.json` lists their
-prompts). `assets/v1/samples/` and `samples.json` are updated automatically from v1's training (real output from
-prompts it never trained on).
+Images and animations that users create with Mosaic are governed by the
+[Terms and Conditions](https://ml-mosaic.github.io/terms/) and the [license page](https://ml-mosaic.github.io/license/),
+not by this repository's license.
+
+## Security
+
+If you believe you have found a security vulnerability, report it to Mosaic privately. Do not open a public issue.
+
+Copyright (c) 2026 Mosaic. All rights reserved.

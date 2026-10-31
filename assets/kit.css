@@ -1,3 +1,4 @@
+/* Copyright (c) 2026 Mosaic. All rights reserved. Mosaic Source-Available License (LICENSE.md): viewing only. */
 /* Shared look for the app pages (studio, status, portal): tokens, buttons, the top bar, critters, toasts. */
 :root {
   --bg: #000; --fg: #fff; --dim: #8a867b; --line: #2a2925; --panel: #0d0d0c; --field: #141413; --tile: #111;
@@ -6,7 +7,7 @@
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; background: var(--bg); color: var(--fg); }
-body { font-family: "Tiny5", ui-monospace, monospace; -webkit-font-smoothing: none; overflow-x: hidden; }
+body { font-family: "Tiny5", ui-monospace, monospace; -webkit-font-smoothing: none; overflow-x: hidden; overflow-x: clip; }   /* clip: keeps position: sticky working */
 a { color: inherit; } button, input, select, textarea { font: inherit; color: inherit; }
 .px, img.px { image-rendering: pixelated; }
 .wrap { max-width: 1200px; margin: 0 auto; padding-left: 24px; padding-right: 24px; }   /* sides only: pages set their own top/bottom */
