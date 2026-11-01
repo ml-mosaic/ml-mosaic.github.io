@@ -86,6 +86,79 @@
   .tbl { display: flex; flex-direction: column; gap: 4px; margin-bottom: 18px; }
   .tbl div { display: grid; grid-template-columns: 140px 120px 90px minmax(0, 1fr); gap: 10px; padding: 7px 10px; background: #0b0a0e; font-size: 13px; }
   .tbl div span:last-child { overflow-wrap: anywhere; }
+  /* nameplates (the same art and particles as the Studio menu) */
+  .plate { position: relative; display: flex; align-items: center; gap: 12px; width: 100%; background: none; border: 0; padding: 12px; cursor: pointer;
+         text-align: left; overflow: hidden; color: #fff; }
+  .plate + .plate { margin-top: 4px; }
+  .plate .mk { width: 34px; height: 34px; flex: none; display: grid; place-items: center; background: #2a1f3a; color: var(--orange); font-size: 15px; position: relative; z-index: 1; }
+  .plate .tx { position: relative; z-index: 1; }
+  .plate .tx b { display: block; font-weight: normal; font-size: 15px; }
+  .plate .tx > span { color: #8f86a0; font-size: 12px; }
+  .plate .tick { margin-left: auto; color: var(--green); position: relative; z-index: 1; }
+  .plate::before, .plate::after { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity .25s steps(4); }
+  .plate::before { background: linear-gradient(270deg, rgba(232,145,58,.35), rgba(232,145,58,0) 70%); }
+  .plate.autumn::after { background: url(../assets/scenes/nameplate-autumn.png) right center / auto 100% no-repeat; image-rendering: pixelated;
+                       -webkit-mask-image: linear-gradient(270deg, #000 25%, transparent 85%); mask-image: linear-gradient(270deg, #000 25%, transparent 85%); }
+  .plate.snow::before { background: linear-gradient(270deg, rgba(140,164,220,.35), rgba(140,164,220,0) 70%); }
+  .plate.snow::after { background: url(../assets/scenes/nameplate-snow.png) right center / auto 100% no-repeat; image-rendering: pixelated;
+                     -webkit-mask-image: linear-gradient(270deg, #000 25%, transparent 85%); mask-image: linear-gradient(270deg, #000 25%, transparent 85%); }
+  .plate.snow .mk { color: #c4d4f0; background: #1c2c5c; }
+  .plate .cost { display: inline-block; margin-left: 6px; padding: 0 5px; background: #1c2c5c; color: #c4d4f0; font-size: 11px; }
+  .plate .ptag + .tick { margin-left: 8px; }
+  .plate .ptag { margin-left: auto; position: relative; z-index: 1; font-size: 10px; letter-spacing: 2px; padding: 2px 6px; background: #24212b; color: #b9b0c8; white-space: nowrap; }
+  .plate .ptag.atelier { background: #2c3c74; color: #fce060; } .plate .ptag.artisan { background: #6b3a1c; color: #fff; }
+  .plate:hover::before, .plate:hover::after, .plate:focus-visible::before, .plate:focus-visible::after { opacity: 1; }
+  .plate.ember::before { background: linear-gradient(270deg, rgba(232,114,42,.38), rgba(232,114,42,0) 70%); }
+  .plate.bloom::before { background: linear-gradient(270deg, rgba(110,224,122,.3), rgba(110,224,122,0) 70%); }
+  .plate.dusk::before { background: linear-gradient(270deg, rgba(200,216,96,.25), rgba(200,216,96,0) 70%); }
+  .plate.aurora::before { background: linear-gradient(270deg, rgba(110,224,160,.3), rgba(154,122,232,0) 70%); }
+  .plate.cinema::before { background: linear-gradient(270deg, rgba(140,164,220,.32), rgba(140,164,220,0) 70%); }
+  .plate.ember::after, .plate.bloom::after, .plate.dusk::after, .plate.aurora::after, .plate.cinema::after {
+    background: var(--plate) right center / auto 100% no-repeat; image-rendering: pixelated;
+    -webkit-mask-image: linear-gradient(270deg, #000 25%, transparent 85%); mask-image: linear-gradient(270deg, #000 25%, transparent 85%); }
+  .plate.ember .mk { color: #f2a030; background: #3a1a10; } .plate.bloom .mk { color: #6ee07a; background: #16301c; }
+  .plate.dusk .mk { color: #f8f080; background: #1c2c22; } .plate.aurora .mk { color: #6ee0a0; background: #1c2440; }
+  .plate.cinema .mk { color: #c4d4f0; background: #1d2b53; }
+  .plate.ember .fall { background-image: url(../assets/scenes/p-spark.png); } .plate.bloom .fall { background-image: url(../assets/scenes/p-petal.png); }
+  .plate.dusk .fall { background-image: url(../assets/scenes/p-glow.png); } .plate.aurora .fall, .plate.cinema .fall { background-image: url(../assets/scenes/p-star.png); }
+  .plate .ptag.developer { background: #3a1e4a; color: #e8b8ff; } .plate .ptag.unavailable { background: #2a2630; color: #8f86a0; }
+  .plate .ptag.preview { background: #3a2f10; color: #fce060; }
+  @media (max-width: 760px) { .flyout { left: 0; bottom: calc(100% + 10px); width: 100%; } }
+  .plate .fall { position: absolute; top: -8px; width: 9px; height: 9px; background: url(../assets/scenes/p-leaf.png) 0 0 / 100% 100%; image-rendering: pixelated;
+               opacity: 0; pointer-events: none; }
+  .plate.snow .fall { background-image: url(../assets/scenes/p-snow.png); }
+  .plate:hover .fall { animation: fall 1.6s steps(8) infinite; }
+  .plate.snow:hover .fall { animation-name: snowfall; animation-duration: 2.2s; }
+  @keyframes snowfall { 0% { opacity: 0; transform: translateY(0); } 20% { opacity: 1; } 100% { opacity: 0; transform: translate(-6px, 62px); } }
+  @keyframes fall { 0% { opacity: 0; transform: translateY(0); } 20% { opacity: 1; } 100% { opacity: 0; transform: translate(-14px, 62px) rotate(90deg); } }
+  /* Models tab: every model on its nameplate, with an on/off switch (off = UNAVAILABLE everywhere, every request refused) */
+  .mhead { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+  .mhead div { background: #0b0a0e; padding: 10px 14px; } .mhead b { display: block; font-weight: normal; font-size: 22px; }
+  .mhead span { color: var(--dim); font-size: 11px; letter-spacing: 1px; }
+  .mgroup { margin: 18px 0 8px; font-size: 12px; letter-spacing: 2px; color: var(--dim); }
+  .mgroup:first-of-type { margin-top: 4px; }
+  .plate { background: #0b0a0e; cursor: default; padding: 14px; min-height: 64px; }
+  .plate + .plate { margin-top: 6px; }
+  .plate .tx > span.meta { display: block; margin-top: 3px; font-size: 11px; color: #6f6880; letter-spacing: .5px; }
+  .plate .ptag.live { background: #15301c; color: var(--green); } .plate .ptag.preview { background: #3a2f10; color: #fce060; }
+  .plate .ptag.unavailable { background: #2a2630; color: #8f86a0; } .plate .ptag.off { background: var(--bad); color: #000; }
+  .plate.isoff .mk, .plate.isoff .tx { opacity: .55; }
+  .plate .ptag, .plate .sw { box-shadow: 0 0 0 3px #0b0a0e; } .plate .sw { box-shadow: inset 0 0 0 2px #3a3446, 0 0 0 3px #0b0a0e; }
+  .plate .sw[aria-checked="true"] { box-shadow: inset 0 0 0 2px #2c6a3a, 0 0 0 3px #0b0a0e; }
+  .plate.isoff { box-shadow: inset 3px 0 0 var(--bad); }
+  .sw { position: relative; z-index: 1; flex: none; margin-left: 12px; width: 52px; height: 26px; border: 0; padding: 0; cursor: pointer; background: #2a2630;
+        box-shadow: inset 0 0 0 2px #3a3446; }
+  .sw::after { content: ""; position: absolute; top: 4px; left: 4px; width: 18px; height: 18px; background: #8f86a0; transition: left .12s steps(3), background .12s; }
+  .sw[aria-checked="true"] { background: #15301c; box-shadow: inset 0 0 0 2px #2c6a3a; }
+  .sw[aria-checked="true"]::after { left: 30px; background: var(--green); }
+  .sw:focus-visible { outline: 2px solid var(--yellow); outline-offset: 2px; }
+  .offnote { position: relative; z-index: 1; margin: 6px 0 0 46px; font-size: 12px; color: #f0a0b0; }
+  .confirm { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; background: #1a0e12; padding: 10px 12px; margin-top: 4px;
+             box-shadow: inset 3px 0 0 var(--bad); animation: rise .14s steps(3); }
+  .confirm input { flex: 1; min-width: 180px; background: #000; border: 0; color: var(--fg); padding: 9px 11px; font: inherit; font-size: 14px; }
+  .confirm .w { color: #f0a0b0; font-size: 13px; flex-basis: 100%; }
+  @keyframes rise { from { transform: translateY(6px); opacity: 0; } }
+  @media (max-width: 700px) { .plate { flex-wrap: wrap; } .plate .ptag { margin-left: 46px; } .offnote { margin-left: 0; } }
   @media (max-width: 900px) { .rep { grid-template-columns: 1fr; } .stats4 { grid-template-columns: 1fr 1fr; } .tbl div { grid-template-columns: 1fr; } }
   @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } .facts { grid-template-columns: 1fr 1fr; } .audit div { grid-template-columns: 1fr; gap: 2px; } }
 </style>
@@ -115,11 +188,12 @@
     Kit.nav(""); document.title = "Mosaic · Console";
     $("#app").innerHTML = `<main class="wrap">
       <div class="head"><h1>Console</h1><span class="who">signed in as @${esc(admin)} &middot; owner only</span>
-        <div class="tabs"><button type="button" data-t="users" aria-pressed="true">Accounts</button><button type="button" data-t="patreon" aria-pressed="false">Patreon</button><button type="button" data-t="reports" aria-pressed="false">Reports<span class="n" id="n-rep" hidden></span></button><button type="button" data-t="appeals" aria-pressed="false">Appeals<span class="n" id="n-app" hidden></span></button><button type="button" data-t="safety" aria-pressed="false">Safety</button><button type="button" data-t="audit" aria-pressed="false">Audit log</button></div></div>
+        <div class="tabs"><button type="button" data-t="users" aria-pressed="true">Accounts</button><button type="button" data-t="models" aria-pressed="false">Models<span class="n" id="n-off" hidden></span></button><button type="button" data-t="patreon" aria-pressed="false">Patreon</button><button type="button" data-t="reports" aria-pressed="false">Reports<span class="n" id="n-rep" hidden></span></button><button type="button" data-t="appeals" aria-pressed="false">Appeals<span class="n" id="n-app" hidden></span></button><button type="button" data-t="safety" aria-pressed="false">Safety</button><button type="button" data-t="audit" aria-pressed="false">Audit log</button></div></div>
       <div id="users" class="layout">
         <section class="card notch"><div class="search"><input id="q" placeholder="Search username or email" autocomplete="off"></div>
           <div class="list" id="list"></div></section>
         <section class="card notch detail" id="detail"><div class="empty">Pick an account.</div></section></div>
+      <section id="models" class="card notch" hidden><div id="mdl"></div></section>
       <section id="patreon" class="card notch" hidden><div id="pt"></div></section>
       <section id="reports" class="card notch" hidden><div class="filter" id="rep-f"></div><div id="rep-list"></div></section>
       <section id="appeals" class="card notch" hidden><div class="filter" id="app-f"></div><div id="app-list"></div></section>
@@ -128,9 +202,10 @@
     document.body.classList.add("ready");
     document.querySelectorAll(".tabs button").forEach(b => b.onclick = () => {
       document.querySelectorAll(".tabs button").forEach(x => x.setAttribute("aria-pressed", x === b));
-      for (const t of ["users", "audit", "patreon", "reports", "appeals", "safety"]) $("#" + t).hidden = b.dataset.t !== t;
+      for (const t of ["users", "models", "audit", "patreon", "reports", "appeals", "safety"]) $("#" + t).hidden = b.dataset.t !== t;
       history.replaceState(null, "", "#" + b.dataset.t);
       if (b.dataset.t === "audit") loadAudit();
+      if (b.dataset.t === "models") loadModels();
       if (b.dataset.t === "patreon") loadPatreon(false);
       if (b.dataset.t === "reports") loadReports("open");
       if (b.dataset.t === "appeals") loadAppeals("open");
@@ -375,11 +450,61 @@
       };
     }
 
+
+    // ---- Models: switch any model off at once (UNAVAILABLE everywhere; every request for it, queued ones too, refused)
+    const GROUPS = [["featured", "TOP MODELS"], ["models", "MODELS"], ["legacy", "LEGACY"]];
+    const stateTag = m => m.off ? `<span class="ptag off">SWITCHED OFF</span>` : m.status === "unavailable" ? `<span class="ptag unavailable">UNAVAILABLE</span>`
+      : m.status === "preview" ? `<span class="ptag preview">PREVIEW</span>` : `<span class="ptag live">LIVE</span>`;
+    const stateText = m => m.off ? "switched off: nobody can use it" : m.why === "training" ? "still training: no worker has it yet"
+      : m.status === "preview" ? "usable, still training" : m.gen2 ? "training finished" : m.serving ? "live" : "live (no worker up right now)";
+    let confirming = null;
+    function renderModels(list) {
+      const off = list.filter(m => m.off).length;
+      $("#n-off").hidden = !off; $("#n-off").textContent = off;
+      const count = s => list.filter(m => !m.off && m.status === s).length;
+      const plate = m => `<div class="plate ${esc(m.nameplate)}${m.off ? " isoff" : ""}" style="--plate:url(../assets/scenes/nameplate-${esc(m.nameplate)}.png)">
+          <span class="mk">${esc(m.name)}</span>
+          <span class="tx"><b>${esc(m.name)}</b><span>${esc(m.tagline)}</span><span class="meta">${m.kind === "video" ? "CLIPS" : "SPRITES"} &middot; ${esc(m.who)} &middot; ${esc(stateText(m))}</span></span>
+          ${stateTag(m)}
+          <button class="sw" type="button" role="switch" aria-checked="${!m.off}" aria-label="${esc(m.name)} on" data-sw="${esc(m.id)}"></button>
+          ${[0, 1, 2, 3, 4].map(i => `<i class="fall" style="right:${14 + i * 15}%;animation-delay:${i * .32}s"></i>`).join("")}</div>
+        ${m.off ? `<div class="offnote">Off since ${esc(when(m.off.at))} &middot; by @${esc(m.off.by)}${m.off.reason ? ` &middot; ${esc(m.off.reason)}` : ""}</div>` : ""}
+        ${confirming === m.id ? `<div class="confirm"><span class="w">Switch ${esc(m.name)} off? It shows UNAVAILABLE everywhere straight away, and every request for it is refused, queued ones too.</span>
+          <input id="off-why" maxlength="300" placeholder="Why (for the audit log), e.g. security issue in prompt handling">
+          <button class="btn small" type="button" data-offgo="${esc(m.id)}" style="background:var(--bad);color:#000">Switch off</button>
+          <button class="btn small ghost" type="button" data-offno>Cancel</button></div>` : ""}`;
+      $("#mdl").innerHTML = `<div class="mhead"><div><b>${count("released")}</b><span>LIVE</span></div><div><b>${count("preview")}</b><span>PREVIEW</span></div>
+          <div><b>${list.filter(m => !m.off && m.status === "unavailable").length}</b><span>STILL TRAINING</span></div>
+          <div><b style="${off ? "color:var(--bad)" : ""}">${off}</b><span>SWITCHED OFF</span></div></div>` +
+        GROUPS.map(([g, title]) => { const ms = list.filter(m => m.group === g); return ms.length ? `<p class="mgroup">${title}</p>${ms.map(plate).join("")}` : ""; }).join("");
+      $("#mdl").querySelectorAll("[data-sw]").forEach(b => b.onclick = async () => {
+        const m = list.find(x => x.id === b.dataset.sw);
+        if (!m.off) { confirming = confirming === m.id ? null : m.id; renderModels(list); $("#off-why")?.focus(); return; }
+        switchModel(m, true, "");
+      });
+      $("#mdl").querySelector("[data-offgo]")?.addEventListener("click", e => switchModel(list.find(x => x.id === e.target.dataset.offgo), false, $("#off-why").value));
+      $("#off-why")?.addEventListener("keydown", e => { if (e.key === "Enter") $("#mdl [data-offgo]").click(); if (e.key === "Escape") $("#mdl [data-offno]").click(); });
+      $("#mdl").querySelector("[data-offno]")?.addEventListener("click", () => { confirming = null; renderModels(list); });
+    }
+    async function switchModel(m, active, reason) {
+      const r = await api(`/api/console/models/${m.id}`, { json: { active, reason } });
+      if (!r.ok) return toast(Session.detail(r.data || {}));
+      confirming = null; renderModels(r.data.models);
+      toast(active ? `${m.name} is back on` : `${m.name} is switched off`);
+    }
+    async function loadModels() {
+      const r = await api("/api/console/models");
+      if (!r.ok) return toast(Session.detail(r.data || {}));
+      renderModels(r.data.models);
+    }
+    api("/api/console/models").then(r => { if (r.ok) { const n = r.data.models.filter(m => m.off).length; $("#n-off").hidden = !n; $("#n-off").textContent = n; } });
+
     async function loadAudit() {
       const r = await api("/api/console/audit");
       if (!r.ok) return toast(Session.detail(r.data || {}));
       const what = e => ({ plan: `plan ${e.old} → ${e.new}`, suspend: `suspended ${e.days} day(s)`, ban: "banned", restore: "restored",
-                           purge: `deleted ${e.posts} posts${e.picture ? " + picture" : ""}`, delete_post: `deleted post "${e.prompt}"` }[e.action] || e.action);
+                           purge: `deleted ${e.posts} posts${e.picture ? " + picture" : ""}`, delete_post: `deleted post "${e.prompt}"`,
+                           model_off: "switched the model off", model_on: "switched the model back on" }[e.action] || e.action);
       $("#audit-list").innerHTML = r.data.entries.length ? r.data.entries.map(e =>
         `<div><span class="w">${new Date(e.at * 1000).toLocaleString([], { dateStyle: "short", timeStyle: "short" })}</span><span>@${esc(e.target)}</span>
           <span>${esc(what(e))}${e.reason ? ` <span class="w">&middot; ${esc(e.reason)}</span>` : ""} <span class="w">&middot; by @${esc(e.by)}</span></span></div>`).join("")

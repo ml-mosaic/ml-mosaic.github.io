@@ -155,6 +155,7 @@
   .mopt.ember .fall { background-image: url(../assets/scenes/p-spark.png); } .mopt.bloom .fall { background-image: url(../assets/scenes/p-petal.png); }
   .mopt.dusk .fall { background-image: url(../assets/scenes/p-glow.png); } .mopt.aurora .fall, .mopt.cinema .fall { background-image: url(../assets/scenes/p-star.png); }
   .mopt .ptag.developer { background: #3a1e4a; color: #e8b8ff; } .mopt .ptag.unavailable { background: #2a2630; color: #8f86a0; }
+  .mopt .ptag.preview, .mcard .ptag.preview { background: #3a2f10; color: #fce060; }
   .mopt.off { opacity: .55; } .mopt.off:hover { opacity: .8; }
   /* "Other models": a flyout to the right with Models and Legacy */
   .mother { position: relative; margin-top: 4px; }
@@ -729,8 +730,12 @@
     return { top, models: list.filter(m => m.group === "models"), legacy: list.filter(m => m.group === "legacy" || !m.group) };
   }
   function stillTraining(m) {
-    Kit.toast(`${m.name} is still training: it switches on here by itself when it's ready.`);
+    Kit.toast(m.why === "off" ? `${m.name} is switched off for now: it'll be back soon.`
+                              : `${m.name} is still training: it switches on here by itself when it's ready.`);
   }
+  // a model's tag: UNAVAILABLE (still training, or switched off) -> PREVIEW (usable, still training) -> its plan tag, if any
+  const tagOf = m => m.status === "unavailable" ? `<span class="ptag unavailable">UNAVAILABLE</span>`
+    : m.status === "preview" ? `<span class="ptag preview">PREVIEW</span>` : m.tag ? `<span class="ptag ${m.tag.toLowerCase()}">${esc(m.tag)}</span>` : "";
   $("#model-btn").onclick = e => { e.stopPropagation(); const o = !modelBox.hasAttribute("open"); o ? modelBox.setAttribute("open", "") : closeMenu();
                                    $("#model-btn").setAttribute("aria-expanded", o); };
   addEventListener("click", e => { if (!modelBox.contains(e.target)) closeMenu(); });
@@ -741,7 +746,7 @@
     const opt = m => `<button class="mopt ${m.nameplate || ""}${m.status === "unavailable" ? " off" : ""}" type="button" role="option" data-id="${m.id}"
         aria-selected="${m.id === model}" style="--plate:url(../assets/scenes/nameplate-${esc(m.nameplate || "autumn")}.png)">
         <span class="mk">${esc(m.name)}</span><span class="tx"><b>${esc(m.name)}</b><span>${esc(m.tagline)}${m.cost > 1 ? `<span class="cost">${m.cost} per go</span>` : ""}</span></span>
-        ${m.status === "unavailable" ? `<span class="ptag unavailable">UNAVAILABLE</span>` : m.tag ? `<span class="ptag ${m.tag.toLowerCase()}">${esc(m.tag)}</span>` : ""}
+        ${tagOf(m)}
         <span class="tick">${m.id === model ? "&#10003;" : ""}</span>
         ${[0, 1, 2, 3, 4].map(i => `<i class="fall" style="right:${8 + i * 16}%;animation-delay:${i * .32}s"></i>`).join("")}</button>`;
     menu.innerHTML = L.top.map(opt).join("") + (L.models.length || L.legacy.length ? `<div class="mother" id="mother">
@@ -875,7 +880,7 @@
     const L = layout(cards);
     const card = m => `<button class="mcard${m.locked ? " locked" : ""}${m.status === "unavailable" ? " off" : ""}" type="button" data-id="${m.id}" aria-pressed="${m.id === model}"
         style="--plate:url(../assets/scenes/nameplate-${esc(m.nameplate || "autumn")}.png)" ${m.locked ? 'title="Part of the Atelier plan"' : ""}>
-        <b>${esc(m.name)}</b><span>${esc(m.tagline)}</span>${m.status === "unavailable" ? `<span class="ptag unavailable">UNAVAILABLE</span>` : m.tag ? `<span class="ptag ${m.tag.toLowerCase()}">${esc(m.tag)}</span>` : ""}</button>`;
+        <b>${esc(m.name)}</b><span>${esc(m.tagline)}</span>${tagOf(m)}</button>`;
     const others = L.models.length || L.legacy.length;
     $("#ws-models").innerHTML = L.top.map(card).join("") + (others ? `<div class="mcwrap"><button class="mcard more" type="button" id="ws-more" aria-expanded="false">
         <b>Other models &#9654;</b><span>more models, and the classics</span></button>
