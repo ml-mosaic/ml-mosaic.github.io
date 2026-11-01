@@ -140,6 +140,33 @@
                   background: rgba(0,0,0,.55); padding: 3px 8px; text-decoration: none; }
   .classic-note:hover { color: #fff; background: rgba(0,0,0,.75); }
   .mopt:hover::before, .mopt:hover::after, .mopt:focus-visible::before, .mopt:focus-visible::after { opacity: 1; }
+  /* second-generation nameplates */
+  .mopt.ember::before { background: linear-gradient(270deg, rgba(232,114,42,.38), rgba(232,114,42,0) 70%); }
+  .mopt.bloom::before { background: linear-gradient(270deg, rgba(110,224,122,.3), rgba(110,224,122,0) 70%); }
+  .mopt.dusk::before { background: linear-gradient(270deg, rgba(200,216,96,.25), rgba(200,216,96,0) 70%); }
+  .mopt.aurora::before { background: linear-gradient(270deg, rgba(110,224,160,.3), rgba(154,122,232,0) 70%); }
+  .mopt.cinema::before { background: linear-gradient(270deg, rgba(140,164,220,.32), rgba(140,164,220,0) 70%); }
+  .mopt.ember::after, .mopt.bloom::after, .mopt.dusk::after, .mopt.aurora::after, .mopt.cinema::after {
+    background: var(--plate) right center / auto 100% no-repeat; image-rendering: pixelated;
+    -webkit-mask-image: linear-gradient(270deg, #000 25%, transparent 85%); mask-image: linear-gradient(270deg, #000 25%, transparent 85%); }
+  .mopt.ember .mk { color: #f2a030; background: #3a1a10; } .mopt.bloom .mk { color: #6ee07a; background: #16301c; }
+  .mopt.dusk .mk { color: #f8f080; background: #1c2c22; } .mopt.aurora .mk { color: #6ee0a0; background: #1c2440; }
+  .mopt.cinema .mk { color: #c4d4f0; background: #1d2b53; }
+  .mopt.ember .fall { background-image: url(../assets/scenes/p-spark.png); } .mopt.bloom .fall { background-image: url(../assets/scenes/p-petal.png); }
+  .mopt.dusk .fall { background-image: url(../assets/scenes/p-glow.png); } .mopt.aurora .fall, .mopt.cinema .fall { background-image: url(../assets/scenes/p-star.png); }
+  .mopt .ptag.developer { background: #3a1e4a; color: #e8b8ff; } .mopt .ptag.unavailable { background: #2a2630; color: #8f86a0; }
+  .mopt.off { opacity: .55; } .mopt.off:hover { opacity: .8; }
+  /* "Other models": a flyout to the right with Models and Legacy */
+  .mother { position: relative; margin-top: 4px; }
+  .mopt.more .mk { color: #b9b0c8; background: #24212b; } .mopt.more .arrow { margin-left: auto; color: #8f86a0; position: relative; z-index: 1; }
+  .mopt.more::before { background: linear-gradient(270deg, rgba(185,176,200,.18), rgba(185,176,200,0) 70%); }
+  .flyout { position: absolute; left: calc(100% + 14px); bottom: -6px; width: 340px; background: #120f17; padding: 6px; --c: #2e2838; margin: var(--u);
+            display: none; z-index: 30; }
+  .mother.open .flyout, .mother:hover .flyout { display: block; animation: slide .16s steps(3); }
+  @keyframes slide { from { transform: translateX(-8px); opacity: 0; } }
+  .flyout .fh { margin: 6px 10px 4px; font-size: 13px; letter-spacing: 2px; color: #e8e4f0; }
+  .flyout .fh.small { margin-top: 12px; font-size: 10px; color: #8f86a0; }
+  @media (max-width: 760px) { .flyout { left: 0; bottom: calc(100% + 10px); width: 100%; } }
   .mopt .fall { position: absolute; top: -8px; width: 9px; height: 9px; background: url(../assets/scenes/p-leaf.png) 0 0 / 100% 100%; image-rendering: pixelated;
                opacity: 0; pointer-events: none; }
   .mopt.snow .fall { background-image: url(../assets/scenes/p-snow.png); }
@@ -246,6 +273,16 @@
   .mcard .ptag { position: absolute; top: 9px; right: 8px; font-size: 9px; letter-spacing: 1px; padding: 2px 5px; background: #24212b; color: #b9b0c8; }
   .mcard .ptag.atelier { background: #2c3c74; color: #fce060; }
   .mcard.locked { cursor: pointer; opacity: .5; } .mcard.locked:hover { opacity: .75; }
+  .mcard.off { opacity: .5; } .mcard .ptag.developer { background: #3a1e4a; color: #e8b8ff; } .mcard .ptag.unavailable { background: #2a2630; color: #8f86a0; }
+  .mcard.more { display: flex; flex-direction: column; justify-content: center; }
+  .mcard.more b { font-size: 16px; } .mcard.more::after { display: none; }
+  .mcwrap { position: relative; }
+  .mcfly { position: fixed; left: 0; top: 0; width: 300px; background: #120f17; padding: 10px; --c: #2e2838; margin: var(--u);
+           display: none; z-index: 30; }
+  .mcfly.open { display: block; animation: slide .16s steps(3); }
+  .mcfly .fh { margin: 2px 2px 8px; font-size: 13px; letter-spacing: 2px; color: #e8e4f0; } .mcfly .fh.small { margin-top: 14px; font-size: 10px; color: #8f86a0; }
+  .mcfly .mcards { grid-template-columns: 1fr 1fr; }
+
   .plist { display: flex; flex-direction: column; gap: 8px; }
   .prow { display: flex; align-items: flex-start; background: #17141e; animation: pop .2s steps(3); }
   .prow:focus-within { box-shadow: 0 0 0 2px var(--pro); }
@@ -678,24 +715,45 @@
   const models = { m1: { id: "m1", name: "m1", cost: 1, kind: "image" } };
   const cost = () => models[model]?.cost || 1;
   const placeholders = { image: "Describe a sprite... a sleepy fox curled up in leaves",
-                         video: "Describe a scene... snow falling on a pine forest at night" };
-  function closeMenu() { modelBox.removeAttribute("open"); $("#model-btn").setAttribute("aria-expanded", "false"); }
+                         video: "Describe a scene... snow falling on a pine forest at night",
+                         v2: "Describe an animation... a knight walking while swinging a sword",
+                         v1p: "Describe an animation... a knight walking while swinging a sword",
+                         c1: "Describe a scene... a fox running through a snowy forest at night, the camera follows" };
+  function closeMenu() { modelBox.removeAttribute("open"); $("#model-btn").setAttribute("aria-expanded", "false"); $("#mother")?.classList.remove("open"); }
+  // the menu's sections: the best of each kind on top; the rest of this generation ("Models") and the first one
+  // ("Legacy") under "Other models". Accounts that see no top-tier model just get their models, as before.
+  function layout(list) {
+    const top = list.filter(m => m.group === "featured");
+    if (!top.length) return { top: list, models: [], legacy: [] };
+    return { top, models: list.filter(m => m.group === "models"), legacy: list.filter(m => m.group === "legacy" || !m.group) };
+  }
+  function stillTraining(m) {
+    Kit.toast(`${m.name} is still training: it switches on here by itself when it's ready.`);
+  }
   $("#model-btn").onclick = e => { e.stopPropagation(); const o = !modelBox.hasAttribute("open"); o ? modelBox.setAttribute("open", "") : closeMenu();
                                    $("#model-btn").setAttribute("aria-expanded", o); };
   addEventListener("click", e => { if (!modelBox.contains(e.target)) closeMenu(); });
   const modelList = api("/api/models", { auth: !!me }).then(r => {
     const list = r.ok ? r.data : [{ id: "m1", name: "m1", tagline: "64×64 sprites", status: "released", nameplate: "autumn", cost: 1, kind: "image", tag: "ALL PLANS" }];
     list.forEach(m => models[m.id] = m);
-    menu.innerHTML = list.map(m => `<button class="mopt ${m.nameplate || ""}" type="button" role="option" data-id="${m.id}" aria-selected="${m.id === model}">
+    const L = layout(list);
+    const opt = m => `<button class="mopt ${m.nameplate || ""}${m.status === "unavailable" ? " off" : ""}" type="button" role="option" data-id="${m.id}"
+        aria-selected="${m.id === model}" style="--plate:url(../assets/scenes/nameplate-${esc(m.nameplate || "autumn")}.png)">
         <span class="mk">${esc(m.name)}</span><span class="tx"><b>${esc(m.name)}</b><span>${esc(m.tagline)}${m.cost > 1 ? `<span class="cost">${m.cost} per go</span>` : ""}</span></span>
-        ${m.tag ? `<span class="ptag ${m.tag.toLowerCase()}">${esc(m.tag)}</span>` : ""}
+        ${m.status === "unavailable" ? `<span class="ptag unavailable">UNAVAILABLE</span>` : m.tag ? `<span class="ptag ${m.tag.toLowerCase()}">${esc(m.tag)}</span>` : ""}
         <span class="tick">${m.id === model ? "&#10003;" : ""}</span>
-        ${[0, 1, 2, 3, 4].map(i => `<i class="fall" style="right:${8 + i * 16}%;animation-delay:${i * .32}s"></i>`).join("")}</button>`).join("")
-      + `<button class="mopt" type="button" disabled><span class="mk" style="color:#57506a">?</span><span class="tx"><b>more soon</b><span>new models land here</span></span></button>`;
+        ${[0, 1, 2, 3, 4].map(i => `<i class="fall" style="right:${8 + i * 16}%;animation-delay:${i * .32}s"></i>`).join("")}</button>`;
+    menu.innerHTML = L.top.map(opt).join("") + (L.models.length || L.legacy.length ? `<div class="mother" id="mother">
+        <button class="mopt more" type="button" aria-haspopup="true" aria-expanded="false"><span class="mk">+</span><span class="tx"><b>Other models</b><span>more models, and the classics</span></span><span class="arrow">&#9654;</span></button>
+        <div class="flyout notch">${L.models.length ? `<p class="fh">Models</p>${L.models.map(opt).join("")}` : ""}${L.legacy.length ? `<p class="fh small">Legacy</p>${L.legacy.map(opt).join("")}` : ""}</div></div>`
+      : `<button class="mopt" type="button" disabled><span class="mk" style="color:#57506a">?</span><span class="tx"><b>more soon</b><span>new models land here</span></span></button>`);
+    const more = menu.querySelector(".mopt.more");
+    if (more) more.onclick = e => { e.stopPropagation(); const box = $("#mother"); box.classList.toggle("open"); more.setAttribute("aria-expanded", box.classList.contains("open")); };
     menu.querySelectorAll(".mopt[data-id]").forEach(o => o.onclick = () => {
+      if (models[o.dataset.id].status === "unavailable") return stillTraining(models[o.dataset.id]);
       model = o.dataset.id; $("#model-name").textContent = o.querySelector("b").textContent; closeMenu();
       menu.querySelectorAll(".mopt[data-id]").forEach(x => { x.setAttribute("aria-selected", x === o); x.querySelector(".tick").innerHTML = x === o ? "&#10003;" : ""; });
-      $("#prompt").placeholder = placeholders[models[model].kind] || placeholders.image;
+      $("#prompt").placeholder = placeholders[model] || placeholders[models[model].kind] || placeholders.image;
       showQuota();                              // clips and sprites have separate allowances
     });
     return list;
@@ -812,15 +870,39 @@
   // model cards: what the plan can use, plus v1 shown locked for Artisan (with a way to see the plan)
   function modelCards(list) {
     const cards = list.map(m => ({ ...m, locked: false }));
-    if (!cards.some(m => m.id === "v1")) cards.push({ id: "v1", name: "v1", tagline: "16:9 animated scenes", nameplate: "snow", tag: "ATELIER", kind: "video", locked: true });
-    $("#ws-models").innerHTML = cards.map(m => `<button class="mcard${m.locked ? " locked" : ""}" type="button" data-id="${m.id}" aria-pressed="${m.id === model}"
+    if (!cards.some(m => m.id === "v1")) cards.push({ id: "v1", name: "v1", tagline: "16:9 animated scenes", nameplate: "snow", tag: "ATELIER", kind: "video", locked: true, group: "legacy" });
+    const L = layout(cards);
+    const card = m => `<button class="mcard${m.locked ? " locked" : ""}${m.status === "unavailable" ? " off" : ""}" type="button" data-id="${m.id}" aria-pressed="${m.id === model}"
         style="--plate:url(../assets/scenes/nameplate-${esc(m.nameplate || "autumn")}.png)" ${m.locked ? 'title="Part of the Atelier plan"' : ""}>
-        <b>${esc(m.name)}</b><span>${esc(m.tagline)}</span>${m.tag ? `<span class="ptag ${m.tag.toLowerCase()}">${esc(m.tag)}</span>` : ""}</button>`).join("");
-    $("#ws-models").querySelectorAll(".mcard").forEach(c => c.onclick = () => {
+        <b>${esc(m.name)}</b><span>${esc(m.tagline)}</span>${m.status === "unavailable" ? `<span class="ptag unavailable">UNAVAILABLE</span>` : m.tag ? `<span class="ptag ${m.tag.toLowerCase()}">${esc(m.tag)}</span>` : ""}</button>`;
+    const others = L.models.length || L.legacy.length;
+    $("#ws-models").innerHTML = L.top.map(card).join("") + (others ? `<div class="mcwrap"><button class="mcard more" type="button" id="ws-more" aria-expanded="false">
+        <b>Other models &#9654;</b><span>more models, and the classics</span></button>
+        <div class="mcfly notch" id="ws-fly">${L.models.length ? `<p class="fh">Models</p><div class="mcards">${L.models.map(card).join("")}</div>` : ""}
+        ${L.legacy.length ? `<p class="fh small">Legacy</p><div class="mcards">${L.legacy.map(card).join("")}</div>` : ""}</div></div>` : "");
+    const fly = $("#ws-fly");
+    if (fly) {
+      // the sidebar scrolls (and clips), so the flyout is fixed to the screen, right next to the button
+      const place = () => {
+        const r = $("#ws-more").getBoundingClientRect(), w = Math.min(300, innerWidth - 32);
+        fly.style.width = w + "px";
+        const right = r.right + 14 + w <= innerWidth - 8;
+        fly.style.left = (right ? r.right + 14 : Math.max(8, r.left)) + "px";
+        fly.style.top = Math.max(8, Math.min(right ? r.top : r.bottom + 10, innerHeight - fly.offsetHeight - 8)) + "px";
+      };
+      $("#ws-more").onclick = e => { e.stopPropagation(); fly.classList.toggle("open"); $("#ws-more").setAttribute("aria-expanded", fly.classList.contains("open")); if (fly.classList.contains("open")) place(); };
+      addEventListener("resize", () => fly.classList.contains("open") && place());
+      $("#ws-models").closest(".ws-side, aside, .side, section")?.addEventListener("scroll", () => fly.classList.remove("open"), { passive: true });
+      addEventListener("click", e => { if (!fly.contains(e.target)) { fly.classList.remove("open"); $("#ws-more")?.setAttribute("aria-expanded", "false"); } });
+    }
+    $("#ws-models").querySelectorAll(".mcard[data-id]").forEach(c => c.onclick = () => {
       if (c.classList.contains("locked")) return Kit.alert("v1 makes little animated scenes, and it comes with the Atelier plan (with clips in batches, too).", { title: "v1 is an Atelier thing", ok: "Okay" })
         .then(() => {});
+      const m = cards.find(x => x.id === c.dataset.id);
+      if (m && m.status === "unavailable") return stillTraining(m);
       model = c.dataset.id;
-      $("#ws-models").querySelectorAll(".mcard").forEach(x => x.setAttribute("aria-pressed", x === c));
+      $("#ws-models").querySelectorAll(".mcard[data-id]").forEach(x => x.setAttribute("aria-pressed", x === c));
+      fly?.classList.remove("open");
       document.querySelectorAll("#ws-prompts textarea").forEach(t => t.placeholder = ROW_HINT[kindOf()]);
       setPer(perPrompt);
     });
