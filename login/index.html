@@ -438,7 +438,7 @@ if (new URLSearchParams(location.search).get("appeal") === "1") addEventListener
     eyes = a.eyes.map(r => {
       const el = document.createElement("div"); el.className = "eye";
       const pupil = document.createElement("div"); pupil.className = "pupil";
-      const lid = document.createElement("div"); lid.className = "lid"; lid.style.background = a.lid;
+      const lid = document.createElement("div"); lid.className = "lid"; lid.style.background = a.lid; lid.style.boxShadow = `inset 0 -${scale}px 0 0 #14121a`;
       el.append(pupil, lid); animalEl.appendChild(el);
       return { el, pupil, lid, r };
     });

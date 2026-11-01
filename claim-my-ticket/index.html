@@ -42,11 +42,10 @@
   .stage { position: fixed; inset: 0; z-index: 10; pointer-events: none; }
   .stage > * { pointer-events: auto; }
   /* the mascot mail carrier */
-  .carrier { position: fixed; bottom: calc(24vh - 2px); width: var(--w); height: var(--h); z-index: 12; background: var(--img) 0 0 / 100% 100% no-repeat;
-             image-rendering: pixelated; filter: drop-shadow(4px 4px 0 rgba(0,0,0,.35)); }
+  .carrier { z-index: 12; filter: drop-shadow(4px 4px 0 rgba(0,0,0,.35)); }
   .carrier.walk { animation: bob .28s steps(2) infinite; }
   @keyframes bob { 50% { transform: translateY(-4px); } }
-  .carrier .bag { position: absolute; width: 60%; height: 34%; left: 52%; top: 46%; background: #6b4a2c; box-shadow: inset 0 -4px 0 #4f3520, 0 -4px 0 0 #8a6a4a; }
+  .carrier .bag { position: absolute; width: 52%; height: 28%; left: 58%; top: 60%; z-index: 2; background: #6b4a2c; box-shadow: inset 0 -4px 0 #4f3520, 0 -4px 0 0 #8a6a4a; }
   .bubble { position: fixed; z-index: 25; background: #fff; color: #000; font-size: 15px; padding: 6px 12px; white-space: nowrap; transform: translate(-50%, -100%);
             pointer-events: none; animation: pop .18s steps(3); box-shadow: 4px 4px 0 rgba(0,0,0,.35); }
   .bubble::after { content: ""; position: absolute; left: 50%; bottom: -6px; width: 8px; height: 6px; transform: translateX(-50%); background: #fff; clip-path: polygon(0 0, 100% 0, 50% 100%); }
@@ -286,14 +285,16 @@
   }
 
   // ================================================================ the mascot walks in with the mail
-  function walkIn(P, toX, k) {
+  async function walkIn(P, toX, k) {
+    const extras = await Kit.json("../assets/scenes/extras.json").catch(() => ({}));
+    const at = P.mascot === "mascot-atelier", a = extras[P.mascot] || { name: P.mascot, w: at ? 21 : 23, h: at ? 19 : 20, eyes: [], pupil: [1, 1], lid: "#000" };
+    let x = reduce ? toX : -a.w * k - 20;
+    // the same live critter as everywhere else: eyes that follow the cursor, blinks, says something when poked
+    const c = Kit.critter({ ...a, words: ["Not me, the envelope!", "Psst... mail for you!", "Go on, open it!"] }, $("#stage"),
+                          { P: k, left: x + "px", bottom: "calc(24vh - 2px)" });
+    const el = c.el; el.classList.add("carrier", "walk");
+    el.insertAdjacentHTML("beforeend", `<span class="bag"></span>`);
     return new Promise(res => {
-      const at = P.mascot === "mascot-atelier", w0 = at ? 21 : 23, h0 = at ? 19 : 20;
-      const el = document.createElement("div"); el.className = "carrier walk";
-      el.style.setProperty("--img", `url(../assets/scenes/${P.mascot}.png)`); el.style.setProperty("--w", w0 * k + "px"); el.style.setProperty("--h", h0 * k + "px");
-      el.innerHTML = `<span class="bag"></span>`;
-      $("#stage").appendChild(el);
-      let x = reduce ? toX : -w0 * k - 20;
       const step = () => {
         x = Math.min(toX, x + 8); el.style.left = x + "px";
         if (x >= toX) { el.classList.remove("walk"); res(el); return; }
@@ -352,7 +353,6 @@
     Kit.hop(carrier, 10); bubble(carrier, "Go on, open it!", 1800);
     const lines = ["It's a ticket!", "Go on, open it!", "What could it be?"];
     const nag = setInterval(() => bubble(carrier, lines[Math.random() * lines.length | 0], 1500), 4200);
-    carrier.addEventListener("click", () => { Kit.hop(carrier, 12); bubble(carrier, "Not me, the envelope!", 1400); });
 
     let opened = false;
     const openIt = async () => {
