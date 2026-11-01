@@ -245,6 +245,18 @@ window.Kit = (() => {
   .kx-perks { list-style: none; padding: 0; margin: 0 0 6px; }
   .kx-perks li { display: flex; gap: 10px; align-items: baseline; color: #d8d2c4; margin-bottom: 8px; font-size: 15px; line-height: 1.4; }
   .kx-perks li::before { content: ""; width: 8px; height: 8px; flex: none; background: var(--c, #f87898); transform: translateY(-1px); }
+  .kx-find { position: relative; }
+  .kx-drop { position: absolute; left: 0; right: 0; top: calc(100% + 4px); z-index: 7; background: #1d1826; max-height: 260px; overflow-y: auto;
+             box-shadow: 0 -3px 0 0 #2e2838, 0 3px 0 0 #2e2838, -3px 0 0 0 #2e2838, 3px 0 0 0 #2e2838, 0 10px 0 0 rgba(0,0,0,.4); }
+  .kx-drop button { display: flex; align-items: center; gap: 10px; width: 100%; background: none; border: 0; color: #e8e4f0; padding: 8px 10px;
+                    font: inherit; font-size: 14px; text-align: left; cursor: pointer; }
+  .kx-drop button img { width: 28px; height: 28px; image-rendering: pixelated; flex: none; }
+  .kx-drop button span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .kx-drop button small { color: #8f86a0; font-size: 12px; margin-left: 6px; }
+  .kx-drop button em { font-style: normal; font-size: 11px; color: #8f86a0; white-space: nowrap; }
+  .kx-drop button[aria-selected="true"], .kx-drop button:hover { background: #2a2236; }
+  .kx-drop button.no { opacity: .55; cursor: not-allowed; }
+  .kx-drop .none { padding: 10px; color: #8f86a0; font-size: 13px; }
   .kx-confetti { position: fixed; inset: 0; z-index: 111; pointer-events: none; image-rendering: pixelated; width: 100%; height: 100%; }
   @media (max-width: 520px) { .kx-body { padding: 18px 16px 18px; } }`;
   document.head.appendChild(Object.assign(document.createElement("style"), { textContent: CSS }));
@@ -339,7 +351,8 @@ window.Kit = (() => {
       <img class="kx-ticket" src="${root}assets/tickets/ticket-${plan}.png" alt="A ${t.name} ticket">
       <p>Your friend gets everything ${t.name} has for ${g.days} days, starting when they claim it. What they make uses <b style="color:#fff;font-weight:normal">your</b> daily allowance.
         You can gift to anyone on ${to}.</p>
-      <label for="kx-to">THEIR MOSAIC USERNAME</label><input id="kx-to" maxlength="32" autocomplete="off" spellcheck="false" placeholder="e.g. pixelpal">
+      <label for="kx-to">THEIR MOSAIC USERNAME</label><div class="kx-find"><input id="kx-to" maxlength="32" autocomplete="off" spellcheck="false" placeholder="start typing a name..."
+        role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="kx-drop"><div class="kx-drop" id="kx-drop" role="listbox" hidden></div></div>
       <label for="kx-msg">A NOTE (OPTIONAL)</label><input id="kx-msg" maxlength="140" placeholder="happy making!">
       <p class="kx-err" id="kx-err"></p>
       <div class="kx-row"><button class="kx-btn" type="button" id="kx-send">Send the ticket</button><button class="kx-btn ghost" type="button" data-close>Not now</button></div>
@@ -348,6 +361,36 @@ window.Kit = (() => {
         <span class="st">${statusName[x.status] || x.status.toUpperCase()}</span>${x.status === "unclaimed" ? `<button type="button" data-cancel="${esc(x.id)}">take back</button>` : ""}</li>`).join("")}</ul>` : ""}`;
     const send = body.querySelector("#kx-send"), err = body.querySelector("#kx-err");
     body.querySelector("#kx-to").focus();
+    // the dropdown: people whose name starts with (or contains) what's typed, asked from the server as you type
+    const input = body.querySelector("#kx-to"), drop = body.querySelector("#kx-drop");
+    let found = [], sel = -1, ask = 0, timer;
+    const shut = () => { drop.hidden = true; input.setAttribute("aria-expanded", "false"); sel = -1; };
+    const choose = p => { if (!p.can_receive) return toast(`@${p.username} ${p.why}`); input.value = p.username; shut(); body.querySelector("#kx-msg").focus(); };
+    const paint = () => {
+      drop.innerHTML = found.length ? found.map((p, i) => `<button type="button" role="option" data-i="${i}" aria-selected="${i === sel}" class="${p.can_receive ? "" : "no"}">
+          <img src="${pfp(p)}" alt=""><span>${esc(p.display_name || p.username)}<small>@${esc(p.username)}</small></span>
+          <em>${p.can_receive ? (PLAN[p.plan]?.name || p.plan) : esc(p.why)}</em></button>`).join("")
+        : `<div class="none">Nobody by that name yet.</div>`;
+      drop.querySelectorAll("button").forEach(b => b.onmousedown = e => { e.preventDefault(); choose(found[+b.dataset.i]); });
+      drop.hidden = false; input.setAttribute("aria-expanded", "true");
+    };
+    input.addEventListener("input", () => {
+      clearTimeout(timer);
+      const q = input.value.trim().replace(/^@/, "");
+      if (!q) return shut();
+      timer = setTimeout(async () => {
+        const mine = ++ask, r = await Session.api(`/api/gifts/people?q=${encodeURIComponent(q)}`);
+        if (mine !== ask || !r.ok) return;                       // an older answer arriving late: ignore it
+        found = r.data.people; sel = found.findIndex(p => p.can_receive); paint();
+      }, 160);
+    });
+    input.addEventListener("keydown", e => {
+      if (drop.hidden || !found.length) return;
+      if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); sel = (sel + (e.key === "ArrowDown" ? 1 : -1) + found.length) % found.length; paint(); }
+      else if (e.key === "Enter" && sel >= 0) { e.preventDefault(); e.stopImmediatePropagation(); choose(found[sel]); }
+      else if (e.key === "Escape") { e.stopPropagation(); shut(); }
+    });
+    input.addEventListener("blur", () => setTimeout(shut, 120));
     body.querySelectorAll("[data-cancel]").forEach(b => b.onclick = async () => {
       const r = await Session.api(`/api/gifts/${b.dataset.cancel}/cancel`, { method: "POST" });
       if (!r.ok) return toast(Session.detail(r.data));
