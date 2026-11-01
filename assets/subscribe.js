@@ -115,7 +115,8 @@ window.Subscribe = (() => {
         <p class="sub-note">One Patreon account links to one Mosaic account at a time. Signed in as @${esc(u.username)}.</p></div></div>`;
     document.body.appendChild(back);
     let poll = null, win = null, done = false;
-    const close = () => { clearInterval(poll); removeEventListener("message", onMsg); removeEventListener("keydown", key); back.remove(); closeCurrent = null; };
+    const timers = [];
+    const close = () => { clearInterval(poll); timers.forEach(clearInterval); removeEventListener("message", onMsg); removeEventListener("keydown", key); back.remove(); closeCurrent = null; };
     const key = e => { if (e.key === "Escape") close(); };
     addEventListener("keydown", key); closeCurrent = close;
     back.addEventListener("click", e => { if (e.target === back || e.target.closest(".sub-x,[data-close]")) close(); });
@@ -148,6 +149,7 @@ window.Subscribe = (() => {
       }, 2500);
     };
     back.querySelector("#sub-link").focus();
+    stageLife(back, { coins: true, say: "link first, then ka-ching!" }, timers);
   }
 
   let closeCurrent = null;
@@ -179,9 +181,14 @@ window.Subscribe = (() => {
     back.addEventListener("click", e => { if (e.target === back || e.target.closest(".sub-x,[data-close]")) close(); });
     back.querySelector(".sub-btn").focus();
 
-    // the cat at the register: ka-ching for joining and upgrading, a goodbye for cancelling
+    stageLife(back, m, timers);
+  }
+
+  // the cat at the register: ka-ching for joining and upgrading, a goodbye for cancelling, a nudge to link first.
+  // Click the register (or the cat) for more.
+  function stageLife(back, m, timers) {
     const stage = back.querySelector(".sub-stage"), reg = back.querySelector(".sub-reg"), reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (!window.Kit) return;
+    if (!window.Kit || !stage) return;
     Kit.json(`${root}assets/scenes/scenes.json`).then(list => {
       if (!back.isConnected) return;
       const cat = list.find(s => s.animal.name === "cat")?.animal;
@@ -203,6 +210,7 @@ window.Subscribe = (() => {
         if (n % 3 === 1) Kit.talk(m.coins ? reg : c?.el || reg, m.say, 1200);
       };
       reg.addEventListener("click", ring);
+      c?.el.addEventListener("click", ring);
       timers.push(setTimeout(ring, 500));
       if (!reduce) timers.push(setInterval(ring, 2600));
     });
