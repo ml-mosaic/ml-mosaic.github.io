@@ -15,234 +15,385 @@
 <script src="../assets/session.js"></script>
 <script src="../assets/kit.js?v=20261101a" data-root="../"></script>
 <style>
-  :root { --u: 4px; }
   * { box-sizing: border-box; }
-  html, body { margin: 0; height: 100%; overflow: hidden; background: #0c0c2c; color: #fff; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #070a1c; color: #fff; }
   body { font-family: "Tiny5", ui-monospace, monospace; -webkit-font-smoothing: none; user-select: none; -webkit-user-select: none; }
-  #sky { position: fixed; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; }
-  .home { position: fixed; top: 18px; left: 20px; z-index: 10; display: block; }
+  #world { position: fixed; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; }
+  .home { position: fixed; top: 18px; left: 20px; z-index: 30; }
   .home img { height: 16px; display: block; }
-  .me { position: fixed; top: 14px; right: 18px; z-index: 10; }
-  .me img { width: 44px; height: 44px; image-rendering: pixelated; display: block; cursor: default;
-            box-shadow: 0 -4px 0 0 #fff, 0 4px 0 0 #fff, -4px 0 0 0 #fff, 4px 0 0 0 #fff; }
-  .me .nm { position: absolute; right: 0; top: calc(100% + 12px); white-space: nowrap; background: #fff; color: #000; padding: 5px 10px; font-size: 14px;
-            opacity: 0; transform: translateY(-4px); transition: all .12s steps(2); pointer-events: none; }
-  .me .nm::before { content: ""; position: absolute; right: 16px; top: -6px; width: 6px; height: 6px; background: #fff; }
+  .me { position: fixed; top: 12px; right: 16px; z-index: 30; padding: 4px; background: #0c1230;
+        box-shadow: 0 -4px 0 0 #fff, 0 4px 0 0 #fff, -4px 0 0 0 #fff, 4px 0 0 0 #fff, 6px 6px 0 4px rgba(0,0,0,.35); transition: transform .12s steps(2); }
+  .me:hover { transform: translateY(-2px); }
+  .me img { width: 40px; height: 40px; image-rendering: pixelated; display: block; }
+  .me .nm { position: absolute; right: -4px; top: calc(100% + 14px); white-space: nowrap; background: #fff; color: #000; padding: 6px 11px; font-size: 14px;
+            opacity: 0; transform: translateY(-6px); transition: all .14s steps(3); pointer-events: none; }
+  .me .nm::before { content: ""; position: absolute; right: 18px; top: -6px; width: 8px; height: 6px; background: #fff; clip-path: polygon(50% 0, 100% 100%, 0 100%); }
   .me:hover .nm, .me:focus-within .nm { opacity: 1; transform: none; }
-  .stage { position: fixed; inset: 0; display: grid; place-items: center; z-index: 2; perspective: 1100px; }
-  .say { position: fixed; left: 50%; top: 12%; transform: translateX(-50%); z-index: 6; text-align: center; width: min(640px, 92vw); pointer-events: none; }
-  .say h1 { font-weight: normal; font-size: clamp(26px, 5vw, 44px); margin: 0 0 8px; text-shadow: 4px 4px 0 rgba(0,0,0,.45); }
-  .say p { margin: 0; color: #d8d4ec; font-size: 17px; text-shadow: 2px 2px 0 rgba(0,0,0,.5); }
-  .say .blink { animation: blink 1.2s steps(2) infinite; } @keyframes blink { 50% { opacity: .35; } }
 
-  /* the envelope: back, the ticket tucked inside, the front pocket, the flap (it swings open) */
-  .env { position: relative; width: min(480px, 84vw); aspect-ratio: 96 / 64; cursor: pointer; transform-style: preserve-3d;
-         animation: float 3s steps(6) infinite; filter: drop-shadow(10px 12px 0 rgba(0,0,0,.35)); }
-  @keyframes float { 50% { transform: translateY(-8px) rotate(-1deg); } }
-  .env.open { animation: none; cursor: default; }
+  /* the headline */
+  .say { position: fixed; left: 50%; top: 11vh; transform: translateX(-50%); z-index: 20; text-align: center; width: min(720px, 92vw); pointer-events: none; }
+  .say h1 { font-weight: normal; font-size: clamp(28px, 5.4vw, 52px); margin: 0 0 10px; letter-spacing: 1px; color: #fff; text-shadow: 4px 4px 0 #000; }
+  .say h1 .hl { color: var(--c, #fce060); }
+  .say p { margin: 0; color: #c9c6e4; font-size: clamp(14px, 2vw, 18px); text-shadow: 2px 2px 0 #000; }
+  .say .blink { animation: blink 1.1s steps(2) infinite; } @keyframes blink { 50% { opacity: .25; } }
+  .say > * { animation: sayin .3s steps(3) both; } .say p { animation-delay: .12s; }
+  @keyframes sayin { from { opacity: 0; transform: translateY(-10px); } }
+
+  .stage { position: fixed; inset: 0; z-index: 10; pointer-events: none; }
+  .stage > * { pointer-events: auto; }
+  /* the mascot mail carrier */
+  .carrier { position: fixed; bottom: calc(24vh - 2px); width: var(--w); height: var(--h); z-index: 12; background: var(--img) 0 0 / 100% 100% no-repeat;
+             image-rendering: pixelated; filter: drop-shadow(4px 4px 0 rgba(0,0,0,.35)); }
+  .carrier.walk { animation: bob .28s steps(2) infinite; }
+  @keyframes bob { 50% { transform: translateY(-4px); } }
+  .carrier .bag { position: absolute; width: 60%; height: 34%; left: 52%; top: 46%; background: #6b4a2c; box-shadow: inset 0 -4px 0 #4f3520, 0 -4px 0 0 #8a6a4a; }
+  .bubble { position: fixed; z-index: 25; background: #fff; color: #000; font-size: 15px; padding: 6px 12px; white-space: nowrap; transform: translate(-50%, -100%);
+            pointer-events: none; animation: pop .18s steps(3); box-shadow: 4px 4px 0 rgba(0,0,0,.35); }
+  .bubble::after { content: ""; position: absolute; left: 50%; bottom: -6px; width: 8px; height: 6px; transform: translateX(-50%); background: #fff; clip-path: polygon(0 0, 100% 0, 50% 100%); }
+  @keyframes pop { from { transform: translate(-50%, -80%) scale(.6); opacity: 0; } }
+
+  /* the envelope */
+  .env { position: fixed; left: 50%; bottom: 26vh; width: min(400px, 76vw); aspect-ratio: 100 / 66; transform: translateX(-50%); z-index: 14; cursor: pointer;
+         perspective: 700px; filter: drop-shadow(8px 10px 0 rgba(0,0,0,.4)); outline: none; }
+  .env:focus-visible { filter: drop-shadow(0 0 0 #fff) drop-shadow(8px 10px 0 rgba(0,0,0,.4)); }
+  .env.drop { animation: drop .6s steps(8) both; }
+  @keyframes drop { 0% { transform: translate(-50%, -60vh) rotate(-8deg); } 70% { transform: translate(-50%, 6px) rotate(2deg); } 85% { transform: translate(-50%, -8px); } 100% { transform: translateX(-50%); } }
+  .env.wiggle { animation: wiggle 2.4s steps(1) infinite; }
+  @keyframes wiggle { 0%, 80%, 100% { transform: translateX(-50%) rotate(0); } 84% { transform: translateX(-50%) rotate(-3deg); }
+                      88% { transform: translateX(-50%) rotate(3deg); } 92% { transform: translateX(-50%) rotate(-2deg); } 96% { transform: translateX(-50%) rotate(1deg); } }
+  .env:hover { --lift: -6px; } .env.wiggle:hover { animation-play-state: paused; }
   .env canvas { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; }
-  .env .back { z-index: 1; } .env .front { z-index: 4; pointer-events: none; }
-  .env .flap { z-index: 5; transform-origin: 50% 0; transition: transform .7s steps(7); }
+  .env .flap { transform-origin: 50% 0; transition: transform .55s steps(6); z-index: 5; }
   .env.open .flap { transform: rotateX(180deg); z-index: 0; }
-  .env .addr { position: absolute; z-index: 6; left: 9%; bottom: 13%; color: #3a2a20; font-size: clamp(13px, 2.4vw, 19px); line-height: 1.35; pointer-events: none; }
-  .env .addr b { font-weight: normal; color: #1a120c; }
-  .env .stamp { position: absolute; z-index: 6; right: 7%; bottom: 12%; width: 18%; aspect-ratio: 1; image-rendering: pixelated; pointer-events: none;
-                background: var(--sb) center / 70% no-repeat, var(--sc); box-shadow: 0 0 0 3px #f4ead8, 0 0 0 5px var(--sc); }
-  .env .peek { position: absolute; z-index: 2; left: 8%; right: 8%; top: 10%; height: 64%; background: var(--tk) center / 100% auto no-repeat; image-rendering: pixelated;
-               transition: transform .9s steps(9), opacity .3s steps(2); }
-  .env.open .peek { transform: translateY(-62%); }
-  .env.gone { transition: transform .6s steps(6), opacity .6s steps(6); transform: translateY(70vh) rotate(8deg); opacity: 0; }
-  .tap { position: absolute; z-index: 7; left: 50%; top: -38px; transform: translateX(-50%); background: #fff; color: #000; font-size: 15px; padding: 5px 12px; white-space: nowrap;
-         animation: bob 1s steps(2) infinite; }
-  .tap::after { content: ""; position: absolute; left: 50%; bottom: -6px; width: 6px; height: 6px; transform: translateX(-50%); background: #fff; }
-  @keyframes bob { 50% { transform: translate(-50%, -4px); } }
-  .env.open .tap { display: none; }
+  .env .front { z-index: 4; pointer-events: none; }
+  .env .peek { position: absolute; left: 9%; right: 9%; top: 8%; height: 70%; z-index: 2; background: var(--tk) center / 100% auto no-repeat;
+               image-rendering: pixelated; transition: transform .7s steps(8); }
+  .env.open .peek { transform: translateY(-58%); }
+  .env .addr { position: absolute; z-index: 6; left: 8%; bottom: 11%; color: #3a2a20; font-size: clamp(12px, 2.3vw, 17px); line-height: 1.45; pointer-events: none; }
+  .env .addr b { font-weight: normal; color: #1a120c; } .env .addr i { font-style: normal; color: #8c6a4a; }
+  .env .stamp { position: absolute; z-index: 6; right: 6%; top: 46%; width: 20%; aspect-ratio: 1; pointer-events: none; image-rendering: pixelated;
+                background: var(--sb) center 70% / 66% no-repeat, var(--sc);
+                -webkit-mask: radial-gradient(circle at 4px 4px, transparent 2px, #000 2.5px) -4px -4px / 8px 8px;
+                mask: radial-gradient(circle at 4px 4px, transparent 2px, #000 2.5px) -4px -4px / 8px 8px; }
+  .env .seal { position: absolute; z-index: 6; left: 50%; top: 40%; width: 11%; aspect-ratio: 1; transform: translate(-50%, -50%); pointer-events: none;
+               animation: thump 1.2s steps(2) infinite; transition: opacity .2s steps(2); }
+  .env.open .seal { opacity: 0; }
+  @keyframes thump { 50% { transform: translate(-50%, -50%) scale(1.12); } }
+  .env.away { animation: away .7s steps(7) forwards; }
+  @keyframes away { to { transform: translate(-50%, 70vh) rotate(10deg); opacity: 0; } }
 
-  /* the ticket, in 3D: drag it around, it springs back to facing you */
-  .tk { position: fixed; left: 50%; top: 50%; width: min(600px, 90vw); aspect-ratio: 150 / 66; transform-style: preserve-3d; z-index: 8; cursor: grab;
-        transform: translate(-50%, -50%) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) scale(var(--s, 1)); touch-action: none; opacity: 0; }
-  .tk.on { opacity: 1; transition: opacity .3s steps(3); }
+  /* the burst of light when it opens */
+  .rays { position: fixed; left: 50%; top: 46%; width: 140vmax; height: 140vmax; transform: translate(-50%, -50%); z-index: 9; pointer-events: none; opacity: 0;
+          background: repeating-conic-gradient(from 0deg, rgba(255,240,170,.16) 0 6deg, transparent 6deg 18deg);
+          -webkit-mask: radial-gradient(circle, #000 0 18%, transparent 46%); mask: radial-gradient(circle, #000 0 18%, transparent 46%); }
+  .rays.on { opacity: 1; transition: opacity .4s steps(4); animation: spin 18s steps(90) infinite; }
+  @keyframes spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
+
+  /* the ticket: two faces, a foil shine, a tear-off stub, a shadow on the ground */
+  .tk { position: fixed; left: 50%; top: 46%; width: min(620px, 90vw); aspect-ratio: 150 / 66; z-index: 15; cursor: grab; touch-action: none; transform-style: preserve-3d;
+        transform: translate(-50%, -50%) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); opacity: 0; }
+  .tk.on { opacity: 1; }
+  .tk.pop { animation: tpop .5s steps(6) both; }
+  @keyframes tpop { 0% { scale: .3; translate: 0 18vh; } 60% { scale: 1.08; } 100% { scale: 1; translate: 0 0; } }
   .tk.grab { cursor: grabbing; }
-  .tk .face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; background: var(--img) center / 100% 100% no-repeat;
-              image-rendering: pixelated; filter: drop-shadow(var(--sx, 8px) var(--sy, 10px) 0 rgba(0,0,0,.4)); }
-  .tk .face.b { transform: rotateY(180deg); }
-  .tk .shine { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; pointer-events: none; mix-blend-mode: screen; opacity: .55;
-               background: linear-gradient(var(--sa, 110deg), transparent 30%, rgba(255,255,255,.55) 45%, transparent 52%, transparent 60%, rgba(255,255,255,.25) 66%, transparent 72%);
-               -webkit-mask: var(--img) center / 100% 100% no-repeat; mask: var(--img) center / 100% 100% no-repeat; }
-  .tk .layer { position: absolute; inset: 0; transform: translateZ(18px); backface-visibility: hidden; -webkit-backface-visibility: hidden; pointer-events: none; }
-  .hint { position: fixed; left: 50%; bottom: calc(50% - min(132px, 20vw) - 70px); transform: translateX(-50%); z-index: 9; color: #d8d4ec; font-size: 14px; opacity: 0;
-          transition: opacity .3s steps(3); white-space: nowrap; }
+  .tk .face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; image-rendering: pixelated;
+              background: var(--img) 0 0 / 100% 100% no-repeat; }
+  .tk .main { clip-path: inset(0 25.4% 0 0); }
+  .tk .stub { clip-path: inset(0 0 0 74.6%); transition: transform .9s cubic-bezier(.5,-0.3,.7,1), opacity .9s steps(6); }
+  .tk.torn .stub { transform: translateZ(1px) translate(14%, 30vh) rotate(38deg); opacity: 0; }
+  .tk .back { transform: rotateY(180deg) translateZ(7px); }
+  .tk .main, .tk .stub, .tk .foil, .tk .claimed { transform: translateZ(1px); }
+  .tk .edge { position: absolute; inset: 0; transform: translateZ(calc(var(--z) * -1px)); background: var(--ec, #3a2a20); pointer-events: none;
+               -webkit-mask: var(--img) 0 0 / 100% 100% no-repeat; mask: var(--img) 0 0 / 100% 100% no-repeat; }
+  .tk.torn .edge { clip-path: inset(0 25.4% 0 0); transition: clip-path 0s .2s; }
+  .tk .foil { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; pointer-events: none; opacity: .32;
+              background: linear-gradient(var(--sa, 115deg), transparent 20%, rgba(255,160,220,.9) 34%, rgba(160,235,255,.9) 42%, rgba(255,250,190,.9) 50%, transparent 62%);
+              -webkit-mask: var(--img) 0 0 / 100% 100% no-repeat; mask: var(--img) 0 0 / 100% 100% no-repeat; }
+  .tk.torn .foil { clip-path: inset(0 25.4% 0 0); }
+  .tk .claimed { position: absolute; left: 26%; top: 26%; z-index: 3; padding: 2% 5%; font-size: clamp(18px, 4vw, 38px); letter-spacing: 3px; color: #d6363a;
+                 border: 5px double #d6363a; transform: translateZ(2px) rotate(-14deg) scale(3); opacity: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; background: rgba(255,250,240,.35); transform-style: flat; z-index: 6; }
+  .tk.stamped .claimed { animation: stamp .35s steps(4) forwards; }
+  @keyframes stamp { 70% { transform: translateZ(2px) rotate(-14deg) scale(.92); opacity: 1; } 100% { transform: translateZ(2px) rotate(-14deg) scale(1); opacity: .95; } }
+  .shadow { position: fixed; left: 50%; top: calc(46% + min(170px, 25vw)); width: min(460px, 66vw); height: 14px; transform: translateX(-50%); z-index: 8;
+            background: rgba(0,0,0,.35); clip-path: polygon(6% 0, 94% 0, 100% 50%, 94% 100%, 6% 100%, 0 50%); opacity: 0; transition: opacity .3s steps(3); }
+  .shadow.on { opacity: 1; }
+  .hint { position: fixed; left: 50%; top: calc(46% + min(196px, 29vw)); transform: translateX(-50%); z-index: 16; color: #c9c6e4; font-size: 14px;
+          text-shadow: 2px 2px 0 #000; opacity: 0; transition: opacity .3s steps(3); white-space: nowrap; font-size: 16px; }
   .hint.on { opacity: 1; }
-  .claim { position: fixed; left: 50%; bottom: 9vh; transform: translate(-50%, 30px); z-index: 9; opacity: 0; pointer-events: none; transition: all .35s steps(5);
-           border: 0; cursor: pointer; padding: 15px 30px; font: inherit; font-size: 20px; letter-spacing: 1px; color: #000; background: var(--c, #fce060);
-           box-shadow: 0 -4px 0 0 var(--c, #fce060), 0 4px 0 0 var(--c, #fce060), -4px 0 0 0 var(--c, #fce060), 4px 0 0 0 var(--c, #fce060), inset 0 -5px 0 0 rgba(0,0,0,.3); }
+
+  /* the claim button: chunky, with a bar that fills before it wakes up */
+  .claim { position: fixed; left: 50%; bottom: 7vh; transform: translate(-50%, 40px); z-index: 18; opacity: 0; pointer-events: none; transition: opacity .35s steps(5), transform .35s steps(5);
+           border: 0; cursor: pointer; padding: 16px 34px 20px; font: inherit; font-size: clamp(18px, 2.6vw, 24px); letter-spacing: 1px; color: #000; background: var(--c, #fce060);
+           box-shadow: 0 -4px 0 0 var(--c), 0 4px 0 0 var(--c), -4px 0 0 0 var(--c), 4px 0 0 0 var(--c), inset 0 -6px 0 0 rgba(0,0,0,.28), 8px 10px 0 4px rgba(0,0,0,.4); }
   .claim.on { opacity: 1; pointer-events: auto; transform: translate(-50%, 0); }
-  .claim:hover { filter: brightness(1.1); } .claim[disabled] { filter: saturate(.3) brightness(.7); cursor: wait; }
-  .msg { position: fixed; left: 50%; bottom: calc(9vh + 70px); transform: translateX(-50%); z-index: 9; color: #ff8a7a; font-size: 15px; text-align: center; width: min(560px, 92vw); }
-  .ground { position: fixed; left: 0; right: 0; bottom: 0; height: 0; z-index: 3; }
+  .claim:hover { filter: brightness(1.08); }
+  .claim:active { transform: translate(-50%, 4px); box-shadow: 0 -4px 0 0 var(--c), 0 4px 0 0 var(--c), -4px 0 0 0 var(--c), 4px 0 0 0 var(--c), inset 0 -2px 0 0 rgba(0,0,0,.28); }
+  .claim .bar { position: absolute; left: 0; bottom: 0; height: 6px; background: rgba(0,0,0,.35); width: 0; }
+  .claim.wait { filter: saturate(.4) brightness(.8); cursor: default; } .claim.wait .bar { animation: fill 2.2s steps(22) forwards; }
+  @keyframes fill { to { width: 100%; } }
+  .claim:disabled { filter: saturate(.4) brightness(.8); cursor: progress; }
+  .msg { position: fixed; left: 50%; bottom: calc(7vh + 86px); transform: translateX(-50%); z-index: 18; color: #ff8a7a; font-size: 15px; text-align: center;
+         width: min(560px, 92vw); text-shadow: 2px 2px 0 #000; }
+
+  /* the empty mailbox */
+  .box { position: fixed; left: 50%; bottom: calc(24vh - 2px); transform: translateX(-50%); z-index: 12; width: 120px; height: 150px; }
+  .box .post { position: absolute; left: 52px; top: 70px; width: 16px; height: 80px; background: #6b4a2c; box-shadow: inset -4px 0 0 #4f3520; }
+  .box .mb { position: absolute; left: 4px; top: 10px; width: 112px; height: 66px; background: #3a6fd8; overflow: hidden;
+             box-shadow: inset 0 -8px 0 #24356e, inset 8px 0 0 #5a8ce8, 0 -4px 0 0 #142050, 0 4px 0 0 #142050, -4px 0 0 0 #142050, 4px 0 0 0 #142050; }
+  .box .hole { position: absolute; left: 12px; top: 14px; width: 54px; height: 44px; background: #0c1230; overflow: hidden; }
+  .box .flag { position: absolute; right: -14px; top: 26px; width: 6px; height: 36px; background: #8a8794; transform-origin: 50% 100%; transform: rotate(90deg); }
+  .box .flag::after { content: ""; position: absolute; left: 6px; top: 0; width: 16px; height: 12px; background: #d6363a; }
+  .box .who { position: absolute; left: 4px; top: 0; width: 46px; height: 60px; animation: peek 3.2s steps(4) infinite; }
+  .box .who .critter { left: 0 !important; top: 0 !important; bottom: auto !important; }
+  @keyframes peek { 0%, 100% { transform: translateY(40px); } 20%, 70% { transform: translateY(4px); } }
+  .empty-cta { position: fixed; left: 50%; bottom: 8vh; transform: translateX(-50%); z-index: 18; text-decoration: none; color: #000; background: #fff; padding: 13px 24px;
+               font-size: 17px; box-shadow: 0 -4px 0 0 #fff, 0 4px 0 0 #fff, -4px 0 0 0 #fff, 4px 0 0 0 #fff, inset 0 -5px 0 rgba(0,0,0,.2), 8px 10px 0 4px rgba(0,0,0,.4); }
+  .empty-cta:hover { transform: translate(-50%, -2px); }
+
+  .wipe { position: fixed; inset: 0; z-index: 100; pointer-events: none; display: grid; grid-template-columns: repeat(16, 1fr); grid-template-rows: repeat(9, 1fr); }
+  .wipe i { background: #000; transform: scale(0); }
+  .wipe.go i { animation: cell .5s steps(4) forwards; }
+  @keyframes cell { to { transform: scale(1.05); } }
   .critter { position: absolute; border: 0; padding: 0; background: transparent no-repeat 0 0 / 100% 100%; image-rendering: pixelated; cursor: pointer; }
   .critter .eye { position: absolute; overflow: hidden; pointer-events: none; } .critter .pupil { position: absolute; background: #14121a; }
   .critter .lid { position: absolute; inset: 0; display: none; } .critter.blink .pupil { display: none; } .critter.blink .lid { display: block; }
   .kit-say { position: fixed; z-index: 90; background: #fff; color: #000; font-size: 15px; padding: 4px 10px; white-space: nowrap; transform: translate(-50%, -100%); pointer-events: none; animation: ksay 1.5s steps(4) forwards; }
   @keyframes ksay { 0% { opacity: 0; } 12%, 80% { opacity: 1; } 100% { opacity: 0; } }
   .kit-float { position: fixed; z-index: 89; pointer-events: none; image-rendering: pixelated; }
-  .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: #fff; color: #000; padding: 10px 16px; z-index: 95; opacity: 0; }
-  .toast.show { opacity: 1; }
-  .empty-btn { display: inline-block; margin-top: 22px; pointer-events: auto; text-decoration: none; color: #000; background: #fff; padding: 11px 20px; font-size: 16px; }
-  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+  @media (max-width: 600px) { .say { top: 13vh; } .me img { width: 32px; height: 32px; } }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01s !important; transition-duration: .01s !important; } }
 </style>
 </head>
 <body>
-<canvas id="sky"></canvas>
+<canvas id="world" aria-hidden="true"></canvas>
 <a class="home" href="../" aria-label="Mosaic home"><img src="../assets/logo-wordmark.png" alt="Mosaic"></a>
 <div class="me" id="me" hidden tabindex="0"><img id="me-pic" alt="Your profile picture"><span class="nm" id="me-name"></span></div>
-<div class="say" id="say"><h1>&nbsp;</h1></div>
+<div class="say" id="say" aria-live="polite"></div>
+<div class="rays" id="rays"></div>
 <div class="stage" id="stage"></div>
-<div class="ground" id="ground"></div>
-<button class="claim" id="claim" type="button">Claim my ticket</button>
-<div class="hint" id="hint">drag the ticket around &middot; flip it over</div>
-<div class="msg" id="msg"></div>
+<div class="shadow" id="shadow"></div>
+<div class="hint" id="hint">drag the ticket around to flip it over</div>
+<button class="claim" id="claim" type="button" hidden>Claim my ticket<span class="bar"></span></button>
+<div class="msg" id="msg" role="alert"></div>
 <script>
 (() => {
   const $ = s => document.querySelector(s), reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
   if (!Session.current()) { location.replace("../login/?next=claim"); return; }
-  const esc = Kit.esc, PLAN = Kit.PLAN;
+  const esc = Kit.esc, PLAN = Kit.PLAN, wait = ms => new Promise(r => setTimeout(r, reduce ? 0 : ms));
+  const tr = s => (window.I18n && I18n.t ? I18n.t(s) : s);
+  const say = html => { $("#say").innerHTML = html; };
 
-  // ---------------------------------------------------------------- the night sky: bands, twinkling stars, hills (drawn small, scaled up)
-  const sky = $("#sky"), g = sky.getContext("2d"), S = 4;
-  let stars = [];
-  function drawSky(t = 0) {
-    const W = Math.ceil(innerWidth / S), H = Math.ceil(innerHeight / S);
-    if (sky.width !== W || sky.height !== H) {
-      sky.width = W; sky.height = H;
-      stars = Array.from({ length: Math.round(W * H / 160) }, () => ({ x: Math.random() * W | 0, y: Math.random() * H * .62 | 0, p: Math.random() * 6, c: Math.random() < .75 }));
-    }
-    const bands = ["#0c0c2c", "#121844", "#18205a", "#1c2c5c", "#2c3c74", "#3a4c8c"], horizon = Math.round(H * .78);
-    bands.forEach((c, i) => { g.fillStyle = c; g.fillRect(0, Math.round(i * horizon / bands.length), W, Math.ceil(horizon / bands.length) + 1); });
-    for (const s of stars) {
-      const on = Math.sin(t / 600 + s.p) > -.6;
-      if (!on) continue;
-      g.fillStyle = s.c ? "#fcfcfc" : "#fce8a0"; g.fillRect(s.x, s.y, 1, 1);
-      if (Math.sin(t / 400 + s.p * 3) > .96) { g.fillRect(s.x - 1, s.y, 3, 1); g.fillRect(s.x, s.y - 1, 1, 3); }
-    }
-    for (let y = -6; y <= 6; y++) for (let x = -6; x <= 6; x++) {                  // a little crescent moon
-      if (x * x + y * y <= 36 && (x - 3) * (x - 3) + (y + 2) * (y + 2) > 25) { g.fillStyle = "#fcf4d8"; g.fillRect(W - 40 + x, 20 + y, 1, 1); }
-    }
-    g.fillStyle = "#141c44";
-    for (let x = 0; x < W; x++) { const h = 6 + Math.round(4 * Math.sin(x / 17) + 3 * Math.sin(x / 7 + 1)); g.fillRect(x, horizon - h, 1, h); }
-    g.fillStyle = "#3a4c8c"; g.fillRect(0, horizon, W, 1); g.fillStyle = "#24305c"; g.fillRect(0, horizon + 1, W, 2); g.fillStyle = "#141c44"; g.fillRect(0, horizon + 3, W, H);
+  // ================================================================ the world: a night hill with a little town, drawn small and scaled up
+  const cv = $("#world"), g = cv.getContext("2d"), S = 4;
+  let W, H, stars, flies, hills, town, shooting = null;
+  function build() {
+    W = Math.ceil(innerWidth / S); H = Math.ceil(innerHeight / S);
+    cv.width = W; cv.height = H;
+    const R = (a, b) => a + Math.random() * (b - a);
+    stars = Array.from({ length: Math.round(W * H / 120) }, () => ({ x: R(0, W) | 0, y: R(0, H * .55) | 0, p: R(0, 6), b: Math.random() < .12 }));
+    flies = Array.from({ length: 14 }, () => ({ x: R(0, W), y: R(H * .62, H * .8), p: R(0, 6), s: R(.2, .6) }));
+    const ridge = (base, amp, step) => { const a = []; let y = base; for (let x = 0; x < W + step; x += step) { y = Math.max(base - amp, Math.min(base + amp * .3, y + R(-2, 2))); for (let k = 0; k < step; k++) a.push(y); } return a; };
+    hills = [ridge(H * .6, 10, 6), ridge(H * .68, 6, 4)];
+    town = [];
+    for (let x = 6; x < W - 6; x += R(8, 16) | 0) if (Math.random() < .5) town.push({ x: x | 0, w: R(6, 10) | 0, h: R(6, 12) | 0, roof: Math.random() < .6 });
   }
-  (function loop(t) { drawSky(t); if (!reduce) requestAnimationFrame(loop); })(0);
-  addEventListener("resize", () => drawSky(performance.now()));
+  function draw(t) {
+    const bands = ["#070a1c", "#0a0f28", "#0e1534", "#121b40", "#16224c", "#1c2a58"], hz = H * .66;
+    bands.forEach((c, i) => { g.fillStyle = c; g.fillRect(0, Math.round(i * hz / 6), W, Math.ceil(hz / 6) + 1); });
+    for (let i = 1; i < 6; i++) { g.fillStyle = bands[i - 1]; for (let x = 0; x < W; x += 2) g.fillRect(x, Math.round(i * hz / 6), 1, 1); }   // dithered band edges
+    for (const s of stars) {
+      if (Math.sin(t / 650 + s.p) < -.55) continue;
+      g.fillStyle = s.b ? "#fce8a0" : "#e8ecff"; g.fillRect(s.x, s.y, 1, 1);
+      if (s.b && Math.sin(t / 420 + s.p * 3) > .9) { g.fillRect(s.x - 1, s.y, 3, 1); g.fillRect(s.x, s.y - 1, 1, 3); }
+    }
+    const mx = W * .78 | 0, my = H * .16 | 0;
+    g.fillStyle = "rgba(240,240,220,.06)"; for (let r = 14; r > 7; r -= 3) { g.beginPath(); g.arc(mx, my, r, 0, 7); g.fill(); }
+    for (let y = -6; y <= 6; y++) for (let x = -6; x <= 6; x++) if (x * x + y * y <= 36) { g.fillStyle = (x + 2) ** 2 + (y + 1) ** 2 < 12 ? "#fffbe8" : "#f0ead0"; g.fillRect(mx + x, my + y, 1, 1); }
+    g.fillStyle = "#d8d0b0"; [[-2, 1], [2, -2], [1, 3]].forEach(([a, b]) => g.fillRect(mx + a, my + b, 1, 1));
+    if (!shooting && !reduce && Math.random() < .004) shooting = { x: Math.random() * W * .7, y: Math.random() * H * .25, t0: t };
+    if (shooting) {
+      const u = (t - shooting.t0) / 700;
+      if (u > 1) shooting = null;
+      else for (let k = 0; k < 7; k++) { g.fillStyle = k < 2 ? "#ffffff" : "#9fb4ff"; g.fillRect((shooting.x + u * 40 - k * 2) | 0, (shooting.y + u * 14 - k * .7) | 0, 1, 1); }
+    }
+    hills.forEach((h, k) => { g.fillStyle = k ? "#141c44" : "#101634"; for (let x = 0; x < W; x++) g.fillRect(x, h[x] | 0, 1, H); });
+    for (const b of town) {
+      const by = (hills[1][b.x] | 0) + 1;
+      g.fillStyle = "#0c1230"; g.fillRect(b.x, by - b.h, b.w, b.h);
+      if (b.roof) for (let k = 0; k < b.w / 2 + 1; k++) g.fillRect(b.x - 1 + k, by - b.h - k, b.w + 2 - 2 * k, 1);
+      g.fillStyle = Math.sin(t / 900 + b.x) > -.9 ? "#fcd060" : "#7a6020";
+      g.fillRect(b.x + 2, by - b.h + 2, 1, 1); if (b.w > 7) g.fillRect(b.x + b.w - 3, by - b.h + 2, 1, 1);
+    }
+    const gy = H * .76 | 0;
+    g.fillStyle = "#1c2a58"; g.fillRect(0, gy, W, 1); g.fillStyle = "#121a40"; g.fillRect(0, gy + 1, W, 2); g.fillStyle = "#0c1230"; g.fillRect(0, gy + 3, W, H);
+    for (let x = 3; x < W; x += 7) { g.fillStyle = "#16224c"; g.fillRect(x, gy - 1, 1, 1); g.fillRect(x + 2, gy - 2, 1, 2); }
+    g.fillStyle = "#f8f080";
+    for (const f of flies) {
+      if (Math.sin(t / 380 + f.p * 5) < 0) continue;
+      g.fillRect((f.x + Math.sin(t / 1200 * f.s * 6 + f.p) * 8) | 0, (f.y + Math.cos(t / 900 + f.p) * 3) | 0, 1, 1);
+    }
+  }
+  build(); addEventListener("resize", () => { build(); if (reduce) draw(0); });
+  if (reduce) draw(0); else (function loop(t) { draw(t); requestAnimationFrame(loop); })(0);
 
-  // ---------------------------------------------------------------- the envelope, in pixel art (96 x 64, three layers)
-  function paint(cv, fn) { cv.width = 96; cv.height = 64; const c = cv.getContext("2d"); fn(c); return cv; }
-  const PAPER = "#f4ead8", SHADE = "#e2d2b4", EDGE = "#8c6a4a", INSIDE = "#c9b28c";
-  function poly(c, pts, fill) { c.fillStyle = fill; for (let y = 0; y < 64; y++) for (let x = 0; x < 96; x++) if (inside(x + .5, y + .5, pts)) c.fillRect(x, y, 1, 1); }
-  function inside(x, y, p) { let o = false; for (let i = 0, j = p.length - 1; i < p.length; j = i++) if ((p[i][1] > y) !== (p[j][1] > y) && x < (p[j][0] - p[i][0]) * (y - p[i][1]) / (p[j][1] - p[i][1]) + p[i][0]) o = !o; return o; }
-  function outline(c, pts) { c.fillStyle = EDGE; for (let i = 0; i < pts.length; i++) { const a = pts[i], b = pts[(i + 1) % pts.length], n = Math.max(Math.abs(b[0] - a[0]), Math.abs(b[1] - a[1]));
-    for (let k = 0; k <= n; k++) c.fillRect(Math.min(95, Math.round(a[0] + (b[0] - a[0]) * k / n)), Math.min(63, Math.round(a[1] + (b[1] - a[1]) * k / n)), 1, 1); } }
-  const back = c => { c.fillStyle = EDGE; c.fillRect(0, 0, 96, 64); c.fillStyle = INSIDE; c.fillRect(1, 1, 94, 62); };
+  // ================================================================ pixel envelope, drawn on 100 x 66 canvases
+  const PAPER = "#f6ecd8", SHADE = "#e6d6b8", EDGE = "#8c6a4a", IN = "#c9b28c";
+  const inside = (x, y, p) => { let o = false; for (let i = 0, j = p.length - 1; i < p.length; j = i++) if ((p[i][1] > y) !== (p[j][1] > y) && x < (p[j][0] - p[i][0]) * (y - p[i][1]) / (p[j][1] - p[i][1]) + p[i][0]) o = !o; return o; };
+  const paint = (c, fn) => { c.width = 100; c.height = 66; fn(c.getContext("2d")); };
+  const poly = (c, pts, fill) => { c.fillStyle = fill; for (let y = 0; y < 66; y++) for (let x = 0; x < 100; x++) if (inside(x + .5, y + .5, pts)) c.fillRect(x, y, 1, 1); };
+  const line = (c, a, b, col) => { c.fillStyle = col; const n = Math.max(Math.abs(b[0] - a[0]), Math.abs(b[1] - a[1])); for (let k = 0; k <= n; k++) c.fillRect(Math.round(a[0] + (b[0] - a[0]) * k / n), Math.round(a[1] + (b[1] - a[1]) * k / n), 1, 1); };
+  const back = c => { c.fillStyle = EDGE; c.fillRect(0, 0, 100, 66); c.fillStyle = IN; c.fillRect(1, 1, 98, 64); c.fillStyle = "#b8a07a"; for (let y = 3; y < 64; y += 4) c.fillRect(2, y, 96, 1); };
   const front = c => {
-    const p = [[0, 4], [48, 36], [96, 4], [96, 64], [0, 64]];
-    poly(c, p, PAPER);
-    poly(c, [[0, 64], [48, 34], [96, 64]], SHADE);                     // the bottom flap, a shade darker
-    outline(c, [[0, 4], [48, 36], [96, 4]]); outline(c, [[0, 63], [48, 34], [95, 63]]);
-    c.fillStyle = EDGE; c.fillRect(0, 4, 1, 60); c.fillRect(95, 4, 1, 60); c.fillRect(0, 63, 96, 1);
+    poly(c, [[0, 4], [50, 38], [100, 4], [100, 66], [0, 66]], PAPER);
+    poly(c, [[0, 66], [50, 36], [100, 66]], SHADE);
+    c.fillStyle = "#efe2c8"; for (let y = 40; y < 64; y += 2) for (let x = y % 4; x < 100; x += 4) c.fillRect(x, y, 1, 1);
+    line(c, [0, 4], [50, 38], EDGE); line(c, [50, 38], [99, 4], EDGE); line(c, [0, 65], [50, 36], EDGE); line(c, [50, 36], [99, 65], EDGE);
+    c.fillStyle = EDGE; c.fillRect(0, 4, 1, 62); c.fillRect(99, 4, 1, 62); c.fillRect(0, 65, 100, 1);
+    for (let x = 2; x < 98; x += 8) { c.fillStyle = "#d6363a"; c.fillRect(x, 62, 4, 2); c.fillStyle = "#3a6fd8"; c.fillRect(x + 4, 62, 4, 2); }   // airmail stripes
   };
-  const flap = c => {
-    poly(c, [[0, 0], [96, 0], [48, 38]], PAPER); outline(c, [[0, 0], [95, 0], [48, 38]]);
-    c.fillStyle = "#d84a5a"; [[45, 32, 6, 4], [44, 33, 8, 3], [46, 36, 4, 2]].forEach(r => c.fillRect(...r));     // the wax seal
-    c.fillStyle = "#f07888"; c.fillRect(46, 33, 2, 1);
-  };
+  const flap = c => { poly(c, [[0, 0], [100, 0], [50, 40]], PAPER); line(c, [0, 0], [99, 0], EDGE); line(c, [0, 0], [50, 40], EDGE); line(c, [99, 0], [50, 40], EDGE);
+    c.fillStyle = SHADE; c.fillRect(4, 1, 92, 1); };
 
-  // ---------------------------------------------------------------- the 3D ticket (drag to turn it; it springs back)
-  function ticket3d(plan) {
+  // ================================================================ the 3D ticket: drag to tilt, fling to flip, foil follows the light
+  function ticket(plan) {
     const el = document.createElement("div"); el.className = "tk";
-    el.innerHTML = `<div class="face" style="--img:url(../assets/tickets/ticket-${plan}.png)"></div><div class="shine" style="--img:url(../assets/tickets/ticket-${plan}.png)"></div>
-      <div class="face b" style="--img:url(../assets/tickets/back-${plan}.png)"></div>`;
+    const img = `url(../assets/tickets/ticket-${plan}.png)`, bk = `url(../assets/tickets/back-${plan}.png)`;
+    const ec = (PLAN[plan] || {}).b || "#3a2a20";
+    el.innerHTML = [1, 2, 3, 4, 5, 6].map(z => `<div class="edge" style="--z:${z};--img:${img};--ec:${z === 6 ? "#0c0a14" : ec}"></div>`).join("") + `<div class="face main" style="--img:${img}"></div><div class="face stub" style="--img:${img}"></div>
+      <div class="foil" style="--img:${img}"></div><div class="claimed">${esc(tr("CLAIMED"))}</div><div class="face back" style="--img:${bk}"></div>`;
     document.body.appendChild(el);
-    let rx = 0, ry = 0, vx = 0, vy = 0, drag = null, hover = { x: 0, y: 0 }, spin = 540;
-    el.addEventListener("pointerdown", e => { drag = { x: e.clientX, y: e.clientY, rx, ry }; el.setPointerCapture(e.pointerId); el.classList.add("grab"); });
-    el.addEventListener("pointermove", e => {
-      if (!drag) return;
-      const nry = drag.ry + (e.clientX - drag.x) * .5, nrx = drag.rx - (e.clientY - drag.y) * .4;
-      vy = nry - ry; vx = nrx - rx; ry = nry; rx = Math.max(-70, Math.min(70, nrx));
-    });
+    let rx = 0, ry = 0, vx = 0, vy = 0, drag = null, hover = { x: 0, y: 0 }, spin = reduce ? 0 : 720, hold = false;
+    el.addEventListener("pointerdown", e => { if (hold) return; drag = { x: e.clientX, y: e.clientY, rx, ry }; el.setPointerCapture(e.pointerId); el.classList.add("grab"); spin = 0; });
+    el.addEventListener("pointermove", e => { if (!drag) return; const nry = drag.ry + (e.clientX - drag.x) * .55, nrx = Math.max(-75, Math.min(75, drag.rx - (e.clientY - drag.y) * .45));
+      vy = nry - ry; vx = nrx - rx; ry = nry; rx = nrx; });
     const up = () => { drag = null; el.classList.remove("grab"); };
     el.addEventListener("pointerup", up); el.addEventListener("pointercancel", up);
     addEventListener("pointermove", e => { hover = { x: e.clientX / innerWidth - .5, y: e.clientY / innerHeight - .5 }; });
-    (function frame() {
+    (function frame(t) {
       if (!el.isConnected) return;
-      if (spin > 0) { ry += Math.min(18, spin * .08); spin -= Math.min(18, spin * .08); if (spin < 1) { spin = 0; ry = Math.round(ry / 360) * 360; } }
+      if (spin > 0) { const d = Math.max(2, spin * .09); ry += d; spin -= d; if (spin <= 0) ry = Math.round(ry / 360) * 360; }
       else if (!drag) {
-        ry += vy; rx += vx; vy *= .9; vx *= .9;                                   // a little momentum, then home
-        const home = Math.round(ry / 180) * 180;                                  // settles on whichever side is nearest
-        ry += (home + hover.x * 24 - ry) * .08; rx += (-hover.y * 18 - rx) * .08;
+        ry += vy; rx += vx; vy *= .9; vx *= .9;
+        const home = hold ? Math.round(ry / 360) * 360 : Math.round(ry / 180) * 180, sway = hold || reduce ? 0 : Math.sin(t / 900) * 6;
+        ry += (home + (hold ? 0 : hover.x * 26) + sway - ry) * .08; rx += ((hold ? 0 : -hover.y * 20 + Math.sin(t / 1300) * 4) - rx) * .08;
       }
       el.style.setProperty("--rx", rx.toFixed(2) + "deg"); el.style.setProperty("--ry", ry.toFixed(2) + "deg");
-      el.style.setProperty("--sa", (110 + ry * .6).toFixed(1) + "deg");
-      el.style.setProperty("--sx", (8 - ry % 360 / 12).toFixed(1) + "px"); el.style.setProperty("--sy", (10 + rx / 6).toFixed(1) + "px");
+      el.style.setProperty("--sa", (115 + ry * .8 + rx * .6).toFixed(1) + "deg");
+      $("#shadow").style.transform = `translateX(-50%) scaleX(${(0.55 + 0.45 * Math.abs(Math.cos(ry * Math.PI / 180))).toFixed(2)})`;
       requestAnimationFrame(frame);
-    })();
-    requestAnimationFrame(() => el.classList.add("on"));
-    return el;
+    })(0);
+    return { el, face: () => { hold = true; vx = vy = 0; spin = 0; drag = null; } };
   }
 
-  // ---------------------------------------------------------------- the visit
-  const toast = Kit.toast;
-  Promise.all([Session.api("/api/tickets"), Kit.json("../assets/scenes/scenes.json").catch(() => []), Kit.json("../assets/scenes/extras.json").catch(() => ({}))]).then(([r, scenes, extras]) => {
+  // ================================================================ the mascot walks in with the mail
+  function walkIn(P, toX, k) {
+    return new Promise(res => {
+      const at = P.mascot === "mascot-atelier", w0 = at ? 21 : 23, h0 = at ? 19 : 20;
+      const el = document.createElement("div"); el.className = "carrier walk";
+      el.style.setProperty("--img", `url(../assets/scenes/${P.mascot}.png)`); el.style.setProperty("--w", w0 * k + "px"); el.style.setProperty("--h", h0 * k + "px");
+      el.innerHTML = `<span class="bag"></span>`;
+      $("#stage").appendChild(el);
+      let x = reduce ? toX : -w0 * k - 20;
+      const step = () => {
+        x = Math.min(toX, x + 8); el.style.left = x + "px";
+        if (x >= toX) { el.classList.remove("walk"); res(el); return; }
+        setTimeout(step, 30);
+      };
+      step();
+    });
+  }
+  function bubble(el, text, ms = 1800) {
+    if (!el.isConnected) return;
+    const r = el.getBoundingClientRect(), b = document.createElement("div");
+    b.className = "bubble"; b.textContent = tr(text); b.style.left = r.left + r.width / 2 + "px"; b.style.top = r.top - 10 + "px";
+    document.body.appendChild(b); setTimeout(() => b.remove(), ms);
+  }
+
+  // ================================================================ the visit
+  Promise.all([Session.api("/api/tickets"), Kit.json("../assets/scenes/scenes.json").catch(() => [])]).then(async ([r, scenes]) => {
     if (r.status === 401) return location.replace("../login/?next=claim");
-    if (!r.ok) return $("#say").innerHTML = `<h1>Hmm, the mailbox is stuck.</h1><p>Couldn't reach Mosaic. Try again in a minute.</p>`;
+    if (!r.ok) return say(`<h1>The mailbox is stuck.</h1><p>Couldn't reach Mosaic. Try again in a minute.</p>`);
     const me = r.data.me, t = r.data.tickets[0];
     $("#me").hidden = false; $("#me-pic").src = Kit.pfp({ username: me.username, avatar: me.avatar }); $("#me-name").textContent = `@${me.username}`;
-    const greeter = name => {
-      const a = scenes.find(s => s.animal.name === name)?.animal || extras[name] || scenes[0]?.animal;
-      if (!a) return;
-      const P = innerWidth < 600 ? 4 : 6, c = Kit.critter(a, $("#ground"), { left: `calc(50% - ${a.w * P / 2}px)`, bottom: `${Math.round(innerHeight * .22) - 4}px`, P });
-      return c;
-    };
-    if (!t) {
-      $("#say").innerHTML = `<h1>You don't have any tickets.</h1><p>When someone gifts you a week of Artisan or Atelier, it arrives here in an envelope.</p>
-        <a class="empty-btn" href="../studio/">Go to the Studio</a>`;
-      const c = greeter("penguin");
-      if (c) { c.a.words = ["Hi there!", "No mail today...", "Check back soon!", "*waddles*"]; setTimeout(() => { Kit.talk(c.el, "Hi there!", 1800); Kit.hop(c.el); }, 700); }
+
+    if (!t) {                                                    // the empty mailbox, with someone peeking out of it
+      say(`<h1>You don't have any tickets.</h1><p>When someone gifts you a week of Artisan or Atelier, it arrives here in an envelope.</p>`);
+      const box = document.createElement("div"); box.className = "box";
+      box.innerHTML = `<span class="post"></span><span class="mb"><span class="hole"><span class="who"></span></span></span><span class="flag"></span>`;
+      $("#stage").appendChild(box);
+      const a = (scenes.find(s => s.animal && s.animal.name === "penguin") || scenes[0] || {}).animal;
+      if (a) Kit.critter({ ...a, words: ["No mail today...", "Check back soon!", "Hi there!"] }, box.querySelector(".who"), { P: 3, left: "0px", top: "0px" });
+      const cta = Object.assign(document.createElement("a"), { className: "empty-cta", href: "../studio/", textContent: "Go to the Studio" });
+      document.body.appendChild(cta);
       return;
     }
-    const plan = PLAN[t.plan] ? t.plan : "artisan", P = PLAN[plan], from = t.from || {};
+
+    const plan = PLAN[t.plan] ? t.plan : "artisan", P = PLAN[plan], from = t.from || {}, giver = esc(from.username || "a friend");
     document.documentElement.style.setProperty("--c", P.c);
-    $("#claim").style.setProperty("--c", P.c);
-    $("#say").innerHTML = `<h1>You've got mail!</h1><p class="blink">click the envelope to open it</p>`;
-    const env = document.createElement("div"); env.className = "env"; env.setAttribute("role", "button"); env.setAttribute("aria-label", "Open the envelope"); env.tabIndex = 0;
-    env.innerHTML = `<span class="tap">click me!</span><canvas class="back"></canvas><div class="peek" style="--tk:url(../assets/tickets/ticket-${plan}.png)"></div><canvas class="front"></canvas><canvas class="flap"></canvas>
-      <div class="addr">To: <b>@${esc(me.username)}</b><br>From: <b>@${esc(from.username || "a friend")}</b><br><span style="color:#8c6a4a">one week of ${esc(P.name)}</span></div>
+    say(`<h1>Special delivery for <span class="hl">@${esc(me.username)}</span></h1>`);
+    // 1. the plan's mascot walks in with a mail bag
+    const k = innerWidth < 600 ? 4 : 5, envW = Math.min(400, innerWidth * .76);
+    const stop = Math.max(8, innerWidth / 2 - envW / 2 - (P.mascot === "mascot-atelier" ? 21 : 23) * k - 6);
+    const carrier = await walkIn(P, stop, k);
+    bubble(carrier, "Psst... mail for you!", 1600);
+    await wait(700);
+    // 2. the envelope drops in and wiggles until you open it
+    const env = document.createElement("div"); env.className = "env drop"; env.setAttribute("role", "button"); env.tabIndex = 0;
+    env.setAttribute("aria-label", tr("Open the envelope"));
+    env.innerHTML = `<canvas class="back"></canvas><div class="peek" style="--tk:url(../assets/tickets/ticket-${plan}.png)"></div><canvas class="front"></canvas><canvas class="flap"></canvas>
+      <svg class="seal" viewBox="0 0 9 9" shape-rendering="crispEdges"><path fill="#d6363a" d="M1 2h2v-1h1v1h1v-1h1v1h2v3h-1v1h-1v1h-1v1h-1v-1h-1v-1h-1v-1h-1z"/><path fill="#f07888" d="M2 2h1v1h-1z"/></svg>
+      <div class="addr">To: <b>@${esc(me.username)}</b><br>From: <b>@${giver}</b><br><i>one week of ${esc(P.name)}</i></div>
       <div class="stamp" style="--sc:${P.b};--sb:url(../assets/scenes/${P.mascot}.png)"></div>`;
     paint(env.querySelector(".back"), back); paint(env.querySelector(".front"), front); paint(env.querySelector(".flap"), flap);
     $("#stage").appendChild(env);
+    await wait(650);
+    env.classList.remove("drop"); env.classList.add("wiggle");
+    say(`<h1>You've got mail!</h1><p class="blink">click the envelope to open it</p>`);
+    Kit.hop(carrier, 10); bubble(carrier, "Go on, open it!", 1800);
+    const lines = ["It's a ticket!", "Go on, open it!", "What could it be?"];
+    const nag = setInterval(() => bubble(carrier, lines[Math.random() * lines.length | 0], 1500), 4200);
+    carrier.addEventListener("click", () => { Kit.hop(carrier, 12); bubble(carrier, "Not me, the envelope!", 1400); });
+
     let opened = false;
-    const openIt = () => {
-      if (opened) return; opened = true;
-      env.classList.add("open");
-      $("#say").innerHTML = `<h1>A ticket from @${esc(from.username || "a friend")}!</h1><p>${t.message ? `&ldquo;${esc(t.message)}&rdquo;` : `a whole week of ${esc(P.name)}, just for you`}</p>`;
-      setTimeout(() => {
-        env.classList.add("gone");
-        const tk = ticket3d(plan);
-        Kit.confetti([P.c, "#ffffff", "#f87898", "#6ee07a", P.b], 2600);
-        setTimeout(() => $("#hint").classList.add("on"), 900);
-        setTimeout(() => $("#claim").classList.add("on"), 3200);                       // a few seconds to admire it first
-      }, reduce ? 50 : 1100);
+    const openIt = async () => {
+      if (opened) return; opened = true; clearInterval(nag);
+      env.classList.remove("wiggle"); env.classList.add("open");
+      $("#rays").classList.add("on");
+      Kit.confetti([P.c, "#ffffff", "#f87898", "#6ee07a", P.b], 1800);
+      Kit.hop(carrier, 16); bubble(carrier, "A gift, just for you!", 2200);
+      say(`<h1>A ticket from <span class="hl">@${giver}</span>!</h1><p>${t.message ? `&ldquo;${esc(t.message)}&rdquo;` : `a whole week of ${esc(P.name)}, just for you`}</p>`);
+      await wait(900);
+      env.classList.add("away"); setTimeout(() => env.remove(), reduce ? 0 : 800);
+      const tk = ticket(plan); tk.el.classList.add("on", "pop");
+      $("#shadow").classList.add("on");
+      Kit.confetti([P.c, "#ffffff", "#fce060", "#5cacfc"], 2600);
+      await wait(1200);
+      $("#hint").classList.add("on");
+      // 3. the claim button wakes up after a moment, a bar filling while you admire the ticket
+      const btn = $("#claim"); btn.hidden = false; btn.classList.add("wait"); btn.disabled = true;
+      requestAnimationFrame(() => btn.classList.add("on"));
+      await wait(2300);
+      btn.classList.remove("wait"); btn.disabled = false;
+      btn.onclick = async () => {
+        btn.disabled = true; $("#msg").textContent = "";
+        const c = await Session.api(`/api/tickets/${encodeURIComponent(t.id)}/claim`, { method: "POST" });
+        if (!c.ok) { btn.disabled = false; $("#msg").textContent = Session.detail(c.data || {}); return; }
+        // 4. stamped, torn off, celebrated, and off to the Studio
+        tk.face(); $("#hint").classList.remove("on"); btn.classList.remove("on");
+        await wait(500); tk.el.classList.add("stamped");
+        await wait(500); tk.el.classList.add("torn");
+        Kit.confetti([P.c, "#ffffff", "#f87898", "#6ee07a", "#5cacfc"], 2600);
+        Kit.hop(carrier, 18); bubble(carrier, "Let's make something!", 2200);
+        say(`<h1>Enjoy your week of <span class="hl">${esc(P.name)}</span>!</h1><p>Taking you to the Studio...</p>`);
+        await wait(1900);
+        const wipe = document.createElement("div"); wipe.className = "wipe";
+        wipe.innerHTML = Array.from({ length: 144 }, (_, i) => `<i style="animation-delay:${((i % 16) + Math.floor(i / 16)) * 18}ms"></i>`).join("");
+        document.body.appendChild(wipe); requestAnimationFrame(() => wipe.classList.add("go"));
+        setTimeout(() => location.href = "../studio/", reduce ? 0 : 950);
+      };
     };
     env.addEventListener("click", openIt);
     env.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openIt(); } });
-    $("#claim").onclick = async () => {
-      $("#claim").disabled = true; $("#msg").textContent = "";
-      const c = await Session.api(`/api/tickets/${t.id}/claim`, { method: "POST" });
-      if (!c.ok) { $("#claim").disabled = false; $("#msg").textContent = Session.detail(c.data || {}); return; }
-      Kit.confetti([P.c, "#ffffff", "#f87898", "#6ee07a", "#5cacfc"], 2400);
-      $("#claim").textContent = "Claimed!"; $("#hint").classList.remove("on");
-      $("#say").innerHTML = `<h1>Enjoy your week of ${esc(P.name)}!</h1><p>Taking you to the Studio...</p>`;
-      setTimeout(() => location.href = "../studio/", 1900);
-    };
   });
 })();
 </script>
