@@ -79,3 +79,51 @@ a { color: inherit; } button, input, select, textarea { font: inherit; color: in
 .kit-dlg h3 { font-weight: normal; font-size: 22px; margin: 0 0 10px; }
 .kit-dlg p { color: #c8c2d4; line-height: 1.5; margin: 0 0 22px; font-size: 15px; white-space: pre-line; }
 .kit-dlg .row { display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
+
+/* ---------------------------------------------------------------- form controls, drawn in the site's own pixel style
+   (no browser-default checkboxes, dropdowns, sliders or scrollbars anywhere) */
+input[type="checkbox"], input[type="radio"] {
+  appearance: none; -webkit-appearance: none; flex: none; width: 18px; height: 18px; margin: 0; cursor: pointer; vertical-align: -3px;
+  background: #1d1826; box-shadow: inset 0 0 0 2px #4a4458; image-rendering: pixelated; }
+input[type="checkbox"]:hover, input[type="radio"]:hover { box-shadow: inset 0 0 0 2px #8f86a0; }
+input[type="checkbox"]:checked { background: var(--green) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 9 9' shape-rendering='crispEdges'%3E%3Cpath fill='%23000' d='M7 2h1v2h-1v1h-1v1h-1v1h-1v1h-1v-1h-1v-1h-1v-1h-1v-1h2v1h1v1h1v-1h1v-1h1v-1h1z'/%3E%3C/svg%3E") center / 14px 14px no-repeat;
+  box-shadow: inset 0 0 0 2px #000; }
+input[type="radio"] { clip-path: polygon(25% 0, 75% 0, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0 75%, 0 25%); }
+input[type="radio"]:checked { background: radial-gradient(var(--yellow) 0 35%, #1d1826 36%); box-shadow: inset 0 0 0 2px var(--yellow); }
+input[type="checkbox"]:disabled, input[type="radio"]:disabled { opacity: .4; cursor: default; }
+input[type="checkbox"]:focus-visible, input[type="radio"]:focus-visible { outline: 2px dashed var(--fg); outline-offset: 3px; }
+
+select {
+  appearance: none; -webkit-appearance: none; cursor: pointer; border: 0; border-radius: 0; color: var(--fg); font: inherit;
+  background: #1d1826 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 7 4' shape-rendering='crispEdges'%3E%3Cpath fill='%23b9b0c8' d='M0 0h7v1h-1v1h-1v1h-1v1h-1v-1h-1v-1h-1v-1h-1z'/%3E%3C/svg%3E") right 12px center / 14px 8px no-repeat;
+  padding: 10px 38px 10px 12px; box-shadow: inset 0 0 0 2px #2e2838; }
+select:hover { box-shadow: inset 0 0 0 2px #8f86a0; }
+select:focus { outline: none; box-shadow: inset 0 0 0 2px var(--c, var(--yellow)); }
+select option { background: #120f17; color: #e8e4f0; }
+
+input[type="range"] { appearance: none; -webkit-appearance: none; background: transparent; height: 22px; cursor: pointer; }
+input[type="range"]::-webkit-slider-runnable-track { height: 6px; background: #2e2838; box-shadow: inset 0 -2px 0 rgba(0,0,0,.35); }
+input[type="range"]::-moz-range-track { height: 6px; background: #2e2838; border: 0; }
+input[type="range"]::-moz-range-progress { height: 6px; background: var(--pro, var(--yellow)); }
+input[type="range"]::-webkit-slider-thumb { appearance: none; -webkit-appearance: none; width: 14px; height: 22px; margin-top: -8px; border: 0; border-radius: 0;
+  background: var(--pro, var(--yellow)); box-shadow: inset 0 -4px 0 rgba(0,0,0,.3), 0 0 0 2px #000; }
+input[type="range"]::-moz-range-thumb { width: 14px; height: 22px; border: 0; border-radius: 0; background: var(--pro, var(--yellow));
+  box-shadow: inset 0 -4px 0 rgba(0,0,0,.3), 0 0 0 2px #000; }
+input[type="range"]:focus-visible { outline: 2px dashed var(--fg); outline-offset: 4px; }
+
+input[type="number"] { -moz-appearance: textfield; }
+input[type="number"]::-webkit-inner-spin-button, input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+input[type="search"]::-webkit-search-cancel-button { -webkit-appearance: none; }
+input[type="file"] { font: inherit; color: var(--dim); }
+input[type="file"]::file-selector-button { font: inherit; border: 0; cursor: pointer; margin-right: 10px; padding: 8px 14px; background: var(--fg); color: #000;
+  box-shadow: inset 0 -3px 0 rgba(0,0,0,.25); }
+::selection { background: var(--pink); color: #000; }
+input::placeholder, textarea::placeholder { color: #57506a; opacity: 1; }
+
+/* scrollbars: chunky and square */
+* { scrollbar-width: thin; scrollbar-color: #4a4458 #0d0b12; }
+::-webkit-scrollbar { width: 12px; height: 12px; }
+::-webkit-scrollbar-track { background: #0d0b12; }
+::-webkit-scrollbar-thumb { background: #4a4458; box-shadow: inset 0 0 0 2px #0d0b12; }
+::-webkit-scrollbar-thumb:hover { background: #6f6880; }
+::-webkit-scrollbar-corner { background: #0d0b12; }

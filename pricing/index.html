@@ -10,12 +10,13 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Tiny5&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../assets/kit.css?v=20261031a">
+<link rel="stylesheet" href="../assets/kit.css?v=20261101a">
 <script src="../config.js"></script>
+<script src="../assets/i18n.js?v=20261101a"></script>
 <script src="../assets/session.js"></script>
-<script src="../assets/kit.js?v=20261031a" data-root="../"></script>
+<script src="../assets/kit.js?v=20261101a" data-root="../"></script>
 <script src="../assets/prices.js?v=20261026g"></script>
-<script src="../assets/subscribe.js?v=20261031a"></script>
+<script src="../assets/subscribe.js?v=20261101a"></script>
 <style>
   header { padding: 64px 0 20px; text-align: center; }
   header .kicker { color: #e8913a; letter-spacing: 3px; font-size: 13px; margin: 0 0 12px; }
@@ -92,7 +93,8 @@
       <div class="price"><b data-price="artisan">S$5</b><span>/ month</span></div><div class="trial">Free trial available</div>
       <ul><li><b>250</b> sprites a day</li><li><b>Pro Studio</b>: exact creativity, fixed seeds, big downloads</li>
         <li>Batches of <b>4</b> sprites at once</li><li><b>Commercial use</b>: sell what you make</li>
-        <li><b>Priority</b> in the queue</li><li class="no">v1 animated scenes</li></ul>
+        <li><b>Priority</b> in the queue</li><li><b>Express</b>: 5 super-fast goes a day</li>
+        <li><b>Gift</b> a friend a week of Artisan</li><li class="no">v1 animated scenes</li></ul>
       <div class="cta"><a class="btn" data-cta="artisan" data-subscribe="artisan" data-mode="join" href="../join/?tier=artisan" style="--c:#e8913a">Start free trial</a>
         <small>On Patreon, which runs billing and the trial.</small></div>
     </section>
@@ -105,6 +107,7 @@
       <div class="price"><b data-price="atelier">S$15</b><span>/ month</span></div><div class="trial"></div>
       <ul><li><b>500</b> sprites a day</li><li><b>50 v1 clips</b> a day: 16:9 animated scenes</li>
         <li>Batches of <b>8</b> sprites and <b>4</b> clips</li><li>Line up <b>10 prompts</b> at once</li><li><b>Top priority</b> in the queue</li>
+        <li><b>Express</b>: 15 super-fast goes a day</li><li><b>Gift</b> a friend a week of Atelier</li>
         <li>Everything in Artisan</li><li>New models first</li></ul>
       <div class="cta"><a class="btn" data-cta="atelier" data-subscribe="atelier" data-mode="join" href="../join/?tier=atelier" style="--c:#fce060">Join Atelier</a>
         <small>On Patreon, which runs billing.</small></div>
@@ -120,6 +123,8 @@
     <tr><td>Sprites a day</td><td>15</td><td>250</td><td>500</td></tr>
     <tr><td>v1 clips a day</td><td class="no">no</td><td class="no">no</td><td>50</td></tr>
     <tr><td>Queue</td><td>standard</td><td>priority</td><td>top priority</td></tr>
+    <tr><td>Express (super-fast goes a day)</td><td class="no">no</td><td>5</td><td>15</td></tr>
+    <tr><td>Gift a week of your plan</td><td class="no">no</td><td>yes, to Free</td><td>yes, to Free or Artisan</td></tr>
     <tr><td>m1: 64×64 sprites</td><td>yes</td><td>yes</td><td>yes</td></tr>
     <tr><td>Studio</td><td>classic</td><td>pro workspace (or classic)</td><td>pro workspace (or classic)</td></tr>
     <tr><td>Exact creativity and fixed seeds</td><td class="no">no</td><td>yes</td><td>yes</td></tr>
@@ -128,14 +133,15 @@
     <tr><td>Prompts on the go at once</td><td>1</td><td>1</td><td>10</td></tr>
     <tr><td>Dev dashboard (usage, keys, calls)</td><td>yes</td><td>yes</td><td>yes</td></tr>
     <tr><td>Downloads</td><td>PNG</td><td>PNG, 8×, 16×</td><td>PNG, 8×, 16×</td></tr>
-    <tr><td>Use of what you make</td><td>personal</td><td>commercial</td><td>commercial</td></tr>
+    <tr><td>Use of what you make</td><td>personal (or anything marked free for commercial use)</td><td>commercial</td><td>commercial</td></tr>
+    <tr><td>Thumbs up / down, reports, the forum</td><td>yes</td><td>yes</td><td>yes</td></tr>
     <tr><td>The API</td><td>yes</td><td>yes</td><td>yes</td></tr>
   </table></div>
 
   <h2>Questions</h2>
   <div class="faq">
-    <div class="notch"><b>How do I subscribe?</b><p>Pick a plan above and subscribe on <a href="https://www.patreon.com/17024707/join" target="_blank" rel="noopener">Patreon</a>. Use the
-      same email as your Mosaic account, and we'll switch your plan on. (A one-click "Link Patreon" button is on its way.)</p></div>
+    <div class="notch"><b>How do I subscribe?</b><p>Press a plan's button above. Signed in, you first link your Patreon account (a small window, one click), then
+      subscribe on Patreon, and your plan switches on by itself within a minute. Each Patreon account links to one Mosaic account at a time.</p></div>
     <div class="notch"><b>Is there a free trial?</b><p>Yes, for Artisan. The trial runs through Patreon, so you can cancel
       there before it ends and you won't be charged.</p></div>
     <div class="notch"><b>What happens if I cancel?</b><p>You go back to Free at the end of the period you paid for. Anything
@@ -148,8 +154,15 @@
     <div class="notch"><b>What's "prompts on the go"?</b><p>In the pro Studio each prompt goes into your queue and draws in the
       background, so on Atelier you can line up to ten (say, a whole tileset) and keep writing while they draw. Nothing is
       charged until it's made, and anything you cancel goes back to your allowance.</p></div>
+    <div class="notch"><b>What's Express?</b><p>A fast lane: switch it on in the Studio and your next few sprites and clips are drawn on a
+      big GPU in seconds instead of waiting in line. Artisan gets 5 goes a day, Atelier 15. When they run out, everything simply goes
+      through the regular line. More in <a href="../blog/meet-express/">Meet Express</a>.</p></div>
+    <div class="notch"><b>Can I give a plan as a present?</b><p>Yes. Artisan and Atelier members can gift a week of their plan: hover your
+      picture at the top right and press <b>Gift a ticket</b>. What your friend makes uses your daily allowance.
+      <a href="../blog/gift-a-ticket/">How gifting works</a>.</p></div>
     <div class="notch"><b>What counts as commercial use?</b><p>Games and apps you sell, client work, ads and merch. The details
-      are on the <a href="../license/">license page</a>.</p></div>
+      are on the <a href="../license/">license page</a> and in the <a href="../terms/">Terms</a>. Using what you make to train other AI models
+      isn't allowed on any plan.</p></div>
     <div class="notch"><b>I liked the old Studio better.</b><p>Paid plans come with the pro Studio, but you can switch back
       to the classic one any time in your <a href="../settings/">settings</a>.</p></div>
   </div>
