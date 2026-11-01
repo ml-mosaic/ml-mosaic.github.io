@@ -222,11 +222,26 @@
     const h = document.documentElement, p = h.scrollTop / Math.max(1, h.scrollHeight - h.clientHeight);
     $("#progress").style.width = p * 100 + "%";
   }, { passive: true });
+  // the contents list follows the reading: the section whose heading last passed a line near the top of the screen
+  // (the first one before any has; the last one once the page can't scroll further)
   const links = [...document.querySelectorAll("#toc a")];
-  const spy = new IntersectionObserver(es => es.forEach(e => {
-    if (e.isIntersecting) links.forEach(a => a.classList.toggle("on", a.getAttribute("href") === "#" + e.target.id));
-  }), { rootMargin: "-15% 0px -75% 0px" });
-  document.querySelectorAll("article h2").forEach(h => spy.observe(h));
+  const heads = links.map(a => document.getElementById(a.getAttribute("href").slice(1))).filter(Boolean);
+  let current = null, locked = 0;
+  const mark = id => { if (id === current) return; current = id; links.forEach(a => a.classList.toggle("on", a.getAttribute("href") === "#" + id)); };
+  const spy = () => {
+    if (!heads.length || Date.now() < locked) return;
+    const h = document.documentElement, line = Math.min(160, innerHeight * 0.25);
+    if (h.scrollTop + innerHeight >= h.scrollHeight - 4) return mark(heads[heads.length - 1].id);
+    let id = heads[0].id;
+    for (const el of heads) if (el.getBoundingClientRect().top - line <= 0) id = el.id;
+    mark(id);
+  };
+  links.forEach(a => a.addEventListener("click", () => {                 // a click shows its section at once
+    mark(a.getAttribute("href").slice(1)); locked = Date.now() + 900; setTimeout(spy, 950);
+  }));
+  addEventListener("scroll", spy, { passive: true });
+  addEventListener("resize", spy);
+  spy();
 
   Promise.all([Kit.json(`${R}assets/m1/showcase.json`), Kit.json(`${R}assets/scenes/scenes.json`)])
     .then(([M, scenes]) => { parade(M); scrubber(M); strengths(M); quotes(scenes); });
