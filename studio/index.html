@@ -280,7 +280,7 @@
   .mcwrap { position: relative; display: flex; }
   .mcwrap > .mcard.more { flex: 1; margin: 0; }       /* fill the grid cell: as tall as the cards beside it */
   .mcfly { position: fixed; left: 0; top: 0; width: 300px; background: #120f17; padding: 10px; --c: #2e2838; margin: var(--u);
-           display: none; z-index: 30; }
+           display: none; z-index: 200; }
   .mcfly.open { display: block; animation: slide .16s steps(3); }
   .mcfly .fh { margin: 2px 2px 8px; font-size: 13px; letter-spacing: 2px; color: #e8e4f0; } .mcfly .fh.small { margin-top: 14px; font-size: 10px; color: #8f86a0; }
   .mcfly .mcards { grid-template-columns: 1fr 1fr; }
@@ -581,7 +581,7 @@
         <img class="big${video ? " video" : ""}" src="${img(p.image)}" alt="${esc(p.prompt)}">
         <div>
           <p class="prompt">&ldquo;${esc(p.prompt)}&rdquo;</p>
-          <div class="chips"><span class="chip ${video ? "v1" : "m1"}">model ${esc(p.model)}</span><span class="chip">${p.creativity}</span><span class="chip">seed ${p.seed}</span>
+          <div class="chips"><span class="chip ${video ? "v1" : "m1"}">model ${esc(modelName(p.model))}</span><span class="chip">${p.creativity}</span><span class="chip">seed ${p.seed}</span>
             <span class="chip">${ago(p.created)}</span>${mine ? `<span class="chip">${p.shared ? "in the gallery" : "private"}</span>` : ""}
             ${mine ? `<a class="chip ${p.license === "commercial" ? "lic" : ""}" href="../license/" title="What you may do with it">${p.license === "commercial" ? "commercial use OK" : "personal use"}</a>` : ""}
             ${p.open_commercial ? `<a class="chip open" href="../license/#open" title="The maker lets anyone use this commercially">free for commercial use</a>` : ""}</div>
@@ -603,7 +603,7 @@
           ${mine && p.license === "commercial" ? `<label class="openc"><input type="checkbox" id="openc" ${p.open_commercial ? "checked" : ""}>
             <span>Let anyone use this commercially<small>Including people whose plan doesn't have commercial rights. Shown as &ldquo;free for commercial use&rdquo; in the gallery.${p.shared ? "" : " (Share it to the gallery for others to see it.)"}</small></span></label>` : ""}
           <p class="meta">${video ? "Made with v1 &middot; 96&times;54, 24 frames at 12 fps, crisp-pixel upscale"
-                                  : `Made with ${esc(p.model)} &middot; 64&times;64, crisp-pixel upscale`}</p>
+                                  : `Made with ${esc(modelName(p.model))} &middot; 64&times;64, crisp-pixel upscale`}</p>
         </div>
       </div>`;
     const sheet = $("#post-sheet");
@@ -729,6 +729,7 @@
     if (!top.length) return { top: list, models: [], legacy: [] };
     return { top, models: list.filter(m => m.group === "models"), legacy: list.filter(m => m.group === "legacy" || !m.group) };
   }
+  const modelName = id => models[id]?.name || { m1p: "m1+", v1p: "v1+" }[id] || id;     // "m1+" rather than its id "m1p"
   function stillTraining(m) {
     Kit.toast(m.why === "off" ? `${m.name} is switched off for now: it'll be back soon.`
                               : `${m.name} is still training: it switches on here by itself when it's ready.`);
@@ -882,12 +883,14 @@
         style="--plate:url(../assets/scenes/nameplate-${esc(m.nameplate || "autumn")}.png)" ${m.locked ? 'title="Part of the Atelier plan"' : ""}>
         <b>${esc(m.name)}</b><span>${esc(m.tagline)}</span>${tagOf(m)}</button>`;
     const others = L.models.length || L.legacy.length;
+    document.querySelectorAll("body > #ws-fly").forEach(f => f.remove());     // the last render's flyout
     $("#ws-models").innerHTML = L.top.map(card).join("") + (others ? `<div class="mcwrap"><button class="mcard more" type="button" id="ws-more" aria-expanded="false">
         <b>Other models &#9654;</b><span>more models, and the classics</span></button>
         <div class="mcfly notch" id="ws-fly">${L.models.length ? `<p class="fh">Models</p><div class="mcards">${L.models.map(card).join("")}</div>` : ""}
         ${L.legacy.length ? `<p class="fh small">Legacy</p><div class="mcards">${L.legacy.map(card).join("")}</div>` : ""}</div></div>` : "");
     const fly = $("#ws-fly");
     if (fly) {
+      document.body.appendChild(fly);            // out of the sidebar's stacking layer, or the images paint over it
       // the sidebar scrolls (and clips), so the flyout is fixed to the screen, right next to the button
       const place = () => {
         const r = $("#ws-more").getBoundingClientRect(), w = Math.min(300, innerWidth - 32);
@@ -901,13 +904,14 @@
       $("#ws-models").closest(".ws-side, aside, .side, section")?.addEventListener("scroll", () => fly.classList.remove("open"), { passive: true });
       addEventListener("click", e => { if (!fly.contains(e.target)) { fly.classList.remove("open"); $("#ws-more")?.setAttribute("aria-expanded", "false"); } });
     }
-    $("#ws-models").querySelectorAll(".mcard[data-id]").forEach(c => c.onclick = () => {
+    const modelCards = () => [...$("#ws-models").querySelectorAll(".mcard[data-id]"), ...($("#ws-fly")?.querySelectorAll(".mcard[data-id]") || [])];
+    modelCards().forEach(c => c.onclick = () => {
       if (c.classList.contains("locked")) return Kit.alert("v1 makes little animated scenes, and it comes with the Atelier plan (with clips in batches, too).", { title: "v1 is an Atelier thing", ok: "Okay" })
         .then(() => {});
       const m = cards.find(x => x.id === c.dataset.id);
       if (m && m.status === "unavailable") return stillTraining(m);
       model = c.dataset.id;
-      $("#ws-models").querySelectorAll(".mcard[data-id]").forEach(x => x.setAttribute("aria-pressed", x === c));
+      modelCards().forEach(x => x.setAttribute("aria-pressed", x === c));
       fly?.classList.remove("open");
       document.querySelectorAll("#ws-prompts textarea").forEach(t => t.placeholder = ROW_HINT[kindOf()]);
       setPer(perPrompt);
@@ -1032,7 +1036,7 @@
     if (!rec) {
       const el = document.createElement("article"); el.className = "job notch" + (clips ? " clips" : "");
       el.innerHTML = `<div class="job-h"><span class="jstate"></span><span class="pr">${esc(j.prompt)}</span>
-          <span class="jchip">${esc(j.model)}</span><span class="jchip">creativity ${esc(j.creativity)}</span>${j.seed != null ? `<span class="jchip">seed ${j.seed}${j.count > 1 ? "+" : ""}</span>` : ""}
+          <span class="jchip">${esc(modelName(j.model))}</span><span class="jchip">creativity ${esc(j.creativity)}</span>${j.seed != null ? `<span class="jchip">seed ${j.seed}${j.count > 1 ? "+" : ""}</span>` : ""}
           <span class="when"></span><button class="jbtn cancel" type="button">cancel</button><button class="jbtn again" type="button">use again</button></div>
         <p class="err" hidden></p><div class="job-grid"></div>`;
       el.querySelector(".cancel").onclick = async () => {
@@ -1041,7 +1045,7 @@
         renderJob(r.data); refreshJobs();
       };
       el.querySelector(".again").onclick = () => {
-        const card = $(`#ws-models .mcard[data-id="${j.model}"]`); if (card && !card.classList.contains("locked")) card.click();
+        const card = document.querySelector(`#ws-models .mcard[data-id="${j.model}"], #ws-fly .mcard[data-id="${j.model}"]`); if (card && !card.classList.contains("locked")) card.click();
         const empty = [...$("#ws-prompts").children].find(r => !r.querySelector("textarea").value.trim());
         const row = empty || addRow("");
         if (row) { const ta = row.querySelector("textarea"); ta.value = j.prompt; ta.dispatchEvent(new Event("input")); ta.focus(); }
