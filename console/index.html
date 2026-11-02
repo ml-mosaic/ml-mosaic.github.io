@@ -456,7 +456,7 @@
     const stateTag = m => m.off ? `<span class="ptag off">SWITCHED OFF</span>` : m.status === "unavailable" ? `<span class="ptag unavailable">UNAVAILABLE</span>`
       : m.status === "preview" ? `<span class="ptag preview">PREVIEW</span>` : `<span class="ptag live">LIVE</span>`;
     const stateText = m => m.off ? "switched off: nobody can use it" : m.why === "training" ? "still training: no worker has it yet"
-      : m.status === "preview" ? "usable, still training" : m.gen2 ? "training finished" : m.serving ? "live" : "live (no worker up right now)";
+      : m.status === "preview" ? (m.finished ? "usable, training finished" : "usable, still training") : m.serving ? "live" : "live (no worker up right now)";
     let confirming = null;
     function renderModels(list) {
       const off = list.filter(m => m.off).length;

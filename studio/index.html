@@ -733,7 +733,7 @@
     Kit.toast(m.why === "off" ? `${m.name} is switched off for now: it'll be back soon.`
                               : `${m.name} is still training: it switches on here by itself when it's ready.`);
   }
-  // a model's tag: UNAVAILABLE (still training, or switched off) -> PREVIEW (usable, still training) -> its plan tag, if any
+  // a model's tag: UNAVAILABLE (still training, or switched off) or PREVIEW (usable); m1 / v1 show their plan tag
   const tagOf = m => m.status === "unavailable" ? `<span class="ptag unavailable">UNAVAILABLE</span>`
     : m.status === "preview" ? `<span class="ptag preview">PREVIEW</span>` : m.tag ? `<span class="ptag ${m.tag.toLowerCase()}">${esc(m.tag)}</span>` : "";
   $("#model-btn").onclick = e => { e.stopPropagation(); const o = !modelBox.hasAttribute("open"); o ? modelBox.setAttribute("open", "") : closeMenu();
