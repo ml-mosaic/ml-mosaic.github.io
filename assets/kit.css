@@ -45,6 +45,8 @@ a { color: inherit; } button, input, select, textarea { font: inherit; color: in
 .utag-developer { background: #1d3a24; color: var(--green); }
 .utag-artisan { background: #6b3a1c; color: #fff; }
 .utag-atelier { background: #2c3c74; color: #fce060; }
+.utag-staff { background: #3a1e4a; color: #e8b8ff; }
+.utag-founder { background: #123430; color: #70e8d8; }
 .avatar { width: 24px; height: 24px; image-rendering: pixelated; display: inline-block; flex: none; }
 @keyframes kit-hop { 50% { transform: translateY(-5px); } }
 
