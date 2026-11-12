@@ -133,11 +133,12 @@
 
       <section class="card notch" id="studio" hidden>
         <h2>Studio look</h2>
-        <p class="hint">Your plan comes with the pro Studio. Prefer the classic one? Switch any time: your plan's allowance
-          and commercial use stay the same either way.</p>
+        <p class="hint">Your plan comes with two Studios. The Classic one is where you start: pick image, animation or video and it
+          uses the best model your plan can use. The Creator Studio is the workspace, with every model, exact creativity, seeds and batches.
+          Switch any time: your plan's allowance and commercial use stay the same either way.</p>
         <div class="seg" id="studio-seg" role="group" aria-label="Studio look">
-          <button type="button" data-v="pro" aria-pressed="true">Pro<small>creativity slider, seeds, batches</small></button>
-          <button type="button" data-v="classic" aria-pressed="false">Classic<small>the original Studio</small></button></div>
+          <button type="button" data-v="classic" aria-pressed="true">Classic<small>image, animation or video: it picks the model</small></button>
+          <button type="button" data-v="creator" aria-pressed="false">Creator<small>every model, creativity slider, seeds, batches</small></button></div>
       </section>
 
       <section class="card notch" id="language">
@@ -212,7 +213,7 @@
     $("#dn").value = p.display_name; $("#bio").value = p.bio; $("#web").value = p.website.replace(/^https?:\/\//, "");
     banner = p.banner;
     $("#a-user").textContent = "@" + u.username; $("#a-email").textContent = u.email || "(none)";
-    $("#a-plan").textContent = { artisan: "Artisan · 250 sprites a day, pro Studio, priority, commercial use", atelier: "Atelier · 500 sprites + 50 v1 clips a day, pro Studio, top priority, commercial use" }[u.plan]
+    $("#a-plan").textContent = { artisan: "Artisan · 250 sprites a day, Creator Studio, priority, commercial use", atelier: "Atelier · 500 sprites + 50 v1 clips a day, Creator Studio, top priority, commercial use" }[u.plan]
                                || "Free · 15 generations a day, personal use";
     showQuota(u.quota); showPic(p); preview(); counts(); dirty(); showTwoFactor(u.two_factor); showStudio(u); showPatreon(u); showExpress(u.express);
   }
@@ -272,8 +273,8 @@
       }
     } catch (_) {}
     history.replaceState(null, "", location.pathname + "#patreon");
-    const msg = { artisan: ["You're on Artisan!", "Patreon is linked. Your pro Studio, badge and 250 sprites a day are switched on."],
-                  atelier: ["You're on Atelier!", "Patreon is linked. v1, your pro Studio, badge and 500 sprites + 50 clips a day are switched on."],
+    const msg = { artisan: ["You're on Artisan!", "Patreon is linked. Your Creator Studio, badge and 250 sprites a day are switched on."],
+                  atelier: ["You're on Atelier!", "Patreon is linked. v1, your Creator Studio, badge and 500 sprites + 50 clips a day are switched on."],
                   nomember: ["Linked, but no plan yet", "We couldn't find an active Artisan or Atelier membership on that Patreon account. Subscribe on Patreon, then press Check again."],
                   taken: ["Already linked elsewhere", "That Patreon account is linked to another Mosaic account. Unlink it there first."],
                   cancelled: ["No problem", "Patreon wasn't linked. You can try again any time."],
@@ -330,16 +331,16 @@
     Kit.alert("Your password is changed. Every other device was signed out, and we've emailed you a note about it.", { title: "Done!", ok: "Okay" });
   });
 
-  // paid plans: pro or classic Studio (saved on the account, so it follows them to every device)
+  // paid plans: classic (the default) or Creator Studio (saved on the account, so it follows them to every device)
   function showStudio(u) {
     if (!u.features?.pro_studio) return;
     $("#studio").hidden = false;
     const mark = v => document.querySelectorAll("#studio-seg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.v === v));
-    mark(u.profile.studio || "pro");
+    mark(u.profile.studio || "classic");
     document.querySelectorAll("#studio-seg button").forEach(b => b.onclick = async () => {
       const r = await Session.api("/api/profile", { json: { studio: b.dataset.v } });
       if (!r.ok) return toast(Session.detail(r.data || {}));
-      mark(r.data.studio); toast(r.data.studio === "classic" ? "Classic Studio it is." : "Pro Studio is back.");
+      mark(r.data.studio); toast(r.data.studio === "classic" ? "Classic Studio it is." : "Creator Studio on.");
     });
     if (location.hash === "#studio") $("#studio").scrollIntoView({ block: "center" });
   }

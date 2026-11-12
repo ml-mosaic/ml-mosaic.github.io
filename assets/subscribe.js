@@ -13,8 +13,8 @@ window.Subscribe = (() => {
     atelier: "https://www.patreon.com/checkout/Mosaic_ML?rid=29914428&vanity=17024707",
   };
   const TIERS = {
-    artisan: { name: "Artisan", price: "S$5 / month", tb: "#6b3a1c", tf: "#fff", c: "#e8913a", perks: "badge, 250 sprites a day and pro Studio" },
-    atelier: { name: "Atelier", price: "S$15 / month", tb: "#2c3c74", tf: "#fce060", c: "#fce060", perks: "badge, v1, 500 sprites + 50 clips a day and pro Studio" },
+    artisan: { name: "Artisan", price: "S$5 / month", tb: "#6b3a1c", tf: "#fff", c: "#e8913a", perks: "badge, 250 sprites a day and Creator Studio" },
+    atelier: { name: "Atelier", price: "S$15 / month", tb: "#2c3c74", tf: "#fce060", c: "#fce060", perks: "badge, v1, 500 sprites + 50 clips a day and Creator Studio" },
   };
   const root = window.Kit?.root ?? "";
   const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));

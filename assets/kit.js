@@ -265,7 +265,7 @@ window.Kit = (() => {
     artisan: { name: "Artisan", mascot: "mascot-artisan", b: "#6b3a1c", tf: "#fff", c: "#e8913a",
                sky: "linear-gradient(#24140c 0 18%, #3a2014 18% 34%, #56301c 34% 50%, #8c4a22 50% 66%, #b8612a 66% 82%, #e8913a 82%)",
                floor: "linear-gradient(#a8672c 0 4px, #7c4a20 4px 8px, #4f2e14 8px)",
-               perks: ["250 sprites every day", "The pro Studio: exact creativity, your own seeds", "Batches of 4 sprites", "Express: 5 super-fast goes a day", "Commercial use of what you make", "Gift a week of Artisan to a friend"] },
+               perks: ["250 sprites every day", "The Creator Studio: exact creativity, your own seeds", "Batches of 4 sprites", "Express: 5 super-fast goes a day", "Commercial use of what you make", "Gift a week of Artisan to a friend"] },
     atelier: { name: "Atelier", mascot: "mascot-atelier", b: "#2c3c74", tf: "#fce060", c: "#fce060",
                sky: "linear-gradient(#0c0c2c 0 22%, #141c44 22% 44%, #1c2c5c 44% 66%, #2c3c74 66%)",
                floor: "linear-gradient(#3a4c8c 0 4px, #24305c 4px 8px, #141c44 8px)",
@@ -483,6 +483,17 @@ window.Kit = (() => {
   }
   if (document.readyState === "loading") addEventListener("DOMContentLoaded", () => setTimeout(popups, 500));
   else setTimeout(popups, 500);
+
+  // a small line at the foot of every page
+  function disclaimer() {
+    if (document.querySelector(".disclaimer")) return;
+    const p = document.createElement("p");
+    p.className = "disclaimer";
+    p.textContent = "Mosaic is not affiliated with MosaicML, a Databricks company.";
+    document.body.appendChild(p);
+  }
+  if (document.readyState === "loading") addEventListener("DOMContentLoaded", disclaimer);
+  else disclaimer();
 
   return { root, reduce, rand, pick, nav, avatar, pfp, tags, whoami, critter, talk, hop, burst, toast, esc, ago, json,
            dialog, confirm: confirmBox, alert: alertBox, profileMenu, gift, report, confetti, celebrate, PLAN };

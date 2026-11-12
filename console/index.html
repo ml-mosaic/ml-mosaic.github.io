@@ -113,14 +113,15 @@
   .plate.dusk::before { background: linear-gradient(270deg, rgba(200,216,96,.25), rgba(200,216,96,0) 70%); }
   .plate.aurora::before { background: linear-gradient(270deg, rgba(110,224,160,.3), rgba(154,122,232,0) 70%); }
   .plate.cinema::before { background: linear-gradient(270deg, rgba(140,164,220,.32), rgba(140,164,220,0) 70%); }
-  .plate.ember::after, .plate.bloom::after, .plate.dusk::after, .plate.aurora::after, .plate.cinema::after {
+  .plate.vista::before { background: linear-gradient(270deg, rgba(96,216,200,.3), rgba(96,216,200,0) 70%); }
+  .plate.ember::after, .plate.bloom::after, .plate.dusk::after, .plate.aurora::after, .plate.cinema::after, .plate.vista::after {
     background: var(--plate) right center / auto 100% no-repeat; image-rendering: pixelated;
     -webkit-mask-image: linear-gradient(270deg, #000 25%, transparent 85%); mask-image: linear-gradient(270deg, #000 25%, transparent 85%); }
   .plate.ember .mk { color: #f2a030; background: #3a1a10; } .plate.bloom .mk { color: #6ee07a; background: #16301c; }
   .plate.dusk .mk { color: #f8f080; background: #1c2c22; } .plate.aurora .mk { color: #6ee0a0; background: #1c2440; }
-  .plate.cinema .mk { color: #c4d4f0; background: #1d2b53; }
+  .plate.cinema .mk { color: #c4d4f0; background: #1d2b53; } .plate.vista .mk { color: #70e8d8; background: #123430; }
   .plate.ember .fall { background-image: url(../assets/scenes/p-spark.png); } .plate.bloom .fall { background-image: url(../assets/scenes/p-petal.png); }
-  .plate.dusk .fall { background-image: url(../assets/scenes/p-glow.png); } .plate.aurora .fall, .plate.cinema .fall { background-image: url(../assets/scenes/p-star.png); }
+  .plate.dusk .fall { background-image: url(../assets/scenes/p-glow.png); } .plate.aurora .fall, .plate.cinema .fall, .plate.vista .fall { background-image: url(../assets/scenes/p-star.png); }
   .plate .ptag.developer { background: #3a1e4a; color: #e8b8ff; } .plate .ptag.unavailable { background: #2a2630; color: #8f86a0; }
   .plate .ptag.preview { background: #3a2f10; color: #fce060; }
   @media (max-width: 760px) { .flyout { left: 0; bottom: calc(100% + 10px); width: 100%; } }

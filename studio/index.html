@@ -96,6 +96,10 @@
   .controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
   .controls .spacer { flex: 1; }
   .seg { display: flex; gap: 4px; }
+  .kinds button { display: flex; align-items: center; gap: 7px; }
+  .kinds button small { font-size: 9px; letter-spacing: 1.5px; padding: 1px 5px; background: #24212b; color: #8f86a0; }
+  .kinds button.off { opacity: .6; } .kinds button.off:hover { opacity: .9; }
+  .using { color: #8f86a0; font-size: 12px; letter-spacing: .5px; } .using b { color: #d8d0e8; font-weight: normal; }
   .seg button { background: #1d1826; border: 0; color: #a69fb5; padding: 8px 12px; cursor: pointer; font-size: 13px; }
   .seg button:hover { color: #fff; }
   .seg button[aria-pressed="true"] { background: var(--yellow); color: #000; }
@@ -379,8 +383,8 @@
   <div class="wrap">
     <h1>Mosaic Studio</h1>
     <p id="greet">What are we drawing today?</p>
-    <span class="sample">m1 + v1 &middot; OUT OF SCHOOL</span>
-    <a class="classic-note" id="classic-note" href="../settings/#studio" hidden>Classic Studio &middot; switch to pro in settings</a>
+    <span class="sample">m2 + m1+ &middot; PREVIEW</span>
+    <a class="classic-note" id="classic-note" href="../settings/#studio" hidden>Classic Studio &middot; try the Creator Studio in settings</a>
   </div>
 </header>
 
@@ -402,10 +406,8 @@
       <div id="compose">
         <textarea id="prompt" maxlength="300" placeholder="Describe a sprite... a sleepy fox curled up in leaves" aria-label="Prompt"></textarea>
         <div class="controls">
-          <div class="model" id="model">
-            <button type="button" id="model-btn" aria-haspopup="listbox" aria-expanded="false"><span id="model-name">m1</span><span class="chev">&#9650;</span></button>
-            <div class="menu notch" role="listbox" id="model-menu"></div>
-          </div>
+          <div class="seg kinds" id="kinds" role="group" aria-label="What to make"></div>
+          <span class="using" id="model-name" title="The best model you can use for this, picked for you"></span>
           <span class="lbl" id="cr-lbl">CREATIVITY</span>
           <div class="seg" id="creativity" role="group" aria-label="Creativity">
             <button type="button" data-v="strict" aria-pressed="false">Strict</button>
@@ -572,7 +574,7 @@
   // ---------------------------------------------------------------- post modal
   const postModal = $("#post-modal"), profileModal = $("#profile-modal");
   [postModal, profileModal].forEach(m => m.addEventListener("click", e => { if (e.target === m) m.classList.remove("open"); }));
-  addEventListener("keydown", e => { if (e.key === "Escape") { postModal.classList.remove("open"); profileModal.classList.remove("open"); closeMenu(); } });
+  addEventListener("keydown", e => { if (e.key === "Escape") { postModal.classList.remove("open"); profileModal.classList.remove("open"); } });
 
   function openPost(p) {
     const mine = p.author.is_me, video = p.kind === "video";
@@ -711,19 +713,44 @@
     postModal.classList.remove("open"); profileModal.classList.add("open");
   }
 
-  // ---------------------------------------------------------------- composer: model menu
-  const modelBox = $("#model"), menu = $("#model-menu");
-  let model = "m1", creativity = "classic";
-  const models = { m1: { id: "m1", name: "m1", cost: 1, kind: "image" } };
+  // ---------------------------------------------------------------- composer: what to make (image / animation / video)
+  // The classic Studio doesn't ask for a model: you pick what you want, and it uses the best model that is switched on and
+  // in your plan (the highest `rank` among that kind's models that aren't unavailable). The Creator Studio lists every model.
+  let model = "m1", creativity = "classic", mode = "image", allModels = [];
+  const models = { m1: { id: "m1", name: "m1", cost: 1, kind: "image", mode: "image" } };
   const cost = () => models[model]?.cost || 1;
   const placeholders = { image: "Describe a sprite... a sleepy fox curled up in leaves",
+                         animation: "Describe an animation... a knight walking while swinging a sword",
                          video: "Describe a scene... snow falling on a pine forest at night",
                          v2: "Describe an animation... a knight walking while swinging a sword",
                          v1p: "Describe an animation... a knight walking while swinging a sword",
                          c1: "Describe a scene... a fox running through a snowy forest at night, the camera follows" };
-  function closeMenu() { modelBox.removeAttribute("open"); $("#model-btn").setAttribute("aria-expanded", "false"); $("#mother")?.classList.remove("open"); }
-  // the menu's sections: the best of each kind on top; the rest of this generation ("Models") and the first one
-  // ("Legacy") under "Other models". Accounts that see no top-tier model just get their models, as before.
+  const MODES = { image: "Image", animation: "Animation", video: "Video" };
+  const modeOf = m => m.mode || (m.kind === "video" ? "video" : "image");
+  const best = md => allModels.filter(m => modeOf(m) === md && m.status !== "unavailable").sort((a, b) => (b.rank || 0) - (a.rank || 0))[0];
+  function whyNot(md) {
+    return allModels.some(m => modeOf(m) === md) ? `${MODES[md]} is still training: it switches on here by itself when it's ready.`
+      : md === "video" ? "Video comes with the Atelier plan." : `${MODES[md]} is on its way: it'll show up here when it's ready.`;
+  }
+  function paintKinds() {
+    $("#kinds").innerHTML = Object.keys(MODES).map(md => {
+      const off = !best(md), soon = off && (allModels.some(m => modeOf(m) === md) || md === "animation");
+      return `<button type="button" data-md="${md}" aria-pressed="${md === mode}" class="${off ? "off" : ""}">${MODES[md]}${off ? `<small>${soon ? "SOON" : "ATELIER"}</small>` : ""}</button>`;
+    }).join("");
+    document.querySelectorAll("#kinds button").forEach(b => b.onclick = () => setMode(b.dataset.md));
+    const m = models[model];
+    $("#model-name").innerHTML = m && allModels.length ? `using <b>${esc(m.name)}</b>${m.status === "preview" ? " &middot; preview" : ""}` : "";
+  }
+  function setMode(md) {
+    const m = best(md);
+    if (!m) return Kit.toast(whyNot(md));
+    mode = md; model = m.id;
+    paintKinds();
+    $("#prompt").placeholder = placeholders[md] || placeholders.image;
+    showQuota();                                  // clips and sprites have separate allowances
+  }
+  // the menu's sections (Creator Studio): the best of each kind on top; the rest of this generation ("Models") and the first
+  // one ("Legacy") under "Other models". Accounts that see no top-tier model just get their models.
   function layout(list) {
     const top = list.filter(m => m.group === "featured");
     if (!top.length) return { top: list, models: [], legacy: [] };
@@ -737,32 +764,12 @@
   // a model's tag: UNAVAILABLE (still training, or switched off) or PREVIEW (usable); m1 / v1 show their plan tag
   const tagOf = m => m.status === "unavailable" ? `<span class="ptag unavailable">UNAVAILABLE</span>`
     : m.status === "preview" ? `<span class="ptag preview">PREVIEW</span>` : m.tag ? `<span class="ptag ${m.tag.toLowerCase()}">${esc(m.tag)}</span>` : "";
-  $("#model-btn").onclick = e => { e.stopPropagation(); const o = !modelBox.hasAttribute("open"); o ? modelBox.setAttribute("open", "") : closeMenu();
-                                   $("#model-btn").setAttribute("aria-expanded", o); };
-  addEventListener("click", e => { if (!modelBox.contains(e.target)) closeMenu(); });
   const modelList = api("/api/models", { auth: !!me }).then(r => {
-    const list = r.ok ? r.data : [{ id: "m1", name: "m1", tagline: "64×64 sprites", status: "released", nameplate: "autumn", cost: 1, kind: "image", tag: "ALL PLANS" }];
+    const list = r.ok ? r.data : [{ id: "m1", name: "m1", tagline: "64×64 sprites", status: "released", nameplate: "autumn", cost: 1, kind: "image", mode: "image", rank: 10, tag: "ALL PLANS" }];
     list.forEach(m => models[m.id] = m);
-    const L = layout(list);
-    const opt = m => `<button class="mopt ${m.nameplate || ""}${m.status === "unavailable" ? " off" : ""}" type="button" role="option" data-id="${m.id}"
-        aria-selected="${m.id === model}" style="--plate:url(../assets/scenes/nameplate-${esc(m.nameplate || "autumn")}.png)">
-        <span class="mk">${esc(m.name)}</span><span class="tx"><b>${esc(m.name)}</b><span>${esc(m.tagline)}${m.cost > 1 ? `<span class="cost">${m.cost} per go</span>` : ""}</span></span>
-        ${tagOf(m)}
-        <span class="tick">${m.id === model ? "&#10003;" : ""}</span>
-        ${[0, 1, 2, 3, 4].map(i => `<i class="fall" style="right:${8 + i * 16}%;animation-delay:${i * .32}s"></i>`).join("")}</button>`;
-    menu.innerHTML = L.top.map(opt).join("") + (L.models.length || L.legacy.length ? `<div class="mother" id="mother">
-        <button class="mopt more" type="button" aria-haspopup="true" aria-expanded="false"><span class="mk">+</span><span class="tx"><b>Other models</b><span>more models, and the classics</span></span><span class="arrow">&#9654;</span></button>
-        <div class="flyout notch">${L.models.length ? `<p class="fh">Models</p>${L.models.map(opt).join("")}` : ""}${L.legacy.length ? `<p class="fh small">Legacy</p>${L.legacy.map(opt).join("")}` : ""}</div></div>`
-      : `<button class="mopt" type="button" disabled><span class="mk" style="color:#57506a">?</span><span class="tx"><b>more soon</b><span>new models land here</span></span></button>`);
-    const more = menu.querySelector(".mopt.more");
-    if (more) more.onclick = e => { e.stopPropagation(); const box = $("#mother"); box.classList.toggle("open"); more.setAttribute("aria-expanded", box.classList.contains("open")); };
-    menu.querySelectorAll(".mopt[data-id]").forEach(o => o.onclick = () => {
-      if (models[o.dataset.id].status === "unavailable") return stillTraining(models[o.dataset.id]);
-      model = o.dataset.id; $("#model-name").textContent = o.querySelector("b").textContent; closeMenu();
-      menu.querySelectorAll(".mopt[data-id]").forEach(x => { x.setAttribute("aria-selected", x === o); x.querySelector(".tick").innerHTML = x === o ? "&#10003;" : ""; });
-      $("#prompt").placeholder = placeholders[model] || placeholders[models[model].kind] || placeholders.image;
-      showQuota();                              // clips and sprites have separate allowances
-    });
+    allModels = list;
+    setMode(best("image") ? "image" : Object.keys(MODES).find(best) || "image");
+    paintKinds();
     return list;
   });
   document.querySelectorAll("#creativity button").forEach(b => b.onclick = () => {
@@ -809,7 +816,7 @@
     } else sw.title = `${xp.remaining} of ${xp.limit} Express goes left today`;
   }
 
-  // ---------------------------------------------------------------- pro Studio: the workspace (Artisan, Atelier, Developer)
+  // ---------------------------------------------------------------- Creator Studio: the workspace (Artisan, Atelier, Developer)
   // Every prompt goes to the backend's queue as a job (POST /api/studio/jobs) and answers at once; the queue panel polls
   // the jobs and fills in each sprite or clip as it lands. Atelier can line up several prompts (features.queue_max) and
   // batch clips (features.clip_batch_max). Jobs live on the server, so a reload picks the queue back up.
@@ -824,7 +831,7 @@
 
   function setupPro(u) {
     if (!u.features?.pro_studio) return;
-    if (u.profile?.studio === "classic") { $("#classic-note").hidden = false; return; }   // they prefer the classic look
+    if (u.profile?.studio !== "creator") { $("#classic-note").hidden = false; return; }   // classic is the default; the Creator Studio is opt-in (settings)
     pro = u.features;
     tier = (u.profile?.badges || []).includes("Developer") ? "dev" : u.plan;
     document.body.classList.add("pro", "ws", tier);

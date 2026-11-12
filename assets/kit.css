@@ -127,3 +127,7 @@ input::placeholder, textarea::placeholder { color: #57506a; opacity: 1; }
 ::-webkit-scrollbar-thumb { background: #4a4458; box-shadow: inset 0 0 0 2px #0d0b12; }
 ::-webkit-scrollbar-thumb:hover { background: #6f6880; }
 ::-webkit-scrollbar-corner { background: #0d0b12; }
+
+/* the not-affiliated line at the foot of every page */
+.disclaimer { margin: 0; padding: 18px 16px 22px; text-align: center; font-size: 11px; letter-spacing: .3px; color: var(--dim); opacity: .75; }
+body:has(.composer) .disclaimer { padding-bottom: 150px; }
