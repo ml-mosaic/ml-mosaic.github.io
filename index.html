@@ -250,6 +250,7 @@
   footer { position: relative; height: 230px; overflow: hidden;
            background: linear-gradient(#000 0 58%, #f0e0a8 58% calc(58% + 8px), #e4c888 calc(58% + 8px) calc(58% + 16px), #d8b878 calc(58% + 16px)); }
   footer .wrap { position: relative; z-index: 2; display: flex; justify-content: space-between; color: var(--dim); font-size: 13px; padding-top: 36px; gap: 16px; flex-wrap: wrap; }
+  footer .disclaimer { display: block; margin: 8px 0 0; padding: 0; text-align: left; font-size: 11px; }
   footer .wrap a { text-decoration: none; } footer .wrap a:hover { color: #fff; }
   .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,.88); display: none; place-items: center; z-index: 50; padding: 24px; }
   .lightbox.open { display: grid; }
@@ -485,7 +486,7 @@ curl <span id="code-url"></span>/api/generate \
 </section>
 
 <footer id="footer">
-  <div class="wrap"><span>&copy; Mosaic &middot; <span id="foot-step"></span></span>
+  <div class="wrap"><span>&copy; Mosaic &middot; <span id="foot-step"></span><small class="disclaimer">Mosaic is not affiliated with MosaicML, a Databricks company.</small></span>
     <span><a href="studio/">studio</a> &middot; <a href="blog/">blog</a> &middot; <a href="portal/">dev portal</a> &middot; <a href="status/">status</a> &middot; <a href="login/">sign in</a> &middot; <a href="#top">back to top &uarr;</a></span></div>
 </footer>
 
