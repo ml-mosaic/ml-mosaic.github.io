@@ -730,11 +730,11 @@
   const best = md => allModels.filter(m => modeOf(m) === md && m.status !== "unavailable").sort((a, b) => (b.rank || 0) - (a.rank || 0))[0];
   function whyNot(md) {
     return allModels.some(m => modeOf(m) === md) ? `${MODES[md]} is still training: it switches on here by itself when it's ready.`
-      : md === "video" ? "Video comes with the Atelier plan." : `${MODES[md]} is on its way: it'll show up here when it's ready.`;
+      : md === "animation" ? "Animation comes with the Atelier plan." : `${MODES[md]} is on its way: it'll show up here when it's ready.`;
   }
   function paintKinds() {
     $("#kinds").innerHTML = Object.keys(MODES).map(md => {
-      const off = !best(md), soon = off && (allModels.some(m => modeOf(m) === md) || md === "animation");
+      const off = !best(md), soon = off && (allModels.some(m => modeOf(m) === md) || md === "video");
       return `<button type="button" data-md="${md}" aria-pressed="${md === mode}" class="${off ? "off" : ""}">${MODES[md]}${off ? `<small>${soon ? "SOON" : "ATELIER"}</small>` : ""}</button>`;
     }).join("");
     document.querySelectorAll("#kinds button").forEach(b => b.onclick = () => setMode(b.dataset.md));
