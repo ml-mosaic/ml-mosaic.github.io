@@ -158,6 +158,17 @@
   .mcard li::before { content: ""; position: absolute; left: 0; top: 10px; width: 8px; height: 8px; background: var(--c2); }
   .mcard.m1 { --c2: var(--orange); } .mcard.v1 { --c2: #8ca4dc; }
   .mcard .go { margin-top: auto; display: flex; gap: 10px; flex-wrap: wrap; }
+  .next { margin-top: 44px; }
+  .next-h { font-size: 14px; letter-spacing: 3px; color: var(--yellow); margin: 0 0 14px; } .next-h span { color: #8f86a0; letter-spacing: 0; }
+  .next-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .ncard { background: #120f17; margin: var(--u); --c: #2e2838; padding: 16px 18px; text-decoration: none; display: flex; flex-direction: column; gap: 8px; }
+  .ncard:hover { --c: var(--yellow); }
+  .ncard b { font-weight: normal; font-size: 26px; color: #fff; } .ncard span { color: #b9b0c8; font-size: 14px; line-height: 1.45; }
+  .ncard em { font-style: normal; font-size: 11px; letter-spacing: 2px; color: #8f86a0; margin-top: auto; }
+  .ncard.flag em { color: #000; background: #70e8d8; align-self: flex-start; padding: 2px 7px; } .ncard.c1 em { background: #8ca4dc; }
+  .ncard.s1 b { color: #70e8d8; } .ncard.c1 b { color: #8ca4dc; } .ncard.v b { color: #6ee0a0; } .ncard.m b { color: #f2a030; }
+  @media (max-width: 900px) { .next-row { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 520px) { .next-row { grid-template-columns: 1fr; } }
 
   /* ---------------------------------------------------------------- plans */
   #plans { background: #0f0c15; }
@@ -299,8 +310,8 @@
   </div>
 </nav>
 
-<a class="grad" href="blog/m1-is-out-of-school/"><span class="wrap"><b>NEW</b> m1 and v1 have finished school: out of preview, for real now
-  <span class="go">read all about it &rarr;</span></span></a>
+<a class="grad" href="blog/a-very-geometric-situation/"><span class="wrap"><b>OOPS</b> m2 and m1+ got a little too geometric, so they're back in school
+  <span class="go">read the very serious report &rarr;</span></span></a>
 
 <header class="world" id="top">
   <div class="sun"></div>
@@ -371,6 +382,15 @@
         </div>
       </div>
     </div>
+    <div class="next">
+      <p class="next-h">IN SCHOOL <span>&middot; coming next, all in the same cute style</span></p>
+      <div class="next-row">
+        <a class="ncard notch flag s1" href="blog/the-next-four/#s"><b>s1</b><span>Scenes: a whole place with something happening in it, any shape you like</span><em>FLAGSHIP</em></a>
+        <a class="ncard notch flag c1" href="blog/the-next-four/#c"><b>c1</b><span>Cinematic clips: little moving scenes with a camera</span><em>FLAGSHIP</em></a>
+        <a class="ncard notch v" href="blog/the-next-four/#v"><b>v2 &middot; v1+</b><span>Sprites that move: walk cycles and more</span><em>IN SCHOOL</em></a>
+        <a class="ncard notch m" href="blog/a-very-geometric-situation/"><b>m2 &middot; m1+</b><span>Sprites, back in school to draw like m1, and to know a lot more things</span><em>BACK IN SCHOOL</em></a>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -378,19 +398,19 @@
   <div class="wrap">
     <span class="tag" style="--c:#e8913a">PLANS</span>
     <h2>Free to start. More when you need it.</h2>
-    <p class="lede">Everyone gets m1, m2 and 15 generations a day. The plans add more of everything, a Creator Studio,
+    <p class="lede">Everyone gets m1 and 15 generations a day. The plans add more of everything, a Creator Studio,
       and the right to sell what you make.</p>
     <div class="tiers">
       <div class="tier notch free"><div class="stage" id="stage-free"></div>
         <div class="nm">Free</div><div class="price"><span data-price="free">S$0</span></div><div class="per">15 <small>generations a day</small></div>
-        <ul><li>m1 and m2 sprites</li><li>The Studio and the API</li><li>Personal use</li>
+        <ul><li>m1 sprites</li><li>The Studio and the API</li><li>Personal use</li>
           <li class="no">Creator Studio</li><li class="no">v1 animated scenes</li></ul>
         <div class="go"><a class="btn small" href="login/#signup" id="tier-free" data-cta="free" style="--c:#b9b0c8">Start free</a></div>
       </div>
       <div class="tier notch artisan"><div class="stage" id="stage-artisan"></div>
         <div class="nm">Artisan</div><div class="price"><span data-price="artisan">S$5</span> <small>/ month</small></div><div class="trial">Free trial available</div>
         <div class="per">250 <small>generations a day</small></div>
-        <ul><li>Everything in Free</li><li>m1+ (preview)</li><li>Creator Studio workspace: exact creativity, fixed seeds</li><li>Batches of 4 sprites at once</li>
+        <ul><li>Everything in Free</li><li>Creator Studio workspace: exact creativity, fixed seeds</li><li>Batches of 4 sprites at once</li>
           <li>Commercial use: sell what you make</li><li>Priority in the queue</li><li>Express: 5 super-fast goes a day</li><li>Gift a friend a week</li></ul>
         <div class="go"><a class="btn small" href="join/?tier=artisan" data-cta="artisan" data-subscribe="artisan" data-mode="join" style="--c:var(--t)">Start free trial</a></div>
       </div>
