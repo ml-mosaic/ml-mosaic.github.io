@@ -573,6 +573,36 @@
     if (pro) libFilter();
   }
 
+  // ---------------------------------------------------------------- what a creation is: read from the file itself
+  // (posts are stored at the model's own size), so each model shows its real size, and a clip its frames and speed
+  const CHIP = { m1p: "#6b3a10", m2: "#1d5a2a", v1p: "#1c5a44", v2: "#4a5a1c", c1: "#2a2c6a", s1: "#1c5a52" };
+  const chipBg = id => CHIP[id] ? `background:linear-gradient(270deg, ${CHIP[id]}, #1d1826 80%)` : "";
+  function gifInfo(b) {
+    const w = b[6] | b[7] << 8, h = b[8] | b[9] << 8;
+    let i = 13, frames = 0, delay = 0;
+    if (b[10] & 0x80) i += 3 * (2 << (b[10] & 7));
+    const skip = () => { while (i < b.length && b[i]) i += b[i] + 1; i++; };
+    while (i < b.length) {
+      const t = b[i++];
+      if (t === 0x21) { if (b[i++] === 0xF9) delay += b[i + 2] | b[i + 3] << 8; skip(); }
+      else if (t === 0x2C) { frames++; const f = b[i + 8]; i += 9; if (f & 0x80) i += 3 * (2 << (f & 7)); i++; skip(); }
+      else break;
+    }
+    const raw = delay ? frames * 100 / delay : 0;              // GIF timing is in 1/100 s, so 12 fps is stored as 12.5
+    const fps = [6, 8, 10, 12, 15, 20, 24, 25, 30].find(f => Math.abs(f - raw) / f < 0.08) || Math.round(raw);
+    return { w, h, frames, fps };
+  }
+  function describeMedia(el, video, out) {
+    if (!el || !out) return;
+    const size = (w, h) => ` &middot; ${w}&times;${h}`;
+    const fromImg = () => { if (el.naturalWidth) out.innerHTML = size(el.naturalWidth, el.naturalHeight); };
+    if (!video) { el.complete ? fromImg() : el.addEventListener("load", fromImg, { once: true }); return; }
+    fetch(el.src).then(r => r.arrayBuffer()).then(buf => {
+      const g = gifInfo(new Uint8Array(buf));
+      out.innerHTML = size(g.w, g.h) + (g.frames > 1 ? `, ${g.frames} frames${g.fps ? ` at ${g.fps} fps` : ""}` : "");
+    }).catch(() => { el.complete ? fromImg() : el.addEventListener("load", fromImg, { once: true }); });
+  }
+
   // ---------------------------------------------------------------- post modal
   const postModal = $("#post-modal"), profileModal = $("#profile-modal");
   [postModal, profileModal].forEach(m => m.addEventListener("click", e => { if (e.target === m) m.classList.remove("open"); }));
@@ -585,7 +615,7 @@
         <img class="big${video ? " video" : ""}" src="${img(p.image)}" alt="${esc(p.prompt)}">
         <div>
           <p class="prompt">&ldquo;${esc(p.prompt)}&rdquo;</p>
-          <div class="chips"><span class="chip ${video ? "v1" : "m1"}">model ${esc(modelName(p.model))}</span><span class="chip">${p.creativity}</span><span class="chip">seed ${p.seed}</span>
+          <div class="chips"><span class="chip ${video ? "v1" : "m1"}" style="${chipBg(p.model)}">model ${esc(modelName(p.model))}</span><span class="chip">${p.creativity}</span><span class="chip">seed ${p.seed}</span>
             <span class="chip">${ago(p.created)}</span>${mine ? `<span class="chip">${p.shared ? "in the gallery" : "private"}</span>` : ""}
             ${mine ? `<a class="chip ${p.license === "commercial" ? "lic" : ""}" href="../license/" title="What you may do with it">${p.license === "commercial" ? "commercial use OK" : "personal use"}</a>` : ""}
             ${p.open_commercial ? `<a class="chip open" href="../license/#open" title="The maker lets anyone use this commercially">free for commercial use</a>` : ""}</div>
@@ -606,11 +636,11 @@
           </div>
           ${mine && p.license === "commercial" ? `<label class="openc"><input type="checkbox" id="openc" ${p.open_commercial ? "checked" : ""}>
             <span>Let anyone use this commercially<small>Including people whose plan doesn't have commercial rights. Shown as &ldquo;free for commercial use&rdquo; in the gallery.${p.shared ? "" : " (Share it to the gallery for others to see it.)"}</small></span></label>` : ""}
-          <p class="meta">${video ? "Made with v1 &middot; 96&times;54, 24 frames at 12 fps, crisp-pixel upscale"
-                                  : `Made with ${esc(modelName(p.model))} &middot; 64&times;64, crisp-pixel upscale`}</p>
+          <p class="meta">Made with ${esc(modelName(p.model))}<span id="meta-size"></span>, crisp-pixel upscale</p>
         </div>
       </div>`;
     const sheet = $("#post-sheet");
+    describeMedia(sheet.querySelector("img.big"), video, sheet.querySelector("#meta-size"));
     sheet.querySelector("#rate")?.appendChild(voteBox(p, "rate-b"));
     sheet.querySelector("#report")?.addEventListener("click", () => Kit.report({ kind: "post", target: p.id, what: "this creation" }));
     sheet.querySelector("#openc")?.addEventListener("change", async e => {
