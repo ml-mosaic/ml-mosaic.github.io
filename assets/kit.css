@@ -133,3 +133,11 @@ input::placeholder, textarea::placeholder { color: #57506a; opacity: 1; }
 /* the not-affiliated line at the foot of every page */
 .disclaimer { margin: 0; padding: 18px 16px 22px; text-align: center; font-size: 11px; letter-spacing: .3px; color: var(--dim); opacity: .75; }
 body:has(.composer) .disclaimer { padding-bottom: 150px; }
+
+/* the site footer (kit.js siteFooter): the landing page's beach strip, with the crab */
+.kfoot { position: relative; height: 270px; overflow: hidden; margin-top: 60px;
+         background: linear-gradient(#000 0 66%, #f0e0a8 66% calc(66% + 8px), #e4c888 calc(66% + 8px) calc(66% + 16px), #d8b878 calc(66% + 16px)); }
+.kfoot .wrap { position: relative; z-index: 2; display: flex; justify-content: space-between; color: var(--dim); font-size: 13px;
+               padding-top: 30px; gap: 16px; flex-wrap: wrap; line-height: 1.6; }
+.kfoot .wrap a { text-decoration: none; color: var(--dim); } .kfoot .wrap a:hover { color: #fff; }
+.kfoot .disclaimer { display: block; margin: 8px 0 0; padding: 0; text-align: left; font-size: 11px; opacity: 1; }

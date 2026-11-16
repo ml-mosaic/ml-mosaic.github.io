@@ -484,6 +484,40 @@ window.Kit = (() => {
   if (document.readyState === "loading") addEventListener("DOMContentLoaded", () => setTimeout(popups, 500));
   else setTimeout(popups, 500);
 
+  // the site footer (the landing page's): a strip of beach with the crab patrolling it, the copyright and the
+  // not-affiliated line, and links. On the pages where it fits; the Studio (its composer lives at the bottom), the
+  // owner console and sign-in go without, and the landing page draws its own.
+  const FOOTER_ON = /\/(blog|pricing|license|terms|status|forum|join|settings|claim-my-ticket)(\/|$)/;
+  function siteFooter() {
+    if (!FOOTER_ON.test(location.pathname) || document.querySelector("footer, .kfoot")) return;
+    const f = document.createElement("footer");
+    f.className = "kfoot";
+    f.innerHTML = `<div class="wrap"><span>&copy; Mosaic &middot; pixel art from plain words
+        <small class="disclaimer">Mosaic is not affiliated with MosaicML, which is a Databricks company.</small></span>
+      <span><a href="${root}studio/">studio</a> &middot; <a href="${root}blog/">blog</a> &middot; <a href="${root}forum/">forum</a> &middot;
+        <a href="${root}pricing/">pricing</a> &middot; <a href="${root}portal/">dev portal</a> &middot; <a href="${root}status/">status</a> &middot;
+        <a href="${root}terms/">terms</a></span></div>`;
+    document.body.appendChild(f);
+    json(`${root}assets/scenes/scenes.json`).then(list => {
+      const s = (list || []).find(x => x.animal.name === "crab");
+      if (!s) return;
+      const a = s.animal, P = 4, w = a.w * P;
+      const c = critter(a, f, { left: "40px", top: `calc(66% - ${a.h * P - 6}px)`, P });
+      if (reduce) return;
+      let x = 40, dir = 1, last = performance.now();
+      (function walk(now) {
+        const dt = Math.min(0.05, (now - last) / 1000); last = now;
+        x += dir * 36 * dt;
+        if (x > f.clientWidth - w - 20 || x < 20) dir *= -1;
+        c.el.style.left = Math.round(x / P) * P + "px";
+        c.el.style.translate = `0 ${Math.floor(now / 180) % 2 ? -4 : 0}px`;
+        if (c.el.isConnected) requestAnimationFrame(walk);
+      })(last);
+    }).catch(() => {});
+  }
+  if (document.readyState === "loading") addEventListener("DOMContentLoaded", siteFooter);
+  else siteFooter();
+
   // a small line at the foot of every page
   function disclaimer() {
     if (document.querySelector(".disclaimer")) return;

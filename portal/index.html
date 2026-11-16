@@ -140,12 +140,109 @@
   @media (max-width: 1000px) { .c3 { grid-column: span 6; } .c4, .c5, .c7, .c8 { grid-column: 1 / -1; } }
   @media (max-width: 760px) { .play { grid-template-columns: 1fr; } .mascot { display: none; } .dash { gap: 14px; } }
   @media (max-width: 520px) { .card { padding: 16px; } .stat .big { font-size: 28px; } .stat .lbl { letter-spacing: 1px; font-size: 11px; } .stat .sub { font-size: 12px; } }
+
+  /* ---------------------------------------------------------------- the console layout: sidebar, breadcrumbs, views */
+  .dc { display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: 34px; padding-top: 26px; }
+  .dc-side { position: sticky; top: 76px; align-self: start; max-height: calc(100vh - 96px); overflow-y: auto; font-size: 15px; padding-bottom: 20px; }
+  .dc-side a { display: flex; align-items: center; justify-content: space-between; color: #cfcac0; text-decoration: none; padding: 7px 10px; margin: 1px 0; }
+  .dc-side a:hover { color: #fff; background: #141310; }
+  .dc-side a[aria-current="page"] { color: #000; background: var(--green); }
+  .dc-side .chev { color: var(--dim); } .dc-side a[aria-current="page"] .chev { color: #000; }
+  .dc-home { letter-spacing: 2px; font-size: 13px; justify-content: flex-start !important; gap: 10px; border-bottom: 2px solid var(--line); margin-bottom: 12px !important; }
+  .dc-home .ico { font-size: 16px; }
+  .dc-group { color: var(--dim); font-size: 11px; letter-spacing: 2px; margin: 20px 10px 6px; display: flex; align-items: center; gap: 8px; }
+  .dc-group::after { content: ""; flex: 1; height: 2px; background: var(--line); }
+  .dc-side .msub { font-size: 14px; padding-left: 20px; }
+  .dc-side .msub em { font-style: normal; font-size: 9px; letter-spacing: 1px; color: var(--dim); }
+  .dc-top { display: flex; align-items: center; gap: 14px; margin: 6px 0 22px; }
+  .dc-crumbs { display: flex; align-items: center; gap: 10px; font-size: 14px; letter-spacing: 2px; white-space: nowrap; overflow: hidden; }
+  .dc-crumbs a { color: var(--dim); text-decoration: none; } .dc-crumbs a:hover { color: #fff; }
+  .dc-crumbs .sep { color: #4a4740; } .dc-crumbs b { font-weight: normal; color: #fff; }
+  .dc-rule { flex: 1; height: 2px; background: var(--line); min-width: 20px; }
+  .dc-try { display: inline-flex; align-items: center; gap: 8px; background: var(--yellow); color: #000; text-decoration: none; font-size: 13px;
+            letter-spacing: 2px; padding: 8px 12px; white-space: nowrap; }
+  .dc-try i { width: 8px; height: 8px; background: var(--orange); }
+  .dc-h1 { font-weight: normal; font-size: clamp(30px, 4vw, 44px); margin: 0 0 6px; }
+  .dc-lede { color: var(--dim); margin: 0 0 24px; font-size: 16px; }
+  .dc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; }
+  .mc { display: grid; grid-template-columns: 72px 1fr; gap: 14px; text-decoration: none; color: inherit; background: var(--panel); padding: 14px;
+        box-shadow: inset 0 0 0 2px var(--line); }
+  .mc:hover { box-shadow: inset 0 0 0 2px var(--mcol, var(--green)); }
+  .mc b { font-weight: normal; font-size: 22px; color: var(--mcol, #fff); display: block; }
+  .mc span { color: #b9b4a8; font-size: 13px; line-height: 1.45; }
+  .mc .st { display: inline-block; margin-top: 8px; font-size: 10px; letter-spacing: 2px; padding: 2px 6px; background: #24231f; color: var(--dim); }
+  .mc .st.on { background: #1d3a24; color: var(--green); } .mc .st.flag { background: #123430; color: #70e8d8; } .mc .st.off { background: #3a1c1c; color: #ff8a80; }
+  .portrait { width: 72px; height: 72px; background: #0b0a09 center / cover no-repeat; image-rendering: pixelated; box-shadow: 0 0 0 2px #000, 0 0 0 4px var(--line); }
+  /* a model's page */
+  .mp { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 22px; }
+  .mp-left .portrait { width: 150px; height: 150px; box-shadow: 0 0 0 3px #000, 0 0 0 6px var(--mcol, var(--line)); }
+  .mp-left .btn { width: 100%; margin-top: 16px; text-align: center; }
+  .box { box-shadow: inset 0 0 0 2px var(--line); padding: 22px 24px; margin-bottom: 14px; }
+  .mp-head { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; color: var(--dim); font-size: 15px; }
+  .chips { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .chip { font-size: 12px; letter-spacing: 2px; padding: 3px 8px; box-shadow: inset 0 0 0 2px #3a3833; color: #cfcac0; }
+  .chip.g { box-shadow: inset 0 0 0 2px #2c6a3a; color: var(--green); } .chip.t { box-shadow: inset 0 0 0 2px #1f5a52; color: #70e8d8; }
+  .chip.r { box-shadow: inset 0 0 0 2px #6a2c2c; color: #ff8a80; }
+  .mp h1 { font-weight: normal; font-size: clamp(36px, 5vw, 54px); margin: 18px 0 8px; color: #fff; line-height: 1; }
+  .mp-desc { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; flex-wrap: wrap; }
+  .mp-desc p { margin: 0; max-width: 560px; font-size: 17px; line-height: 1.6; color: #d8d2c4; }
+  .idchip { display: inline-flex; align-items: center; gap: 10px; font-family: ui-monospace, Menlo, monospace; font-size: 15px; color: #fff;
+            box-shadow: inset 0 0 0 2px #3a3833; padding: 7px 12px; background: #000; cursor: pointer; border: 0; }
+  .idchip:hover { box-shadow: inset 0 0 0 2px var(--green); } .idchip small { color: var(--dim); font-family: "Tiny5", monospace; letter-spacing: 1px; }
+  .stats { display: grid; grid-template-columns: repeat(3, auto) 1fr auto; gap: 30px 44px; align-items: start; }
+  .stats .lab { font-size: 13px; letter-spacing: 2px; color: #cfcac0; margin: 0 0 12px; display: flex; align-items: center; gap: 8px; }
+  .blocks { display: flex; gap: 5px; } .blocks i { width: 18px; height: 22px; background: #24231f; }
+  .blocks i.on { background: var(--orange); box-shadow: inset 0 -4px 0 #a8501a; }
+  .modal { display: flex; align-items: center; gap: 10px; color: var(--orange); font-size: 13px; letter-spacing: 1px; }
+  .modal .arrow { color: #4a4740; letter-spacing: -2px; }
+  .ctx { border-left: 2px dashed var(--line); padding-left: 22px; }
+  .ctx b { display: block; font-weight: normal; font-size: 26px; color: var(--orange); }
+  .prices { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; border-top: 2px dashed var(--line); margin-top: 26px; padding-top: 22px; }
+  .prices b { display: block; font-weight: normal; font-size: 26px; color: var(--orange); }
+  .prices span { display: block; font-size: 12px; letter-spacing: 2px; color: var(--dim); margin-top: 8px; line-height: 1.6; }
+  .ptop { display: flex; align-items: center; gap: 14px; margin: 26px 0 0; font-size: 13px; letter-spacing: 2px; color: #cfcac0; }
+  .mtabs { display: flex; gap: 6px; margin: 22px 0 0; }
+  .mtabs button { background: #141310; border: 0; color: var(--dim); padding: 10px 16px; font-size: 15px; letter-spacing: 2px; cursor: pointer; }
+  .mtabs button[aria-selected="true"] { background: #2a2925; color: #fff; }
+  .mpane { box-shadow: inset 0 0 0 2px var(--line); padding: 22px 24px; }
+  .mpane ul { margin: 0; padding: 0 0 0 18px; color: #cfcac0; line-height: 1.8; }
+  .ex { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; }
+  .ex img, .ex div { width: 100%; aspect-ratio: 1; image-rendering: pixelated; background: #0b0a09 no-repeat; display: block; }
+  .ex.wide img { aspect-ratio: 16 / 9; }
+  .school { color: var(--dim); font-size: 15px; line-height: 1.6; }
+  @media (max-width: 1000px) { .dc { grid-template-columns: 1fr; } .dc-side { position: static; max-height: none; display: flex; flex-wrap: wrap; gap: 4px; }
+    .dc-side .dc-group, .dc-side #dc-models { display: none; } .stats { grid-template-columns: 1fr 1fr; } .ctx { border: 0; padding: 0; }
+    .mp { grid-template-columns: 1fr; } .mp-left { display: flex; gap: 16px; align-items: center; } .mp-left .portrait { width: 96px; height: 96px; } }
+  @media (max-width: 560px) { .prices { grid-template-columns: 1fr; } .dc-try { display: none; } }
 </style>
 </head>
 <body>
 <nav class="topbar" style="--c:var(--green)"></nav>
 
-<main class="wrap">
+<main class="dc wrap">
+  <aside class="dc-side" aria-label="Dev portal">
+    <a class="dc-home" href="#/dashboard"><span class="ico">&#8962;</span>HOME</a>
+    <p class="dc-group">OVERVIEW</p>
+    <a href="#/dashboard" data-nav="dashboard">Dashboard</a>
+    <p class="dc-group">BUILD</p>
+    <a href="#/playground" data-nav="playground">Playground</a>
+    <a href="keys/">API keys <span class="chev">&#8250;</span></a>
+    <p class="dc-group">MODELS</p>
+    <a href="#/models" data-nav="models">All models</a>
+    <div id="dc-models"></div>
+    <p class="dc-group">REFERENCE</p>
+    <a href="#/reference" data-nav="reference">Generate endpoint</a>
+    <a href="#/reference/responses" data-nav="reference/responses">Responses &amp; errors</a>
+    <a href="../status/">Status <span class="chev">&#8599;</span></a>
+  </aside>
+  <div class="dc-main">
+    <div class="dc-top">
+      <nav class="dc-crumbs" id="crumbs" aria-label="Where you are"></nav>
+      <span class="dc-rule"></span>
+      <a class="dc-try" href="#/playground"><i></i>TRY IN PLAYGROUND &#8599;</a>
+    </div>
+
+    <section data-view="dashboard">
   <header class="head">
     <div>
       <p class="kicker">DEV PORTAL</p>
@@ -156,15 +253,13 @@
       <span class="eye" style="left:calc(100% * 10 / 18)"><span class="pupil"></span></span>
       <span class="say" id="say">noot!</span>
     </button>
-  </header>
-  <div class="strip" id="strip" aria-label="Live status">
+  </header>  <div class="strip" id="strip" aria-label="Live status">
     <span class="pill notch" id="st-api"><i></i>API <b>checking...</b></span>
     <span class="pill notch" id="st-m1"><i></i>m1 <b>...</b></span>
     <span class="pill notch" id="st-v1"><i></i>v1 <b>...</b></span>
     <span class="pill notch" id="st-workers"><i></i>Workers <b>...</b></span>
     <span class="pill notch" id="st-queue"><i></i>Queue <b>...</b></span>
   </div>
-
   <div class="dash">
     <!-- today -->
     <section class="card stat c3 notch"><div class="lbl">SPRITES TODAY</div><div class="big" id="s-img">&ndash;</div>
@@ -203,10 +298,16 @@
       <button class="tbl-toggle" id="calls-more" type="button" hidden></button>
     </section>
 
+
+  </div>
+    </section>
+
+    <section data-view="playground" hidden>
+      <div class="dash">
     <!-- playground -->
     <section class="card c12 notch" aria-labelledby="pg">
       <h2 id="pg">Playground</h2>
-      <p class="hint">Runs m1 for real, signed in as you, and shows up on the chart above. Same request as the API: copy it from the reference below.</p>
+      <p class="hint">Runs m1 for real, signed in as you, and shows up on your dashboard. Same request as the API: copy it from the <a href="#/reference">reference</a>.</p>
       <div class="play">
         <form id="gen" autocomplete="off">
           <label class="l" for="prompt"><span>PROMPT</span><span id="count">0 / 300</span></label>
@@ -234,9 +335,13 @@
         </div>
       </div>
     </section>
+      </div>
+    </section>
 
+    <section data-view="reference" hidden>
+      <div class="dash">
     <!-- reference -->
-    <section class="card c8 notch" aria-labelledby="ref">
+    <section class="card c12 notch" aria-labelledby="ref">
       <h2 id="ref">API reference</h2>
       <p class="hint">One endpoint makes sprites: <code>POST <span class="base"></span>/api/generate</code>, which returns a PNG. Sign in with an API key, or put
         <code>"email"</code> + <code>"password"</code> in the body instead. API home: <a class="apilink" href="../api/"></a> (for browsers; code talks to the direct address).</p>
@@ -251,7 +356,11 @@
         <tr><td><code>Authorization: Bearer MOSAIC_...</code></td><td>header</td><td>An API key (make them on the <a href="keys/">keys page</a>), or <code>api_token</code> in the body.</td></tr>
       </table>
     </section>
-    <section class="card c4 notch" aria-labelledby="resp">
+      </div>
+    </section>
+    <section data-view="reference/responses" hidden>
+      <div class="dash">
+    <section class="card c12 notch" aria-labelledby="resp">
       <h2 id="resp">Responses</h2>
       <table class="ref">
         <tr><td><span class="code ok">200</span></td><td>The PNG. <code>X-Seed</code> is the seed it used; <code>X-Quota-Remaining</code> what's left today.</td></tr>
@@ -261,6 +370,15 @@
         <tr><td><span class="code err">503</span></td><td>The model is waking up or very busy: try again in a minute.</td></tr>
       </table>
     </section>
+      </div>
+    </section>
+
+    <section data-view="models" hidden>
+      <h1 class="dc-h1">Models</h1>
+      <p class="dc-lede">Everything Mosaic can draw, in one house style. Every model is made from scratch.</p>
+      <div class="dc-grid" id="dc-grid"></div>
+    </section>
+    <section data-view="model" hidden id="dc-model"></section>
   </div>
 </main>
 
@@ -270,6 +388,100 @@
   const S = Session.current();
   if (!S) return;
   Kit.nav("Dev portal");
+
+  // ---------------------------------------------------------------- the console: sidebar views, breadcrumbs, model pages
+  // What a model is and does (never how it works inside), for the model pages and the sidebar.
+  const MP = [
+    { id: "m1", name: "m1", kind: "Sprites", col: "#e8913a", plate: "autumn", state: "RELEASED", cls: "on", date: "October 31, 2026",
+      tags: [["RELEASED", "g"], ["ALL PLANS", ""]], desc: "Turns a sentence into a 64×64 pixel-art sprite on a see-through background: critters, items, plants, buildings and tiles, in Mosaic's chunky, cute house style.",
+      speed: 4, quality: 4, out: "image", limit: "300", limitLbl: "PROMPT", unit: "CHARACTERS", api: true,
+      prices: [["15", "FREE", "SPRITES A DAY"], ["250", "ARTISAN", "SPRITES A DAY"], ["500", "ATELIER", "SPRITES A DAY"]],
+      feats: ["64×64 sprites, transparent unless you ask for a background", "Exact creativity and fixed seeds (Creator Studio and the API)",
+              "Downloads up to 1024 px with crisp pixels", "Commercial use on Artisan and Atelier"],
+      art: { strip: "../assets/m1/hero-0.png", frames: 21 }, gallery: "../assets/m1/gallery.png" },
+    { id: "v1", name: "v1", kind: "Animated scenes", col: "#8ca4dc", plate: "snow", state: "RELEASED", cls: "on", date: "October 31, 2026",
+      tags: [["RELEASED", "g"], ["ATELIER", ""]], desc: "Makes a sentence move: a little looping 16:9 pixel-art scene, 24 frames at 12 fps. Walks, weather, campfires, rolling seas.",
+      speed: 2, quality: 3, out: "video", limit: "300", limitLbl: "PROMPT", unit: "CHARACTERS", api: true,
+      prices: [["–", "FREE", "NOT YET"], ["–", "ARTISAN", "NOT YET"], ["50", "ATELIER", "CLIPS A DAY"]],
+      feats: ["96×54 GIF, 24 frames at 12 fps, made to loop", "MP4 and enlarged GIF downloads", "Batches of up to 4 clips on Atelier",
+              "Coming to Free (limited) and Artisan when v2 and v1+ are out"],
+      art: { img: "../assets/v1/campfire.gif" }, clips: ["campfire", "sailboat", "windmill-snow", "aurora", "walk-beach", "bat"] },
+    { id: "s1", name: "s1", kind: "Scenes", col: "#70e8d8", plate: "vista", state: "IN SCHOOL", cls: "flag", tags: [["FLAGSHIP", "t"], ["IN SCHOOL", ""]],
+      desc: "A whole place with something happening in it, at any shape you like: square, wide or tall. Our highest-resolution model yet.", school: true },
+    { id: "c1", name: "c1", kind: "Cinematic clips", col: "#8ca4dc", plate: "cinema", state: "IN SCHOOL", cls: "flag", tags: [["FLAGSHIP", "t"], ["IN SCHOOL", ""]],
+      desc: "Little moving scenes with a camera: characters out on adventures, weather, light, a world that keeps going past the edge of the frame.", school: true },
+    { id: "v2", name: "v2 · v1+", kind: "Sprite animations", col: "#6ee0a0", plate: "aurora", state: "IN SCHOOL", cls: "", tags: [["IN SCHOOL", ""]],
+      desc: "Sprites that move: walk cycles and more, ready for your game.", school: true },
+    { id: "m2", name: "m2 · m1+", kind: "Sprites, next", col: "#f2a030", plate: "ember", state: "BACK IN SCHOOL", cls: "off", tags: [["SWITCHED OFF", "r"], ["BACK IN SCHOOL", ""]],
+      desc: "Back in school to draw exactly like m1, and to know a lot more things. Read why in “A very geometric situation” on the blog.", school: true, blog: "../blog/a-very-geometric-situation/" },
+  ];
+  const portrait = (m, big) => {
+    const st = `background-image:url(../assets/scenes/nameplate-${m.plate}.png)`;
+    if (m.art?.strip) return `<div class="portrait" style="background:#1d1826 url(${m.art.strip}) 100% 0 / ${m.art.frames * 100}% 100% no-repeat"></div>`;
+    if (m.art?.img) return `<div class="portrait" style="background-image:url(${m.art.img})"></div>`;
+    return `<div class="portrait" style="${st};background-size:auto 100%;background-position:right center"></div>`;
+  };
+  $("#dc-models").innerHTML = MP.map(m => `<a class="msub" href="#/models/${m.id}" data-nav="models/${m.id}">${esc(m.name)} <em>${m.cls === "on" ? "" : esc(m.state)}</em></a>`).join("");
+  $("#dc-grid").innerHTML = MP.map(m => `<a class="mc" href="#/models/${m.id}" style="--mcol:${m.col}">${portrait(m)}
+    <div><b>${esc(m.name)}</b><span>${esc(m.kind)}: ${esc(m.desc.split(".")[0])}.</span><br><em class="st ${m.cls}">${esc(m.state)}</em></div></a>`).join("");
+
+  const icon = { text: "&#9636;", image: "&#9635;", video: "&#9654;" };
+  function modelPage(m) {
+    const blocks = n => `<div class="blocks">${[0, 1, 2, 3, 4].map(i => `<i class="${i < n ? "on" : ""}"></i>`).join("")}</div>`;
+    const usage = m.id === "v1"
+      ? `curl -X POST ${MOSAIC.backend}/api/generate \\\n  -H "Authorization: Bearer MOSAIC_..." -H "Content-Type: application/json" \\\n  -d '{"model": "v1", "prompt": "a campfire at night in the woods"}' -o clip.gif`
+      : `curl -X POST ${MOSAIC.backend}/api/generate \\\n  -H "Authorization: Bearer MOSAIC_..." -H "Content-Type: application/json" \\\n  -d '{"prompt": "a little green frog wearing a crown", "creativity": 0.5, "scale": 8}' -o frog.png`;
+    const examples = m.clips ? `<div class="ex wide">${m.clips.map(c => `<img src="../assets/v1/${c}.gif" alt="a v1 clip" loading="lazy">`).join("")}</div>`
+      : m.gallery ? `<div class="ex">${Array.from({ length: 16 }, (_, i) => `<div style="background-image:url(${m.gallery});background-size:800% 600%;background-position:${(i % 8) * 100 / 7}% ${Math.floor(i / 8) * 100 / 5}%"></div>`).join("")}</div>` : "";
+    $("#dc-model").innerHTML = `<div class="mp" style="--mcol:${m.col}">
+      <div class="mp-left">${portrait(m, true)}${m.api ? `<a class="btn small" href="#/playground" style="--c:var(--orange)">Try it</a>` : m.blog ? `<a class="btn small ghost" href="${m.blog}">Read why</a>` : ""}</div>
+      <div>
+        <div class="box">
+          <div class="mp-head"><span>${m.date || "Coming soon"}</span><span class="chips">${m.tags.map(([t, c]) => `<span class="chip ${c}">${esc(t)}</span>`).join("")}</span></div>
+          <h1>${esc(m.name)}</h1>
+          <div class="mp-desc"><p>${esc(m.desc)}</p>${m.api ? `<button class="idchip" type="button" data-copy="${m.id}">${m.id} <small>COPY</small></button>` : ""}</div>
+        </div>
+        ${m.school ? `<div class="box school">This one is still in school. It shows up in the Studio, the playground and the API by itself when it's ready.
+           Keep an eye on the <a href="../blog/">blog</a>.</div>` : `
+        <div class="box">
+          <div class="stats">
+            <div><p class="lab">&#9889; SPEED</p>${blocks(m.speed)}</div>
+            <div><p class="lab">&#9733; QUALITY</p>${blocks(m.quality)}</div>
+            <div><p class="lab">&#8644; MODALITIES</p><div class="modal">${icon.text} TEXT <span class="arrow">&#8250;&#8250;&#8250;</span> ${icon[m.out]} ${m.out === "video" ? "CLIP" : "IMAGE"}</div></div>
+            <div></div>
+            <div class="ctx"><p class="lab">${m.limitLbl}</p><b>${m.limit}</b><span class="lab">${m.unit}</span></div>
+          </div>
+          <div class="ptop">ALLOWANCE <span class="chip">1 PER GO</span></div>
+          <div class="prices">${m.prices.map(([n, plan, what]) => `<div><b>${n}</b><span>${plan}<br>${what}</span></div>`).join("")}</div>
+        </div>
+        <div class="mtabs" role="tablist"><button role="tab" aria-selected="true" data-pane="f">FEATURES</button><button role="tab" aria-selected="false" data-pane="u">USAGE</button><button role="tab" aria-selected="false" data-pane="e">EXAMPLES</button></div>
+        <div class="mpane" data-p="f"><ul>${m.feats.map(f => `<li>${esc(f)}</li>`).join("")}</ul></div>
+        <div class="mpane" data-p="u" hidden><pre>${esc(usage)}</pre></div>
+        <div class="mpane" data-p="e" hidden>${examples}<p class="hint" style="margin:12px 0 0">Real ${esc(m.name)} output.</p></div>`}
+      </div></div>`;
+    document.querySelectorAll(".mtabs button").forEach(b => b.onclick = () => {
+      document.querySelectorAll(".mtabs button").forEach(x => x.setAttribute("aria-selected", x === b));
+      document.querySelectorAll(".mpane").forEach(p => p.hidden = p.dataset.p !== b.dataset.pane);
+    });
+    document.querySelectorAll("[data-copy]").forEach(b => b.onclick = () => navigator.clipboard?.writeText(b.dataset.copy).then(() => toast(`Copied “${b.dataset.copy}”`)));
+  }
+
+  const TITLES = { dashboard: ["OVERVIEW", "DASHBOARD"], playground: ["BUILD", "PLAYGROUND"], models: ["MODELS", "ALL MODELS"],
+                   reference: ["REFERENCE", "GENERATE"], "reference/responses": ["REFERENCE", "RESPONSES"] };
+  function route() {
+    const r = (location.hash.replace(/^#\/?/, "") || "dashboard").replace(/\/$/, "");
+    const m = r.startsWith("models/") ? MP.find(x => x.id === r.slice(7)) : null;
+    const view = m ? "model" : (TITLES[r] ? r : "dashboard");
+    document.querySelectorAll("[data-view]").forEach(v => v.hidden = v.dataset.view !== view);
+    document.querySelectorAll(".dc-side [data-nav]").forEach(a => a.setAttribute("aria-current", a.dataset.nav === (m ? `models/${m.id}` : view) ? "page" : "false"));
+    const trail = m ? [["MODELS", "#/models"], [m.name.toUpperCase(), null]] : [[TITLES[view][0], null], [TITLES[view][1], null]];
+    $("#crumbs").innerHTML = `<a href="#/dashboard" aria-label="Home">&#8962;</a>` + trail.map(([t, h], i) =>
+      `<span class="sep">&#8250;</span>${i === trail.length - 1 ? `<b>${esc(t)}</b>` : h ? `<a href="${h}">${esc(t)}</a>` : `<span>${esc(t)}</span>`}`).join("");
+    if (m) modelPage(m);
+    window.scrollTo(0, 0);
+  }
+  addEventListener("hashchange", route);
+  route();
   document.querySelectorAll(".base").forEach(e => e.textContent = MOSAIC.backend);
   document.querySelectorAll(".apilink").forEach(e => e.textContent = MOSAIC.apiLink.replace(/^https?:\/\//, ""));
   $("#hello").textContent = `Hi, ${S.username}!`;
