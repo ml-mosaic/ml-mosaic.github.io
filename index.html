@@ -160,13 +160,14 @@
   .mcard .go { margin-top: auto; display: flex; gap: 10px; flex-wrap: wrap; }
   .next { margin-top: 44px; }
   .next-h { font-size: 14px; letter-spacing: 3px; color: var(--yellow); margin: 0 0 14px; } .next-h span { color: #8f86a0; letter-spacing: 0; }
-  .next-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .next-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
   .ncard { background: #120f17; margin: var(--u); --c: #2e2838; padding: 16px 18px; text-decoration: none; display: flex; flex-direction: column; gap: 8px; }
   .ncard:hover { --c: var(--yellow); }
   .ncard b { font-weight: normal; font-size: 26px; color: #fff; } .ncard span { color: #b9b0c8; font-size: 14px; line-height: 1.45; }
   .ncard em { font-style: normal; font-size: 11px; letter-spacing: 2px; color: #8f86a0; margin-top: auto; }
   .ncard.flag em { color: #000; background: #70e8d8; align-self: flex-start; padding: 2px 7px; } .ncard.c1 em { background: #8ca4dc; }
-  .ncard.s1 b { color: #70e8d8; } .ncard.c1 b { color: #8ca4dc; } .ncard.v b { color: #6ee0a0; } .ncard.m b { color: #f2a030; }
+  .ncard.s1 b { color: #70e8d8; } .ncard.c1 b { color: #8ca4dc; } .ncard.v b { color: #c8d860; } .ncard.v1p b { color: #6ee0a0; }
+  .ncard.m b { color: #6ee07a; } .ncard.m1p b { color: #f2a030; }
   @media (max-width: 900px) { .next-row { grid-template-columns: 1fr 1fr; } }
   @media (max-width: 520px) { .next-row { grid-template-columns: 1fr; } }
 
@@ -387,8 +388,10 @@
       <div class="next-row">
         <a class="ncard notch flag s1" href="blog/the-next-four/#s"><b>s1</b><span>Scenes: a whole place with something happening in it, any shape you like</span><em>FLAGSHIP</em></a>
         <a class="ncard notch flag c1" href="blog/the-next-four/#c"><b>c1</b><span>Cinematic clips: little moving scenes with a camera</span><em>FLAGSHIP</em></a>
-        <a class="ncard notch v" href="blog/the-next-four/#v"><b>v2 &middot; v1+</b><span>Sprites that move: walk cycles and more</span><em>IN SCHOOL</em></a>
-        <a class="ncard notch m" href="blog/a-very-geometric-situation/"><b>m2 &middot; m1+</b><span>Sprites, back in school to draw like m1, and to know a lot more things</span><em>BACK IN SCHOOL</em></a>
+        <a class="ncard notch v" href="blog/the-next-four/#v"><b>v2</b><span>Sprites that move, in a new design</span><em>IN SCHOOL</em></a>
+        <a class="ncard notch v1p" href="blog/the-next-four/#v"><b>v1+</b><span>Game-ready sprite animations, bigger</span><em>IN SCHOOL</em></a>
+        <a class="ncard notch m" href="blog/a-very-geometric-situation/"><b>m2</b><span>Sprites, back in school to draw like m1</span><em>BACK IN SCHOOL</em></a>
+        <a class="ncard notch m1p" href="blog/a-very-geometric-situation/"><b>m1+</b><span>Bigger sprites, back in school to draw like m1</span><em>BACK IN SCHOOL</em></a>
       </div>
     </div>
   </div>
