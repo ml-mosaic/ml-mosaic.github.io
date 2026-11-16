@@ -80,6 +80,8 @@
   @media (max-width: 980px) { .doc { grid-template-columns: minmax(0, 1fr); gap: 0; padding-top: 50px; } .toc { display: none; }
     .stats { grid-template-columns: repeat(2, 1fr); } .sprites { grid-template-columns: repeat(2, 1fr); } }
   @media (max-width: 640px) { .tiers2, .clips { grid-template-columns: 1fr; } }
+  .update { background: #1d1826; padding: 16px 20px; margin: 0 var(--u) 36px; --c: #e8913a; font-size: 16px; line-height: 1.6; color: #d8d2c4; }
+  .update b { color: #e8913a; font-weight: normal; letter-spacing: 1px; } .update a { color: #fff; }
 </style>
 </head>
 <body>
@@ -98,6 +100,12 @@
 <div class="doc">
   <aside class="toc"><p>CONTENTS</p><ol id="toc"><li><a href="#what">What's new</a></li><li><a href="#who">Who gets them</a></li><li><a href="#preview">What preview means</a></li><li><a href="#try">How to try them</a></li></ol></aside>
   <article>
+<div class="update notch"><b>UPDATE, 16 NOVEMBER 2026.</b> We've switched m2 and m1+ off for now. Using them more, we noticed
+  they draw in a very different style from m1: smooth, geometric shapes and thin lines. Next to m1's sprites, they look like they
+  came out of a machine. m1's look is simpler and cuter, like something an artist drew, and that's the look we want every Mosaic
+  model to have. So the next versions are going back to school to learn it: chibi proportions, big eyes, chunky pixels and a
+  bold outline. Everything below still describes what they do; they'll be back when they draw like Mosaic. Until then, the
+  Studio uses m1.</div>
 <h2 id="what"><span class="n">01</span>What's new</h2>
 <p>m1 draws a 64&times;64 sprite from a sentence. <b>m2</b> and <b>m1+</b> do the same job, and they have both been schooled on a much
   bigger, tidier set of sprites. A few things you'll notice:</p>

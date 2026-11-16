@@ -489,7 +489,7 @@ window.Kit = (() => {
     if (document.querySelector(".disclaimer")) return;
     const p = document.createElement("p");
     p.className = "disclaimer";
-    p.textContent = "Mosaic is not affiliated with MosaicML, a Databricks company.";
+    p.textContent = "Mosaic is not affiliated with MosaicML, which is a Databricks company.";
     document.body.appendChild(p);
   }
   if (document.readyState === "loading") addEventListener("DOMContentLoaded", disclaimer);
