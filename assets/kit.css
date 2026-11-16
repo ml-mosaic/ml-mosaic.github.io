@@ -36,7 +36,8 @@ a { color: inherit; } button, input, select, textarea { font: inherit; color: in
 .topbar .links a { text-decoration: none; color: var(--dim); white-space: nowrap; display: inline-block; }
 .topbar .links a:hover { color: var(--fg); animation: kit-hop .4s steps(3); }
 .topbar .links a[aria-current] { color: var(--fg); box-shadow: 0 6px 0 -2px var(--c, var(--orange)); }
-.topbar .who { margin-left: auto; display: flex; align-items: center; gap: 12px; font-size: 14px; color: var(--dim); white-space: nowrap; }
+.topbar .who { margin: 0 0 0 auto; padding: 0; min-height: 0; line-height: normal; align-self: center;
+               display: flex; align-items: center; gap: 12px; font-size: 14px; color: var(--dim); white-space: nowrap; }
 .topbar .who a.me { display: flex; align-items: center; gap: 8px; text-decoration: none; color: var(--fg); }
 /* tags next to a name, set on the server, not by the user: staff ("Developer") and paid plans ("Artisan", "Atelier").
    Same look as the owner console's chips (console/index.html .chip), colour for colour. */
