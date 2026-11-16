@@ -103,7 +103,8 @@ window.I18n = (() => {
     const host = ["nav.topbar .who", ".who", "nav .links"].map(q => document.querySelector(q)).find(Boolean);
     if (!host || host.querySelector(".i18n-pick")) return;
     const css = `.i18n-pick { position: relative; display: inline-flex; margin-right: 6px; font-family: "Tiny5", ui-monospace, monospace; }
-      .i18n-pick > button { background: none; border: 0; color: #8a867b; cursor: pointer; font: inherit; font-size: 13px; padding: 4px 6px; letter-spacing: 1px; }
+      .i18n-pick > button { background: none; border: 0; color: #8a867b; cursor: pointer; font: inherit; font-size: 13px; padding: 4px 6px; letter-spacing: 1px;
+                            display: inline-flex; align-items: center; gap: 6px; }
       .i18n-pick > button:hover { color: #fff; }
       .i18n-pick ul { position: absolute; right: 0; top: calc(100% + 8px); z-index: 70; list-style: none; margin: 0; padding: 6px; background: #120f17; min-width: 170px;
                       box-shadow: 0 -4px 0 0 #2e2838, 0 4px 0 0 #2e2838, -4px 0 0 0 #2e2838, 4px 0 0 0 #2e2838; }
@@ -111,8 +112,13 @@ window.I18n = (() => {
                              font-family: "Tiny5", "DotGothic16", "Apple SD Gothic Neo", "Malgun Gothic", ui-monospace, monospace; font-size: 14px; }
       .i18n-pick li button:hover, .i18n-pick li button[aria-current="true"] { background: #221d2c; color: #fff; }`;
     document.head.appendChild(Object.assign(document.createElement("style"), { textContent: css }));
+    // our own pixel globe (not the emoji, which looks different on every phone)
+    const G = ["..ooooo..", ".olbggbo.", "olbbgGgbo", "obggbbbbo", "obgGbbbgo", "obbgbbgGo", "obbbbbgbo", ".obbbbbo.", "..ooooo.."];
+    const GC = { o: "#2c4a80", l: "#8cc4ff", b: "#3c78d8", g: "#6ee07a", G: "#3fa850" };
+    const GLOBE = `<svg width="18" height="18" viewBox="0 0 9 9" shape-rendering="crispEdges" aria-hidden="true" style="vertical-align:-4px">${
+      G.flatMap((r, y) => [...r].map((c, x) => GC[c] ? `<rect x="${x}" y="${y}" width="1" height="1" fill="${GC[c]}"/>` : "")).join("")}</svg>`;
     const box = document.createElement("span"); box.className = "i18n-pick"; box.dataset.noi18n = "";
-    box.innerHTML = `<button type="button" aria-haspopup="listbox" title="Language">&#x1F310; ${lang.toUpperCase()}</button><ul hidden role="listbox">${
+    box.innerHTML = `<button type="button" aria-haspopup="listbox" title="Language">${GLOBE} ${lang.toUpperCase()}</button><ul hidden role="listbox">${
       Object.entries(LANGS).map(([k, v]) => `<li><button type="button" data-l="${k}" aria-current="${k === lang}">${v}</button></li>`).join("")}</ul>`;
     host.prepend(box);
     const list = box.querySelector("ul");

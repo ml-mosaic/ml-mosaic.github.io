@@ -115,7 +115,16 @@
   .ideas button { background: var(--field); border: 0; color: var(--dim); font-size: 12px; padding: 5px 8px; cursor: pointer; }
   .ideas button:hover { color: var(--fg); }
   .out { aspect-ratio: 1; background: var(--tile); position: relative; display: grid; place-items: center; overflow: hidden; }
-  .out img { width: 100%; height: 100%; image-rendering: pixelated; display: block; }
+  .out img { width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; display: block; }
+  .pgm { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin: 0 0 18px; }
+  .pgm button { position: relative; height: 54px; border: 0; padding: 0; cursor: pointer; background: #17141e; text-align: left; overflow: hidden;
+                font: inherit; color: #fff; box-shadow: inset 0 0 0 2px #2a2925; }
+  .pgm button::after { content: ""; position: absolute; inset: 0; background: var(--np) right center / auto 100% no-repeat; image-rendering: pixelated; opacity: .75;
+                       -webkit-mask-image: linear-gradient(270deg, #000 25%, transparent 85%); mask-image: linear-gradient(270deg, #000 25%, transparent 85%); }
+  .pgm button b { position: absolute; z-index: 1; left: 12px; top: 8px; font-weight: normal; font-size: 18px; }
+  .pgm button small { position: absolute; z-index: 1; left: 12px; bottom: 7px; font-size: 10px; letter-spacing: 2px; color: var(--mcol); }
+  .pgm button[aria-pressed="true"] { box-shadow: inset 0 0 0 3px var(--mcol); }
+  .pgm button:disabled { cursor: not-allowed; filter: grayscale(1); opacity: .45; }
   .out .empty { color: #4a4740; font-size: 14px; text-align: center; padding: 20px; }
   .out .busy { position: absolute; inset: 0; display: none; place-items: center; background: rgba(0,0,0,.55); font-size: 15px; }
   .out.loading .busy { display: grid; }
@@ -124,7 +133,7 @@
   .meta { display: flex; justify-content: space-between; gap: 10px; color: var(--dim); font-size: 12px; margin-top: 12px; flex-wrap: wrap; }
   .history { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; margin-top: 14px; }
   .history button { aspect-ratio: 1; padding: 0; border: 0; background: var(--tile); cursor: pointer; }
-  .history img { width: 100%; height: 100%; image-rendering: pixelated; display: block; }
+  .history img { width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; display: block; }
   .history button[aria-current="true"] { outline: 3px solid var(--accent); }
 
   /* reference */
@@ -149,7 +158,8 @@
   .dc-side a[aria-current="page"] { color: #fff; background: #141310; box-shadow: inset 4px 0 0 var(--mcol, var(--green)); }
   .dc-side .chev { color: var(--dim); }
   .dc-home { letter-spacing: 2px; font-size: 13px; justify-content: flex-start !important; gap: 10px; border-bottom: 2px solid var(--line); margin-bottom: 12px !important; }
-  .dc-home .ico { font-size: 16px; }
+  .dc-home .ico { display: inline-flex; } .dc-home svg, .dc-crumbs svg { display: block; }
+  .dc-crumbs .hm { display: inline-flex; padding: 2px; } .dc-crumbs .hm:hover { background: #24231f; }
   .dc-group { color: var(--dim); font-size: 11px; letter-spacing: 2px; margin: 20px 10px 6px; display: flex; align-items: center; gap: 8px; }
   .dc-group::before { content: ""; width: 6px; height: 6px; background: var(--gcol, var(--green)); }
   .dc-side .msub { font-size: 14px; padding-left: 20px; }
@@ -232,7 +242,7 @@
 
 <main class="dc wrap">
   <aside class="dc-side" aria-label="Dev portal">
-    <a class="dc-home" href="#/dashboard"><span class="ico">&#8962;</span>HOME</a>
+    <a class="dc-home" href="#/dashboard"><span class="ico" aria-hidden="true"></span>HOME</a>
     <p class="dc-group" style="--gcol:var(--green)">OVERVIEW</p>
     <a href="#/dashboard" data-nav="dashboard">Dashboard</a>
     <p class="dc-group" style="--gcol:var(--pink)">BUILD</p>
@@ -318,7 +328,9 @@
     <!-- playground -->
     <section class="card c12 notch" aria-labelledby="pg">
       <h2 id="pg">Playground</h2>
-      <p class="hint">Runs m1 for real, signed in as you, and shows up on your dashboard. Same request as the API: copy it from the <a href="#/reference">reference</a>.</p>
+      <p class="hint">Runs any model you can use, for real, signed in as you, and shows up on your dashboard. Same request as the API: copy it from the <a href="#/reference">reference</a>.</p>
+      <p class="l" id="pgm-l" style="display:flex;justify-content:space-between;gap:12px"><span>MODEL</span><span id="pgm-note"></span></p>
+      <div class="pgm" id="pgm" role="group" aria-labelledby="pgm-l"></div>
       <div class="play">
         <form id="gen" autocomplete="off">
           <label class="l" for="prompt"><span>PROMPT</span><span id="count">0 / 300</span></label>
@@ -334,14 +346,14 @@
             </div>
             <div>
               <label class="l" for="scale"><span>DOWNLOAD SIZE</span></label>
-              <div class="field notch"><select id="scale"><option value="1">64 px</option><option value="4">256 px</option><option value="8" selected>512 px</option><option value="16">1024 px</option></select></div>
+              <div class="field notch"><select id="scale"></select></div>
             </div>
           </div>
           <button class="btn" id="go" type="submit" style="--c:var(--green)">Generate</button>
         </form>
         <div>
-          <div class="out notch" id="out"><div class="empty" id="empty">your sprite shows up here</div><img id="img" alt="" hidden><div class="busy"><span>drawing</span></div></div>
-          <div class="meta"><span id="m-left"></span><a id="dl" href="#" download hidden>download png</a></div>
+          <div class="out notch" id="out"><div class="empty" id="empty">what you make shows up here</div><img id="img" alt="" hidden><div class="busy"><span>drawing</span></div></div>
+          <div class="meta"><span id="m-left"></span><a id="dl" href="#" download hidden>download</a></div>
           <div class="history" id="history"></div>
         </div>
       </div>
@@ -432,6 +444,15 @@
       desc: "Bigger, sharper sprites. Back in school to draw exactly like m1, and to know a lot more things. Read why in “A very geometric situation” on the blog.",
       school: true, blog: "../blog/a-very-geometric-situation/" },
   ];
+  // our own pixel house for "home"
+  const HOUSE = (() => {
+    const H = ["...r.c.", "..rrrc.", ".rrrrR.", "rrrrrrR", ".wwwwW.", ".wdwbW.", ".wdwwW.", ".WWWWW."];
+    const C = { r: "#e8913a", R: "#a8501a", c: "#8a6a5a", w: "#f0e0a8", W: "#c8a868", d: "#6b3a1c", b: "#8cc4ff" };
+    return `<svg width="14" height="16" viewBox="0 0 7 8" shape-rendering="crispEdges" aria-hidden="true">${
+      H.flatMap((r, y) => [...r].map((c, x) => C[c] ? `<rect x="${x}" y="${y}" width="1" height="1" fill="${C[c]}"/>` : "")).join("")}</svg>`;
+  })();
+  document.querySelector(".dc-home .ico").innerHTML = HOUSE;
+
   // the Studio's model art: each model's nameplate, its colour glowing in from the right, and its particles falling
   const PLATE = { autumn: ["rgba(232,145,58,.35)", "p-leaf"], snow: ["rgba(140,164,220,.35)", "p-snow"], ember: ["rgba(232,114,42,.38)", "p-spark"],
                   bloom: ["rgba(110,224,122,.3)", "p-petal"], dusk: ["rgba(200,216,96,.25)", "p-glow"], aurora: ["rgba(110,224,160,.3)", "p-star"],
@@ -459,9 +480,9 @@
       ${plate(m, "mhero", 170, 9)}
       <div class="mrow"><p>${esc(m.desc)}</p>
         <div class="acts">${m.api ? `<button class="idchip" type="button" data-copy="${m.id}">${m.id} <small>COPY</small></button>
-          <a class="btn small" href="#/playground" style="--c:var(--mcol)">Try it</a>` : m.blog ? `<a class="btn small ghost" href="${m.blog}">Read why</a>` : ""}</div></div>
-      ${m.school ? `<div class="tile notch school">This one is still in school. It turns up in the Studio, the playground and the API by itself when it's ready.
-         Keep an eye on the <a href="../blog/">blog</a>.</div>` : `
+          <a class="btn small" href="#/playground/${m.id}" style="--c:var(--mcol)">Try it</a>` : m.blog ? `<a class="btn small ghost" href="${m.blog}">Read why</a>` : ""}</div></div>
+      ${m.school ? `<div class="tile notch school">This one is still in school, so you can't use it yet. When it's out, we'll announce it on the
+         <a href="../blog/">blog</a>, along with which plans get it.</div>` : `
       <div class="tiles">
         <div class="tile notch"><p class="lab">SPEED</p>${blocks(m.speed)}</div>
         <div class="tile notch"><p class="lab">QUALITY</p>${blocks(m.quality)}</div>
@@ -486,11 +507,13 @@
   function route() {
     const r = (location.hash.replace(/^#\/?/, "") || "dashboard").replace(/\/$/, "");
     const m = r.startsWith("models/") ? MP.find(x => x.id === r.slice(7)) : null;
-    const view = m ? "model" : (TITLES[r] ? r : "dashboard");
+    if (r.startsWith("playground/")) { pgWant = r.slice(11); if (pgModels && pgModels.length) pgPick(pgWant); }
+    const view = m ? "model" : r.startsWith("playground/") ? "playground" : (TITLES[r] ? r : "dashboard");
     document.querySelectorAll("[data-view]").forEach(v => v.hidden = v.dataset.view !== view);
+    document.querySelector(".dc-try").hidden = view === "playground";
     document.querySelectorAll(".dc-side [data-nav]").forEach(a => a.setAttribute("aria-current", a.dataset.nav === (m ? `models/${m.id}` : view) ? "page" : "false"));
     const trail = m ? [["MODELS", "#/models"], [m.name.toUpperCase(), null]] : [[TITLES[view][0], null], [TITLES[view][1], null]];
-    $("#crumbs").innerHTML = `<a href="#/dashboard" aria-label="Home">&#8962;</a>` + trail.map(([t, h], i) =>
+    $("#crumbs").innerHTML = `<a class="hm" href="#/dashboard" aria-label="Home">${HOUSE}</a>` + trail.map(([t, h], i) =>
       `<span class="sep">&#8250;</span>${i === trail.length - 1 ? `<b>${esc(t)}</b>` : h ? `<a href="${h}">${esc(t)}</a>` : `<span>${esc(t)}</span>`}`).join("");
     if (m) modelPage(m);
     window.scrollTo(0, 0);
@@ -645,26 +668,68 @@
   // ---------------------------------------------------------------- playground
   const IDEAS = ["a little green frog wearing a crown", "a red potion bottle with a cork", "a cozy cottage with a red roof",
                  "a crimson dragon with golden wings", "a cute penguin", "a treasure chest", "a lava texture tile"];
-  IDEAS.forEach(t => { const b = document.createElement("button"); b.type = "button"; b.textContent = t;
-                       b.onclick = () => { $("#prompt").value = t; $("#prompt").dispatchEvent(new Event("input")); }; $("#ideas").appendChild(b); });
+  const CLIP_IDEAS = ["a campfire at night in the woods", "a sailboat on a rolling sea", "a windmill in the snow", "the aurora over a frozen lake",
+                      "a fox walking along the beach", "rain on a little village"];
+  function paintIdeas(list) {
+    $("#ideas").innerHTML = "";
+    list.forEach(t => { const b = document.createElement("button"); b.type = "button"; b.textContent = t;
+                        b.onclick = () => { $("#prompt").value = t; $("#prompt").dispatchEvent(new Event("input")); }; $("#ideas").appendChild(b); });
+  }
+  paintIdeas(IDEAS);
   $("#prompt").addEventListener("input", e => { $("#count").textContent = `${e.target.value.length} / 300`; refreshCode(); });
   $("#cr").addEventListener("input", e => { $("#cr-v").textContent = (+e.target.value).toFixed(2); refreshCode(); });
   $("#seed").addEventListener("input", e => { e.target.value = e.target.value.replace(/\D/g, "").slice(0, 10); refreshCode(); });
   $("#scale").addEventListener("change", refreshCode);
   $("#dice").onclick = () => { $("#seed").value = Math.floor(Math.random() * 1e6); refreshCode(); };
 
+  // the models you can use (the Studio's list): pick one, and the size menu, the output and the code follow it
+  const PG_FALLBACK = [{ id: "m1", name: "m1", kind: "image", status: "released", nameplate: "autumn", tag: "ALL PLANS" }];
+  const SIZE = { m1: [64, 64], m1p: [64, 64], m2: [64, 64], v1: [96, 54], c1: [256, 144] };    // native sizes we know (s1 picks its own shape)
+  var pgModels = [], pgModel = "m1", pgWant;               // var: the router (above) can set pgWant before this line runs
+  const pgCur = () => pgModels.find(m => m.id === pgModel) || PG_FALLBACK[0];
+  const isClipModel = () => pgCur().kind === "video";
+  function pgSizes() {
+    const n = SIZE[pgModel], keep = +$("#scale").value || 8;
+    const opts = (isClipModel() ? [1, 4, 8] : [1, 4, 8, 16]).map(k => `<option value="${k}">${n ? `${n[0] * k} px` : `${k}&times;`}${n && n[0] !== n[1] ? ` &times; ${n[1] * k}` : ""}</option>`);
+    $("#scale").innerHTML = opts.join("");
+    $("#scale").value = [1, 4, 8, 16].includes(keep) && !(isClipModel() && keep > 8) ? keep : 8;
+  }
+  function pgPick(id) {
+    const m = pgModels.find(x => x.id === id && x.status !== "unavailable");
+    if (!m) return;
+    pgModel = id;
+    document.querySelectorAll("#pgm button").forEach(b => b.setAttribute("aria-pressed", b.dataset.id === id));
+    $("#pgm-note").textContent = m.kind === "video" ? "makes a looping clip (gif)" : "makes a sprite (png)";
+    paintIdeas(m.kind === "video" ? CLIP_IDEAS : IDEAS);
+    $("#prompt").placeholder = m.kind === "video" ? CLIP_IDEAS[0] : IDEAS[0];
+    pgSizes(); refreshCode();
+  }
+  const PCOL = { autumn: "#e8913a", snow: "#8ca4dc", ember: "#f2a030", bloom: "#6ee07a", dusk: "#c8d860", aurora: "#6ee0a0", cinema: "#8ca4dc", vista: "#70e8d8" };
+  Session.api("/api/models").then(r => {
+    pgModels = (r.ok && Array.isArray(r.data) && r.data.length ? r.data : PG_FALLBACK).slice().sort((a, b) => (a.status === "unavailable") - (b.status === "unavailable"));
+    $("#pgm").innerHTML = pgModels.map(m => {
+      const off = m.status === "unavailable", note = off ? (m.why === "off" ? "SWITCHED OFF" : "IN SCHOOL") : m.status === "preview" ? "PREVIEW" : (m.kind === "video" ? "CLIPS" : "SPRITES");
+      return `<button type="button" data-id="${esc(m.id)}" aria-pressed="false" ${off ? "disabled" : ""} title="${esc(m.tagline || "")}"
+        style="--np:url(../assets/scenes/nameplate-${esc(m.nameplate || "autumn")}.png);--mcol:${PCOL[m.nameplate] || "#e8913a"}"><b>${esc(m.name)}</b><small>${note}</small></button>`;
+    }).join("");
+    document.querySelectorAll("#pgm button").forEach(b => b.onclick = () => pgPick(b.dataset.id));
+    pgPick(pgWant && pgModels.some(m => m.id === pgWant && m.status !== "unavailable") ? pgWant : "m1");
+  });
+  pgSizes();
+
   const history = [];
   function showResult(h) {
     $("#empty").hidden = true; $("#img").hidden = false; $("#img").src = h.url; $("#img").alt = h.prompt;
-    $("#m-left").textContent = `seed ${h.seed} · creativity ${h.cr} · ${(h.ms / 1000).toFixed(1)} s`;
-    const dl = $("#dl"); dl.hidden = false; dl.href = h.url; dl.download = `${h.prompt.slice(0, 40).replace(/[^\w]+/g, "-")}-${h.seed}.png`;
+    $("#m-left").textContent = `${h.model} · seed ${h.seed} · creativity ${h.cr} · ${(h.ms / 1000).toFixed(1)} s`;
+    const dl = $("#dl"); dl.hidden = false; dl.href = h.url; dl.download = `${h.prompt.slice(0, 40).replace(/[^\w]+/g, "-")}-${h.seed}.${h.ext}`;
+    dl.textContent = `download ${h.ext}`;
     [...$("#history").children].forEach(b => b.setAttribute("aria-current", b.dataset.url === h.url));
   }
   $("#gen").addEventListener("submit", async e => {
     e.preventDefault();
     const prompt = $("#prompt").value.trim();
     if (!prompt) { $("#prompt").focus(); return toast("type a prompt first"); }
-    const body = { prompt, creativity: +$("#cr").value, scale: +$("#scale").value };
+    const body = { model: pgModel, prompt, creativity: +$("#cr").value, scale: +$("#scale").value };
     if ($("#seed").value) body.seed = +$("#seed").value;
     $("#go").disabled = true; $("#out").classList.add("loading");
     const t0 = performance.now();
@@ -673,10 +738,11 @@
     if (r.status === 401) return location.replace("../login/?next=portal");
     load();                                                     // the chart, the tiles and the call log
     if (r.status === 429 && r.data?.detail?.quota)
-      return Kit.alert("You've used all of today's generations. They refill at midnight UTC.", { title: "Out of sprites for today" });
+      return Kit.alert("You've used all of today's generations for this model. They refill at midnight UTC.", { title: "Out for today" });
     if (!r.ok) return toast(Session.detail(r.data || {}));
     const url = URL.createObjectURL(await r.res.blob());
-    const h = { url, prompt, seed: r.res.headers.get("X-Seed"), cr: body.creativity.toFixed(2), ms: Math.round(performance.now() - t0) };
+    const h = { url, prompt, seed: r.res.headers.get("X-Seed"), cr: body.creativity.toFixed(2), ms: Math.round(performance.now() - t0),
+                model: pgCur().name, ext: /gif/.test(r.res.headers.get("content-type") || "") ? "gif" : "png" };
     history.unshift(h); if (history.length > 8) URL.revokeObjectURL(history.pop().url);
     $("#history").innerHTML = "";
     history.forEach(x => { const b = document.createElement("button"); b.type = "button"; b.dataset.url = x.url;
@@ -694,10 +760,11 @@
     const p = esc(($("#prompt").value.trim() || "a little green frog wearing a crown").replace(/["'\\]/g, ""));
     const cr = (+$("#cr").value).toFixed(2), seed = $("#seed").value, scale = $("#scale").value, B = MOSAIC.backend, key = "MOSAIC_...";
     const q = v => `<span class="s">${v}</span>`;
+    const mid = pgModel, clip = isClipModel(), out = clip ? "clip.gif" : "sprite.png", hasM = mid !== "m1";
     const code = {
-      curl: `curl ${B}/api/generate \\\n  -H ${q(`'Authorization: Bearer ${key}'`)} \\\n  -H 'content-type: application/json' \\\n  -d '{\n    "prompt":     ${q(`"${p}"`)},\n    "creativity": ${q(cr)},${seed ? `\n    "seed":       ${q(seed)},` : ""}\n    "scale":      ${q(scale)}\n  }' -o sprite.png`,
-      py: `<span class="c"># pip install requests</span>\nimport requests\n\nr = requests.post(\n    "${B}/api/generate",\n    headers={"Authorization": ${q(`"Bearer ${key}"`)}},\n    json={"prompt": ${q(`"${p}"`)}, "creativity": ${q(cr)},${seed ? ` "seed": ${q(seed)},` : ""} "scale": ${q(scale)}},\n)\nr.raise_for_status()\nopen("sprite.png", "wb").write(r.content)\nprint("seed", r.headers["X-Seed"], "| left today", r.headers["X-Quota-Remaining"])`,
-      js: `const r = await fetch("${B}/api/generate", {\n  method: "POST",\n  headers: { "content-type": "application/json", Authorization: ${q(`"Bearer ${key}"`)} },\n  body: JSON.stringify({ prompt: ${q(`"${p}"`)}, creativity: ${q(cr)},${seed ? ` seed: ${q(seed)},` : ""} scale: ${q(scale)} }),\n});\nconst png = await r.blob();   <span class="c">// image/png</span>`,
+      curl: `curl ${B}/api/generate \\\n  -H ${q(`'Authorization: Bearer ${key}'`)} \\\n  -H 'content-type: application/json' \\\n  -d '{\n${hasM ? `    "model":      ${q(`"${mid}"`)},\n` : ""}    "prompt":     ${q(`"${p}"`)},\n    "creativity": ${q(cr)},${seed ? `\n    "seed":       ${q(seed)},` : ""}\n    "scale":      ${q(scale)}\n  }' -o ${out}`,
+      py: `<span class="c"># pip install requests</span>\nimport requests\n\nr = requests.post(\n    "${B}/api/generate",\n    headers={"Authorization": ${q(`"Bearer ${key}"`)}},\n    json={${hasM ? `"model": ${q(`"${mid}"`)}, ` : ""}"prompt": ${q(`"${p}"`)}, "creativity": ${q(cr)},${seed ? ` "seed": ${q(seed)},` : ""} "scale": ${q(scale)}},\n)\nr.raise_for_status()\nopen("${out}", "wb").write(r.content)\nprint("seed", r.headers["X-Seed"], "| left today", r.headers["X-Quota-Remaining"])`,
+      js: `const r = await fetch("${B}/api/generate", {\n  method: "POST",\n  headers: { "content-type": "application/json", Authorization: ${q(`"Bearer ${key}"`)} },\n  body: JSON.stringify({ ${hasM ? `model: ${q(`"${mid}"`)}, ` : ""}prompt: ${q(`"${p}"`)}, creativity: ${q(cr)},${seed ? ` seed: ${q(seed)},` : ""} scale: ${q(scale)} }),\n});\nconst ${clip ? "gif" : "png"} = await r.blob();   <span class="c">// ${clip ? "image/gif" : "image/png"}</span>`,
     };
     $("#code").innerHTML = code[tab];
   }
