@@ -146,74 +146,85 @@
   .dc-side { position: sticky; top: 76px; align-self: start; max-height: calc(100vh - 96px); overflow-y: auto; font-size: 15px; padding-bottom: 20px; }
   .dc-side a { display: flex; align-items: center; justify-content: space-between; color: #cfcac0; text-decoration: none; padding: 7px 10px; margin: 1px 0; }
   .dc-side a:hover { color: #fff; background: #141310; }
-  .dc-side a[aria-current="page"] { color: #000; background: var(--green); }
-  .dc-side .chev { color: var(--dim); } .dc-side a[aria-current="page"] .chev { color: #000; }
+  .dc-side a[aria-current="page"] { color: #fff; background: #141310; box-shadow: inset 4px 0 0 var(--mcol, var(--green)); }
+  .dc-side .chev { color: var(--dim); }
   .dc-home { letter-spacing: 2px; font-size: 13px; justify-content: flex-start !important; gap: 10px; border-bottom: 2px solid var(--line); margin-bottom: 12px !important; }
   .dc-home .ico { font-size: 16px; }
   .dc-group { color: var(--dim); font-size: 11px; letter-spacing: 2px; margin: 20px 10px 6px; display: flex; align-items: center; gap: 8px; }
-  .dc-group::after { content: ""; flex: 1; height: 2px; background: var(--line); }
+  .dc-group::before { content: ""; width: 6px; height: 6px; background: var(--gcol, var(--green)); }
   .dc-side .msub { font-size: 14px; padding-left: 20px; }
   .dc-side .msub em { font-style: normal; font-size: 9px; letter-spacing: 1px; color: var(--dim); }
   .dc-top { display: flex; align-items: center; gap: 14px; margin: 6px 0 22px; }
-  .dc-crumbs { display: flex; align-items: center; gap: 10px; font-size: 14px; letter-spacing: 2px; white-space: nowrap; overflow: hidden; }
+  .dc-crumbs { display: flex; align-items: center; gap: 10px; font-size: 13px; letter-spacing: 2px; white-space: nowrap; overflow: hidden;
+               background: var(--panel); padding: 8px 14px; margin: var(--u); }
   .dc-crumbs a { color: var(--dim); text-decoration: none; } .dc-crumbs a:hover { color: #fff; }
   .dc-crumbs .sep { color: #4a4740; } .dc-crumbs b { font-weight: normal; color: #fff; }
-  .dc-rule { flex: 1; height: 2px; background: var(--line); min-width: 20px; }
-  .dc-try { display: inline-flex; align-items: center; gap: 8px; background: var(--yellow); color: #000; text-decoration: none; font-size: 13px;
-            letter-spacing: 2px; padding: 8px 12px; white-space: nowrap; }
-  .dc-try i { width: 8px; height: 8px; background: var(--orange); }
+  .dc-rule { flex: 1; }
   .dc-h1 { font-weight: normal; font-size: clamp(30px, 4vw, 44px); margin: 0 0 6px; }
   .dc-lede { color: var(--dim); margin: 0 0 24px; font-size: 16px; }
   .dc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; }
-  .mc { display: grid; grid-template-columns: 72px 1fr; gap: 14px; text-decoration: none; color: inherit; background: var(--panel); padding: 14px;
-        box-shadow: inset 0 0 0 2px var(--line); }
-  .mc:hover { box-shadow: inset 0 0 0 2px var(--mcol, var(--green)); }
-  .mc b { font-weight: normal; font-size: 22px; color: var(--mcol, #fff); display: block; }
+  .mc { display: flex; flex-direction: column; text-decoration: none; color: inherit; background: var(--panel); margin: var(--u); --c: #2a2925; }
+  .mc:hover { --c: var(--mcol, var(--green)); }
+  .mc .plate { height: 74px; } .mc .plate .nm { font-size: 26px; bottom: 10px; }
+  .mc > div:last-child { padding: 12px 14px 14px; }
+  .mc b { display: none; }
   .mc span { color: #b9b4a8; font-size: 13px; line-height: 1.45; }
   .mc .st { display: inline-block; margin-top: 8px; font-size: 10px; letter-spacing: 2px; padding: 2px 6px; background: #24231f; color: var(--dim); }
   .mc .st.on { background: #1d3a24; color: var(--green); } .mc .st.flag { background: #123430; color: #70e8d8; } .mc .st.off { background: #3a1c1c; color: #ff8a80; }
+  .plate { position: relative; overflow: hidden; background: #17141e; image-rendering: pixelated; }
+  .plate::before { content: ""; position: absolute; inset: 0; background: linear-gradient(270deg, var(--glow), transparent 75%); }
+  .plate::after { content: ""; position: absolute; inset: 0; background: var(--np) right center / auto 100% no-repeat; image-rendering: pixelated;
+                  -webkit-mask-image: linear-gradient(270deg, #000 30%, transparent 90%); mask-image: linear-gradient(270deg, #000 30%, transparent 90%); }
+  .plate .fall { position: absolute; top: -10px; width: var(--pz, 9px); height: var(--pz, 9px); background: var(--pt) 0 0 / 100% 100%; image-rendering: pixelated;
+                 z-index: 1; opacity: 0; animation: pfall var(--pd, 2.4s) steps(10) infinite; }
+  @keyframes pfall { 0% { opacity: 0; transform: translate(0, 0); } 15% { opacity: 1; } 100% { opacity: 0; transform: translate(-18px, var(--ph, 80px)) rotate(90deg); } }
+  @media (prefers-reduced-motion: reduce) { .plate .fall { animation: none; } }
+  .plate .nm { position: absolute; z-index: 2; left: 18px; bottom: 12px; font-size: 32px; color: #fff; line-height: 1; }
+  .plate .kd { position: absolute; z-index: 2; left: 20px; top: 12px; font-size: 11px; letter-spacing: 2px; color: var(--mcol); }
   .portrait { width: 72px; height: 72px; background: #0b0a09 center / cover no-repeat; image-rendering: pixelated; box-shadow: 0 0 0 2px #000, 0 0 0 4px var(--line); }
-  /* a model's page */
-  .mp { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 22px; }
-  .mp-left .portrait { width: 150px; height: 150px; box-shadow: 0 0 0 3px #000, 0 0 0 6px var(--mcol, var(--line)); }
-  .mp-left .btn { width: 100%; margin-top: 16px; text-align: center; }
-  .box { box-shadow: inset 0 0 0 2px var(--line); padding: 22px 24px; margin-bottom: 14px; }
-  .mp-head { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; color: var(--dim); font-size: 15px; }
-  .chips { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-  .chip { font-size: 12px; letter-spacing: 2px; padding: 3px 8px; box-shadow: inset 0 0 0 2px #3a3833; color: #cfcac0; }
-  .chip.g { box-shadow: inset 0 0 0 2px #2c6a3a; color: var(--green); } .chip.t { box-shadow: inset 0 0 0 2px #1f5a52; color: #70e8d8; }
-  .chip.r { box-shadow: inset 0 0 0 2px #6a2c2c; color: #ff8a80; }
-  .mp h1 { font-weight: normal; font-size: clamp(36px, 5vw, 54px); margin: 18px 0 8px; color: #fff; line-height: 1; }
-  .mp-desc { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; flex-wrap: wrap; }
-  .mp-desc p { margin: 0; max-width: 560px; font-size: 17px; line-height: 1.6; color: #d8d2c4; }
+  /* a model's page: a nameplate banner, then tiles */
+  .mhero { height: 168px; margin: var(--u) var(--u) 18px; --c: #2a2925; }
+  .mhero .nm { font-size: clamp(44px, 6vw, 66px); left: 26px; bottom: 22px; }
+  .mhero .kd { left: 28px; top: 20px; font-size: 13px; }
+  .mhero .chips { position: absolute; z-index: 2; right: 18px; top: 16px; }
+  .mrow { display: flex; justify-content: space-between; align-items: center; gap: 18px; flex-wrap: wrap; margin: 0 0 22px; }
+  .mrow p { margin: 0; max-width: 620px; font-size: 17px; line-height: 1.6; color: #d8d2c4; }
+  .mrow .acts { display: flex; gap: 10px; align-items: center; }
+  .chips { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .chip { font-size: 11px; letter-spacing: 2px; padding: 3px 8px; background: rgba(0,0,0,.6); color: #cfcac0; }
+  .chip.g { background: #1d3a24; color: var(--green); } .chip.t { background: #123430; color: #70e8d8; } .chip.r { background: #3a1c1c; color: #ff8a80; }
+  .chip.d { background: rgba(0,0,0,.6); color: var(--dim); }
   .idchip { display: inline-flex; align-items: center; gap: 10px; font-family: ui-monospace, Menlo, monospace; font-size: 15px; color: #fff;
-            box-shadow: inset 0 0 0 2px #3a3833; padding: 7px 12px; background: #000; cursor: pointer; border: 0; }
-  .idchip:hover { box-shadow: inset 0 0 0 2px var(--green); } .idchip small { color: var(--dim); font-family: "Tiny5", monospace; letter-spacing: 1px; }
-  .stats { display: grid; grid-template-columns: repeat(3, auto) 1fr auto; gap: 30px 44px; align-items: start; }
-  .stats .lab { font-size: 13px; letter-spacing: 2px; color: #cfcac0; margin: 0 0 12px; display: flex; align-items: center; gap: 8px; }
-  .blocks { display: flex; gap: 5px; } .blocks i { width: 18px; height: 22px; background: #24231f; }
-  .blocks i.on { background: var(--orange); box-shadow: inset 0 -4px 0 #a8501a; }
-  .modal { display: flex; align-items: center; gap: 10px; color: var(--orange); font-size: 13px; letter-spacing: 1px; }
-  .modal .arrow { color: #4a4740; letter-spacing: -2px; }
-  .ctx { border-left: 2px dashed var(--line); padding-left: 22px; }
-  .ctx b { display: block; font-weight: normal; font-size: 26px; color: var(--orange); }
-  .prices { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; border-top: 2px dashed var(--line); margin-top: 26px; padding-top: 22px; }
-  .prices b { display: block; font-weight: normal; font-size: 26px; color: var(--orange); }
-  .prices span { display: block; font-size: 12px; letter-spacing: 2px; color: var(--dim); margin-top: 8px; line-height: 1.6; }
-  .ptop { display: flex; align-items: center; gap: 14px; margin: 26px 0 0; font-size: 13px; letter-spacing: 2px; color: #cfcac0; }
-  .mtabs { display: flex; gap: 6px; margin: 22px 0 0; }
-  .mtabs button { background: #141310; border: 0; color: var(--dim); padding: 10px 16px; font-size: 15px; letter-spacing: 2px; cursor: pointer; }
-  .mtabs button[aria-selected="true"] { background: #2a2925; color: #fff; }
-  .mpane { box-shadow: inset 0 0 0 2px var(--line); padding: 22px 24px; }
-  .mpane ul { margin: 0; padding: 0 0 0 18px; color: #cfcac0; line-height: 1.8; }
+            padding: 9px 12px; background: #000; cursor: pointer; border: 0; box-shadow: inset 0 0 0 2px #2a2925; }
+  .idchip:hover { box-shadow: inset 0 0 0 2px var(--mcol); } .idchip small { color: var(--dim); font-family: "Tiny5", monospace; letter-spacing: 1px; }
+  .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 14px; }
+  .tile { background: var(--panel); padding: 16px 18px; margin: var(--u); --c: #2a2925; }
+  .tile .lab { font-size: 11px; letter-spacing: 2px; color: var(--dim); margin: 0 0 12px; }
+  .tile b { display: block; font-weight: normal; font-size: 24px; color: var(--mcol); }
+  .tile small { color: var(--dim); font-size: 12px; }
+  .blocks { display: flex; gap: 4px; } .blocks i { width: 14px; height: 18px; background: #24231f; }
+  .blocks i.on { background: var(--mcol); box-shadow: inset 0 -4px 0 rgba(0,0,0,.35); }
+  .flow { display: flex; align-items: center; gap: 8px; color: #fff; font-size: 14px; }
+  .flow i { font-style: normal; color: var(--mcol); }
+  .ladder { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 22px; }
+  .rung { padding: 16px 18px; margin: var(--u); --c: var(--rc); background: var(--rb); }
+  .rung .pl { font-size: 11px; letter-spacing: 2px; color: var(--rt); } .rung b { display: block; font-weight: normal; font-size: 30px; color: #fff; margin: 6px 0 2px; }
+  .rung span { color: #cfcac0; font-size: 13px; }
+  .rung.free { --rb: #141310; --rc: #3a3833; --rt: #b9b0c8; } .rung.artisan { --rb: #24150c; --rc: #6b3a1c; --rt: #e8913a; }
+  .rung.atelier { --rb: #10162c; --rc: #2c3c74; --rt: #fce060; }
+  .mtabs { display: flex; gap: 22px; border-bottom: 3px solid var(--line); margin: 0 0 18px; }
+  .mtabs button { background: none; border: 0; color: var(--dim); padding: 8px 0; font-size: 15px; cursor: pointer; margin-bottom: -3px; border-bottom: 3px solid transparent; }
+  .mtabs button[aria-selected="true"] { color: #fff; border-bottom-color: var(--mcol); }
+  .mpane ul { margin: 0; padding: 0; list-style: none; color: #cfcac0; line-height: 1.6; }
+  .mpane li { padding: 4px 0 4px 20px; position: relative; } .mpane li::before { content: ""; position: absolute; left: 0; top: 12px; width: 8px; height: 8px; background: var(--mcol); }
   .ex { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; }
   .ex img, .ex div { width: 100%; aspect-ratio: 1; image-rendering: pixelated; background: #0b0a09 no-repeat; display: block; }
   .ex.wide img { aspect-ratio: 16 / 9; }
   .school { color: var(--dim); font-size: 15px; line-height: 1.6; }
   @media (max-width: 1000px) { .dc { grid-template-columns: 1fr; } .dc-side { position: static; max-height: none; display: flex; flex-wrap: wrap; gap: 4px; }
     .dc-side .dc-group, .dc-side #dc-models { display: none; } .stats { grid-template-columns: 1fr 1fr; } .ctx { border: 0; padding: 0; }
-    .mp { grid-template-columns: 1fr; } .mp-left { display: flex; gap: 16px; align-items: center; } .mp-left .portrait { width: 96px; height: 96px; } }
-  @media (max-width: 560px) { .prices { grid-template-columns: 1fr; } .dc-try { display: none; } }
+    .tiles { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 560px) { .ladder { grid-template-columns: 1fr; } .dc-try { display: none; } }
 </style>
 </head>
 <body>
@@ -222,15 +233,15 @@
 <main class="dc wrap">
   <aside class="dc-side" aria-label="Dev portal">
     <a class="dc-home" href="#/dashboard"><span class="ico">&#8962;</span>HOME</a>
-    <p class="dc-group">OVERVIEW</p>
+    <p class="dc-group" style="--gcol:var(--green)">OVERVIEW</p>
     <a href="#/dashboard" data-nav="dashboard">Dashboard</a>
-    <p class="dc-group">BUILD</p>
+    <p class="dc-group" style="--gcol:var(--pink)">BUILD</p>
     <a href="#/playground" data-nav="playground">Playground</a>
     <a href="keys/">API keys <span class="chev">&#8250;</span></a>
-    <p class="dc-group">MODELS</p>
+    <p class="dc-group" style="--gcol:var(--orange)">MODELS</p>
     <a href="#/models" data-nav="models">All models</a>
     <div id="dc-models"></div>
-    <p class="dc-group">REFERENCE</p>
+    <p class="dc-group" style="--gcol:var(--blue)">REFERENCE</p>
     <a href="#/reference" data-nav="reference">Generate endpoint</a>
     <a href="#/reference/responses" data-nav="reference/responses">Responses &amp; errors</a>
     <a href="../status/">Status <span class="chev">&#8599;</span></a>
@@ -239,7 +250,7 @@
     <div class="dc-top">
       <nav class="dc-crumbs" id="crumbs" aria-label="Where you are"></nav>
       <span class="dc-rule"></span>
-      <a class="dc-try" href="#/playground"><i></i>TRY IN PLAYGROUND &#8599;</a>
+      <a class="btn small dc-try" href="#/playground" style="--c:var(--pink)">Try in the playground</a>
     </div>
 
     <section data-view="dashboard">
@@ -415,15 +426,19 @@
     { id: "m2", name: "m2 · m1+", kind: "Sprites, next", col: "#f2a030", plate: "ember", state: "BACK IN SCHOOL", cls: "off", tags: [["SWITCHED OFF", "r"], ["BACK IN SCHOOL", ""]],
       desc: "Back in school to draw exactly like m1, and to know a lot more things. Read why in “A very geometric situation” on the blog.", school: true, blog: "../blog/a-very-geometric-situation/" },
   ];
-  const portrait = (m, big) => {
-    const st = `background-image:url(../assets/scenes/nameplate-${m.plate}.png)`;
-    if (m.art?.strip) return `<div class="portrait" style="background:#1d1826 url(${m.art.strip}) 100% 0 / ${m.art.frames * 100}% 100% no-repeat"></div>`;
-    if (m.art?.img) return `<div class="portrait" style="background-image:url(${m.art.img})"></div>`;
-    return `<div class="portrait" style="${st};background-size:auto 100%;background-position:right center"></div>`;
-  };
-  $("#dc-models").innerHTML = MP.map(m => `<a class="msub" href="#/models/${m.id}" data-nav="models/${m.id}">${esc(m.name)} <em>${m.cls === "on" ? "" : esc(m.state)}</em></a>`).join("");
-  $("#dc-grid").innerHTML = MP.map(m => `<a class="mc" href="#/models/${m.id}" style="--mcol:${m.col}">${portrait(m)}
-    <div><b>${esc(m.name)}</b><span>${esc(m.kind)}: ${esc(m.desc.split(".")[0])}.</span><br><em class="st ${m.cls}">${esc(m.state)}</em></div></a>`).join("");
+  // the Studio's model art: each model's nameplate, its colour glowing in from the right, and its particles falling
+  const PLATE = { autumn: ["rgba(232,145,58,.35)", "p-leaf"], snow: ["rgba(140,164,220,.35)", "p-snow"], ember: ["rgba(232,114,42,.38)", "p-spark"],
+                  bloom: ["rgba(110,224,122,.3)", "p-petal"], dusk: ["rgba(200,216,96,.25)", "p-glow"], aurora: ["rgba(110,224,160,.3)", "p-star"],
+                  cinema: ["rgba(140,164,220,.32)", "p-star"], vista: ["rgba(96,216,200,.3)", "p-star"] };
+  function plate(m, cls, h, n = 6) {
+    const [glow, pt] = PLATE[m.plate] || PLATE.autumn;
+    const falls = Array.from({ length: n }, (_, i) => `<i class="fall" style="right:${6 + i * (88 / n)}%;animation-delay:${(i * 0.41) % 2.4}s"></i>`).join("");
+    return `<div class="plate notch ${cls}" style="--np:url(../assets/scenes/nameplate-${m.plate}.png);--glow:${glow};--pt:url(../assets/scenes/${pt}.png);--ph:${h}px">
+      ${falls}<span class="kd">${esc(m.kind.toUpperCase())}</span><span class="nm">${esc(m.name)}</span>${cls === "mhero" ? `<span class="chips">${m.tags.map(([t, c]) => `<span class="chip ${c}">${esc(t)}</span>`).join("")}</span>` : ""}</div>`;
+  }
+  $("#dc-models").innerHTML = MP.map(m => `<a class="msub" href="#/models/${m.id}" data-nav="models/${m.id}" style="--mcol:${m.col}">${esc(m.name)} <em>${m.cls === "on" ? "" : esc(m.state)}</em></a>`).join("");
+  $("#dc-grid").innerHTML = MP.map(m => `<a class="mc notch" href="#/models/${m.id}" style="--mcol:${m.col}">${plate(m, "", 70, 4)}
+    <div><span>${esc(m.desc.split(".")[0])}.</span><br><em class="st ${m.cls}">${esc(m.state)}</em></div></a>`).join("");
 
   const icon = { text: "&#9636;", image: "&#9635;", video: "&#9654;" };
   function modelPage(m) {
@@ -433,32 +448,26 @@
       : `curl -X POST ${MOSAIC.backend}/api/generate \\\n  -H "Authorization: Bearer MOSAIC_..." -H "Content-Type: application/json" \\\n  -d '{"prompt": "a little green frog wearing a crown", "creativity": 0.5, "scale": 8}' -o frog.png`;
     const examples = m.clips ? `<div class="ex wide">${m.clips.map(c => `<img src="../assets/v1/${c}.gif" alt="a v1 clip" loading="lazy">`).join("")}</div>`
       : m.gallery ? `<div class="ex">${Array.from({ length: 16 }, (_, i) => `<div style="background-image:url(${m.gallery});background-size:800% 600%;background-position:${(i % 8) * 100 / 7}% ${Math.floor(i / 8) * 100 / 5}%"></div>`).join("")}</div>` : "";
-    $("#dc-model").innerHTML = `<div class="mp" style="--mcol:${m.col}">
-      <div class="mp-left">${portrait(m, true)}${m.api ? `<a class="btn small" href="#/playground" style="--c:var(--orange)">Try it</a>` : m.blog ? `<a class="btn small ghost" href="${m.blog}">Read why</a>` : ""}</div>
-      <div>
-        <div class="box">
-          <div class="mp-head"><span>${m.date || "Coming soon"}</span><span class="chips">${m.tags.map(([t, c]) => `<span class="chip ${c}">${esc(t)}</span>`).join("")}</span></div>
-          <h1>${esc(m.name)}</h1>
-          <div class="mp-desc"><p>${esc(m.desc)}</p>${m.api ? `<button class="idchip" type="button" data-copy="${m.id}">${m.id} <small>COPY</small></button>` : ""}</div>
-        </div>
-        ${m.school ? `<div class="box school">This one is still in school. It shows up in the Studio, the playground and the API by itself when it's ready.
-           Keep an eye on the <a href="../blog/">blog</a>.</div>` : `
-        <div class="box">
-          <div class="stats">
-            <div><p class="lab">&#9889; SPEED</p>${blocks(m.speed)}</div>
-            <div><p class="lab">&#9733; QUALITY</p>${blocks(m.quality)}</div>
-            <div><p class="lab">&#8644; MODALITIES</p><div class="modal">${icon.text} TEXT <span class="arrow">&#8250;&#8250;&#8250;</span> ${icon[m.out]} ${m.out === "video" ? "CLIP" : "IMAGE"}</div></div>
-            <div></div>
-            <div class="ctx"><p class="lab">${m.limitLbl}</p><b>${m.limit}</b><span class="lab">${m.unit}</span></div>
-          </div>
-          <div class="ptop">ALLOWANCE <span class="chip">1 PER GO</span></div>
-          <div class="prices">${m.prices.map(([n, plan, what]) => `<div><b>${n}</b><span>${plan}<br>${what}</span></div>`).join("")}</div>
-        </div>
-        <div class="mtabs" role="tablist"><button role="tab" aria-selected="true" data-pane="f">FEATURES</button><button role="tab" aria-selected="false" data-pane="u">USAGE</button><button role="tab" aria-selected="false" data-pane="e">EXAMPLES</button></div>
-        <div class="mpane" data-p="f"><ul>${m.feats.map(f => `<li>${esc(f)}</li>`).join("")}</ul></div>
-        <div class="mpane" data-p="u" hidden><pre>${esc(usage)}</pre></div>
-        <div class="mpane" data-p="e" hidden>${examples}<p class="hint" style="margin:12px 0 0">Real ${esc(m.name)} output.</p></div>`}
-      </div></div>`;
+    const plan = { FREE: "free", ARTISAN: "artisan", ATELIER: "atelier" };
+    $("#dc-model").innerHTML = `<div style="--mcol:${m.col}">
+      ${plate(m, "mhero", 170, 9)}
+      <div class="mrow"><p>${esc(m.desc)}</p>
+        <div class="acts">${m.api ? `<button class="idchip" type="button" data-copy="${m.id}">${m.id} <small>COPY</small></button>
+          <a class="btn small" href="#/playground" style="--c:var(--mcol)">Try it</a>` : m.blog ? `<a class="btn small ghost" href="${m.blog}">Read why</a>` : ""}</div></div>
+      ${m.school ? `<div class="tile notch school">This one is still in school. It turns up in the Studio, the playground and the API by itself when it's ready.
+         Keep an eye on the <a href="../blog/">blog</a>.</div>` : `
+      <div class="tiles">
+        <div class="tile notch"><p class="lab">SPEED</p>${blocks(m.speed)}</div>
+        <div class="tile notch"><p class="lab">QUALITY</p>${blocks(m.quality)}</div>
+        <div class="tile notch"><p class="lab">MAKES</p><div class="flow"><i>${icon.text}</i>words <i>&#8250;</i> <i>${icon[m.out]}</i>${m.out === "video" ? "a clip" : "a sprite"}</div></div>
+        <div class="tile notch"><p class="lab">${m.limitLbl}</p><b>${m.limit}</b><small>${m.unit.toLowerCase()}</small></div>
+      </div>
+      <div class="ladder">${m.prices.map(([n, pl, what]) => `<div class="rung notch ${plan[pl]}"><span class="pl">${pl}</span><b>${n}</b><span>${what.toLowerCase()}</span></div>`).join("")}</div>
+      <div class="mtabs" role="tablist"><button role="tab" aria-selected="true" data-pane="f">Features</button><button role="tab" aria-selected="false" data-pane="u">Usage</button><button role="tab" aria-selected="false" data-pane="e">Examples</button></div>
+      <div class="mpane" data-p="f"><ul>${m.feats.map(f => `<li>${esc(f)}</li>`).join("")}</ul></div>
+      <div class="mpane" data-p="u" hidden><pre>${esc(usage)}</pre></div>
+      <div class="mpane" data-p="e" hidden>${examples}<p class="hint" style="margin:12px 0 0">Real ${esc(m.name)} output.</p></div>`}
+      </div>`;
     document.querySelectorAll(".mtabs button").forEach(b => b.onclick = () => {
       document.querySelectorAll(".mtabs button").forEach(x => x.setAttribute("aria-selected", x === b));
       document.querySelectorAll(".mpane").forEach(p => p.hidden = p.dataset.p !== b.dataset.pane);
