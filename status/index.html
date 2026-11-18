@@ -64,6 +64,7 @@
   .inc h3 { font-weight: normal; font-size: 18px; margin: 0 0 6px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
   .tag { font-size: 11px; padding: 2px 7px; color: #000; background: var(--s); letter-spacing: 1px; }
   .inc .when { color: var(--dim); font-size: 12px; margin-bottom: 12px; }
+  .inc > a { display: inline-block; margin-top: 4px; color: var(--s); font-size: 14px; }
   .inc ol { list-style: none; margin: 0; padding: 0 0 0 14px; border-left: 4px solid #2a2733; }
   .inc li { margin: 0 0 10px; color: #c8c2d4; font-size: 14px; line-height: 1.45; position: relative; }
   .inc li::before { content: ""; position: absolute; left: -22px; top: 5px; width: 12px; height: 12px; background: var(--s); }
@@ -72,6 +73,8 @@
   .log { font-family: ui-monospace, Menlo, monospace; font-size: 12px; background: var(--panel); padding: 14px; margin: var(--u); max-height: 240px; overflow-y: auto; color: #b9b4c8; }
   .log div { display: flex; gap: 14px; padding: 2px 0; }
   .log .ok { color: var(--ok); } .log .warn { color: var(--warn); } .log .down { color: var(--down); }
+  .sched { background: #0f1a26; margin: var(--u) var(--u) 26px; padding: 18px 20px; --c: var(--maint); font-size: 15px; line-height: 1.55; color: #d4e2f0; }
+  .sched b { color: var(--maint); font-weight: normal; letter-spacing: 1px; } .sched a { color: #fff; }
   .note { color: #6f6880; font-size: 12px; margin: 10px 4px 0; }
 
   @media (max-width: 820px) {
@@ -107,6 +110,7 @@
 <div class="tape"></div>
 
 <main class="wrap">
+  <div id="sched-banner"></div>
   <section>
     <h2>Components <small>last 90 days</small></h2>
     <div id="comps"></div>
@@ -115,6 +119,10 @@
     <h2>Your checks <small>live, from this browser, kept for 24 hours</small></h2>
     <div class="log" id="log"></div>
     <p class="note">The status page isn't part of the server: it asks the server how it's doing every 30 seconds. If nothing answers, that's an outage.</p>
+  </section>
+  <section id="upcoming-s" hidden>
+    <h2>Scheduled maintenance</h2>
+    <div id="upcoming"></div>
   </section>
   <section>
     <h2>Past incidents</h2>
@@ -169,7 +177,9 @@
     { id: "accounts", name: "Accounts", desc: "sign-in and sessions", check: async () => { const r = await probe("/api/logout", { method: "POST" }); return { state: r.reached && r.status === 200 ? "ok" : r.reached ? "degraded" : "down", ms: r.ms }; } },
     { id: "studio", name: "Studio", desc: "gallery, likes and creations", check: async () => { const r = await probe("/api/studio/feed?limit=1"); return { state: r.reached && r.status === 200 ? "ok" : r.reached ? "degraded" : "down", ms: r.ms }; } },
   ];
-  const LABEL = { ok: "Operational", degraded: "Wobbly", down: "Down", unknown: "Checking" };
+  const LABEL = { ok: "Operational", degraded: "Wobbly", down: "Down", unknown: "Checking", maintenance: "Maintenance" };
+  // a maintenance entry that is running right now (its components show blue, not red, while they don't answer)
+  const activeMaint = () => incidents.find(x => x.impact === "maintenance" && new Date(x.start) <= Date.now() && Date.now() < new Date(x.end));
 
   // ---------------------------------------------------------------- 90-day bars from the incident log + today's live checks
   let incidents = [], launched = "2026-10-07";            // days before launch show as "no data"
@@ -179,19 +189,24 @@
     const today = new Date(); today.setUTCHours(0, 0, 0, 0);
     for (let i = 89; i >= 0; i--) {
       const d = new Date(today - i * 86400000), key = dayKey(d);
-      const hits = incidents.filter(x => x.components.includes(compId) && x.start.slice(0, 10) === key);
+      const d0 = d.getTime(), d1 = Math.min(d0 + 86400000, Date.now());
+      const part = x => Math.max(0, Math.min(d1, new Date(x.end).getTime()) - Math.max(d0, new Date(x.start).getTime()));
+      const hits = incidents.filter(x => x.components.includes(compId) && part(x) > 0);
       const worst = hits.reduce((w, x) => ["minor", "maintenance", "major", "critical"].indexOf(x.impact) > ["minor", "maintenance", "major", "critical"].indexOf(w) ? x.impact : w, hits.length ? hits[0].impact : null);
-      const mins = hits.reduce((m, x) => m + (new Date(x.end) - new Date(x.start)) / 60000, 0);
+      const mins = hits.reduce((m, x) => m + part(x) / 60000, 0);
       days.push(key < launched ? { key, cls: "none", mins: 0, titles: [], before: true } : { key, cls: worst || "", mins, titles: hits.map(h => h.title) });
     }
     return days;
   }
   function renderComps(results = {}) {
     $("#comps").innerHTML = COMPONENTS.map(c => {
-      const r = results[c.id] || { state: "unknown" }, days = history(c.id), down = days.reduce((m, d) => m + (d.cls && d.cls !== "maintenance" ? d.mins : 0), 0);
+      let r = results[c.id] || { state: "unknown" };
+      const m = activeMaint();
+      if (m && m.components.includes(c.id) && r.state !== "ok" && r.state !== "unknown") r = { ...r, state: "maintenance", note: "scheduled maintenance" };
+      const days = history(c.id), down = days.reduce((m, d) => m + (d.cls && d.cls !== "maintenance" ? d.mins : 0), 0);
       const live = Math.max(1, days.filter(d => !d.before).length);
       const up = (100 - down / (live * 1440) * 100).toFixed(2);
-      if (r.state !== "ok" && r.state !== "unknown") days[days.length - 1].cls = r.state === "down" ? "major" : "minor";
+      if (r.state !== "ok" && r.state !== "unknown" && r.state !== "maintenance") days[days.length - 1].cls = r.state === "down" ? "major" : "minor";
       return `<div class="comp notch" style="--s:${COLORS[r.state]}">
         <div class="top"><div><div class="name">${c.name}</div><div class="desc">${c.desc}${r.note ? ` &middot; ${esc(r.note)}` : ""}</div></div>
           <span class="st">&#9632; ${LABEL[r.state]}</span><span class="ms">${r.ms != null ? r.ms + " ms" : ""}</span></div>
@@ -216,7 +231,8 @@
     const results = {};
     await Promise.all(COMPONENTS.map(async c => results[c.id] = await c.check({ health })));
     const backend = COMPONENTS.filter(c => c.id !== "website").map(c => results[c.id].state);
-    const overall = backend.every(s => s === "down") ? "outage" : backend.every(s => s === "ok") ? "ok" : "partial";
+    let overall = backend.every(s => s === "down") ? "outage" : backend.every(s => s === "ok") ? "ok" : "partial";
+    if (overall !== "ok" && activeMaint()) overall = "maintenance";
     lastResults = results; renderComps(results); setMood(overall);
     const now = Date.now();
     log.unshift({ t: now, overall, ms: health.ms });
@@ -224,7 +240,7 @@
     log.length = Math.min(log.length, 300);
     try { localStorage.setItem("mosaic-status-log", JSON.stringify(log)); } catch (_) {}
     $("#log").innerHTML = log.map(l => `<div><span>${new Date(l.t).toLocaleTimeString()}</span>
-      <span class="${l.overall === "ok" ? "ok" : l.overall === "partial" ? "warn" : "down"}">${{ ok: "all good", partial: "partial outage", outage: "no response: outage" }[l.overall]}</span>
+      <span class="${l.overall === "ok" ? "ok" : l.overall === "partial" ? "warn" : l.overall === "maintenance" ? "" : "down"}">${{ ok: "all good", partial: "partial outage", outage: "no response: outage", maintenance: "scheduled maintenance" }[l.overall]}</span>
       <span>${l.ms != null ? l.ms + " ms" : ""}</span></div>`).join("");
     $("#when").textContent = `checked at ${new Date().toLocaleTimeString()}`;
     $("#recheck").disabled = false; next = 30;
@@ -233,12 +249,14 @@
     mood = overall;
     const S = { ok: ["var(--ok)", "ALL GOOD", "Everything's running.", "m1 and v1 are awake and drawing. The site manager is... resting its eyes.", "all systems go!"],
                 partial: ["var(--warn)", "PARTIAL OUTAGE", "Some things are wobbly.", "Part of Mosaic isn't answering right. We're (sleepily) on it.", "some things are down"],
-                outage: ["var(--down)", "OUTAGE", "Nothing's answering.", "The Mosaic server isn't responding at all. Hang tight, someone's on the way with coffee.", "everything's down"] }[overall];
+                outage: ["var(--down)", "OUTAGE", "Nothing's answering.", "The Mosaic server isn't responding at all. Hang tight, someone's on the way with coffee.", "everything's down"],
+                maintenance: ["var(--maint)", "MAINTENANCE", "Down for maintenance.", "", "back soon!"] }[overall];
+    if (overall === "maintenance") { const m = activeMaint(); S[3] = `Scheduled maintenance until ${new Date(m.end).toLocaleDateString(undefined, { month: "long", day: "numeric" })}: safety checks and updates. Image and video generation, logging in, the Studio and the API are offline until then.`; }
     document.documentElement.style.setProperty("--s", S[0]);
     $("#pill").style.setProperty("--s", S[0]); $("#pill-t").textContent = S[1];
     $("#headline").textContent = S[2]; $("#sub").textContent = S[3];
     $("#sign").textContent = S[4]; $("#sign").style.setProperty("--s", S[0]);
-    if (cat && overall !== "ok") Kit.talk(cat.el, overall === "outage" ? "uh oh." : "hmm...", 2200);
+    if (cat && overall !== "ok") Kit.talk(cat.el, overall === "outage" ? "uh oh." : overall === "maintenance" ? "hard at work." : "hmm...", 2200);
   }
   let next = 30;
   setInterval(() => { if (--next <= 0) runChecks(); $("#countdown").textContent = `next check in ${Math.max(0, next)}s`; }, 1000);
@@ -272,12 +290,24 @@
     incidents = d.incidents || []; launched = d.launched || launched;
     const fmt = s => new Date(s).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
     const dur = x => { const m = Math.round((new Date(x.end) - new Date(x.start)) / 60000); return m >= 60 ? `${Math.floor(m / 60)}h ${m % 60}m` : `${m} min`; };
-    $("#incidents").innerHTML = incidents.map(x => `<div class="inc notch" style="--s:${COLORS[x.impact]}">
+    const now = Date.now(), soon = incidents.filter(x => x.impact === "maintenance" && new Date(x.end) > now);
+    const past = incidents.filter(x => !soon.includes(x) && new Date(x.start) <= now);
+    const day = s => new Date(s).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+    const more = x => x.link ? ` <a href="${esc(x.link)}">Read more &rarr;</a>` : "";
+    $("#upcoming-s").hidden = !soon.length;
+    $("#upcoming").innerHTML = soon.map(x => `<div class="inc notch" style="--s:${COLORS.maintenance}">
+      <h3><span class="tag">${new Date(x.start) <= now ? "IN PROGRESS" : "SCHEDULED"}</span>${esc(x.title)}</h3>
+      <div class="when">${day(x.start)} &rarr; ${day(x.end)} &middot; ${x.components.join(", ")}</div>
+      <ol>${x.updates.map(([t, s, m]) => `<li><b>${s}</b>${esc(m)}<span>${fmt(t)}</span></li>`).join("")}</ol>${more(x)}</div>`).join("");
+    const next = soon.find(x => new Date(x.start) > now);
+    $("#sched-banner").innerHTML = next ? `<div class="sched notch"><b>HEADS UP</b> &middot; Scheduled maintenance from ${day(next.start)} to ${day(next.end)}.
+      Image and video generation, logging in, the Studio and the API will be offline.${more(next)}</div>` : "";
+    $("#incidents").innerHTML = past.map(x => `<div class="inc notch" style="--s:${COLORS[x.impact]}">
       <h3><span class="tag">${x.impact.toUpperCase()}</span>${esc(x.title)}</h3>
       <div class="when">${fmt(x.start)} &rarr; ${fmt(x.end)} &middot; ${dur(x)} &middot; ${x.components.join(", ")}</div>
       <ol>${x.updates.map(([t, s, m]) => `<li><b>${s}</b>${esc(m)}<span>${fmt(t)}</span></li>`).join("")}</ol></div>`).join("")
       || '<p class="note">No incidents yet. Long may it last.</p>';
-    if (lastResults) renderComps(lastResults);       // redraw the 90-day bars with the history
+    if (lastResults) { renderComps(lastResults); if (activeMaint() && mood !== "ok") setMood("maintenance"); }   // redraw with the history
   });
 })();
 </script>
