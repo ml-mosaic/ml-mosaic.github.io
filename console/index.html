@@ -14,7 +14,7 @@
 <script src="../config.js"></script>
 <script src="../assets/i18n.js?v=20261116a"></script>
 <script src="../assets/session.js"></script>
-<script src="../assets/kit.js?v=20261119b" data-root="../"></script>
+<script src="../assets/kit.js?v=20261119c" data-root="../"></script>
 <style>
   /* Owner console. Hidden: not linked anywhere, not indexed, and for anyone but the owner the API answers 404 and
      this page shows "not found". The real protection is server-side (every /api/console call is checked). */
@@ -190,7 +190,7 @@
     Kit.nav(""); document.title = "Mosaic · Console";
     $("#app").innerHTML = `<main class="wrap">
       <div class="head"><h1>Console</h1><span class="who">signed in as @${esc(admin)} &middot; owner only</span>
-        <div class="tabs"><button type="button" data-t="users" aria-pressed="true">Accounts</button><button type="button" data-t="models" aria-pressed="false">Models<span class="n" id="n-off" hidden></span></button><button type="button" data-t="patreon" aria-pressed="false">Patreon</button><button type="button" data-t="reports" aria-pressed="false">Reports<span class="n" id="n-rep" hidden></span></button><button type="button" data-t="appeals" aria-pressed="false">Appeals<span class="n" id="n-app" hidden></span></button><button type="button" data-t="safety" aria-pressed="false">Safety</button><button type="button" data-t="audit" aria-pressed="false">Audit log</button></div></div>
+        <div class="tabs"><button type="button" data-t="users" aria-pressed="true">Accounts</button><button type="button" data-t="models" aria-pressed="false">Models<span class="n" id="n-off" hidden></span></button><button type="button" data-t="patreon" aria-pressed="false">Patreon</button><button type="button" data-t="reports" aria-pressed="false">Reports<span class="n" id="n-rep" hidden></span></button><button type="button" data-t="appeals" aria-pressed="false">Appeals<span class="n" id="n-app" hidden></span></button><button type="button" data-t="contrib" aria-pressed="false">Art<span class="n" id="n-art" hidden></span></button><button type="button" data-t="safety" aria-pressed="false">Safety</button><button type="button" data-t="audit" aria-pressed="false">Audit log</button></div></div>
       <div id="users" class="layout">
         <section class="card notch"><div class="search"><input id="q" placeholder="Search username or email" autocomplete="off"></div>
           <div class="list" id="list"></div></section>
@@ -199,12 +199,13 @@
       <section id="patreon" class="card notch" hidden><div id="pt"></div></section>
       <section id="reports" class="card notch" hidden><div class="filter" id="rep-f"></div><div id="rep-list"></div></section>
       <section id="appeals" class="card notch" hidden><div class="filter" id="app-f"></div><div id="app-list"></div></section>
+      <section id="contrib" class="card notch" hidden><div class="filter" id="art-f"></div><div id="art-list"></div></section>
       <section id="safety" class="card notch" hidden><div id="safe"></div></section>
       <section id="audit" class="card notch" hidden><div class="audit" id="audit-list"></div></section></main>`;
     document.body.classList.add("ready");
     document.querySelectorAll(".tabs button").forEach(b => b.onclick = () => {
       document.querySelectorAll(".tabs button").forEach(x => x.setAttribute("aria-pressed", x === b));
-      for (const t of ["users", "models", "audit", "patreon", "reports", "appeals", "safety"]) $("#" + t).hidden = b.dataset.t !== t;
+      for (const t of ["users", "models", "audit", "patreon", "reports", "appeals", "contrib", "safety"]) $("#" + t).hidden = b.dataset.t !== t;
       history.replaceState(null, "", "#" + b.dataset.t);
       if (b.dataset.t === "audit") loadAudit();
       if (b.dataset.t === "models") loadModels();
@@ -212,6 +213,7 @@
       if (b.dataset.t === "reports") loadReports("open");
       if (b.dataset.t === "appeals") loadAppeals("open");
       if (b.dataset.t === "safety") loadSafety();
+      if (b.dataset.t === "contrib") loadArt("pending");
     });
     // the email links land on a tab (console/#reports, #appeals, #safety)
     const startTab = location.hash.slice(1);
@@ -222,6 +224,7 @@
       if (a.ok) set("#n-rep", a.data.open); if (b.ok) set("#n-app", b.data.open);
     };
     counts();
+    api("/api/console/contributions").then(r => { if (r.ok) { const n = r.data.submissions.length; $("#n-art").hidden = !n; $("#n-art").textContent = n; } });
 
     const when = t => new Date(t * 1000).toLocaleString([], { dateStyle: "short", timeStyle: "short" });
     function filters(box, states, cur, load) {
@@ -289,6 +292,39 @@
         toast(accept ? "Accepted: account restored" : "Rejected"); loadAppeals(status); counts();
       });
       $("#app-list").querySelectorAll("[data-open]").forEach(b => b.onclick = () => {
+        document.querySelector('.tabs button[data-t="users"]').click(); $("#q").value = b.dataset.open; loadUsers().then(() => open(b.dataset.open));
+      });
+    }
+    // the data programme: tick the sprites to keep, then accept (unticked ones are declined)
+    async function loadArt(status) {
+      filters("#art-f", ["pending", "accepted", "declined", "withdrawn", "all"], status, loadArt);
+      const r = await api(`/api/console/contributions?status=${status}`);
+      if (!r.ok) return toast(Session.detail(r.data || {}));
+      const L = r.data.submissions;
+      $("#art-list").innerHTML = L.length ? L.map(s => `<div class="rep" style="grid-template-columns:1fr"><div>
+          <h4>@${esc(s.user)} &middot; ${s.items.length} sprite${s.items.length > 1 ? "s" : ""} <span class="chip">${esc(s.status)}</span></h4>
+          <p class="w">sent ${when(s.at)} &middot; consent: own work ${s.consent.own_work ? "yes" : "NO"}, no AI ${s.consent.no_ai ? "yes" : "NO"}, licence ${s.consent.license ? "yes" : "NO"}, credit ${s.consent.public_credit ? "yes" : "no"} &middot; terms ${esc(s.terms)}${s.reviewed_by ? ` &middot; reviewed by @${esc(s.reviewed_by)}` : ""}</p>
+          <div style="display:flex;flex-wrap:wrap;gap:10px;margin:10px 0">${s.items.map((it, i) => `<label style="width:120px;text-align:center;cursor:pointer">
+            <img src="${MOSAIC.backend}/api/contribute/images/${esc(s.id)}/${i}.png" data-auth alt="" style="width:112px;height:112px;object-fit:contain;image-rendering:pixelated;background:#1d1b25;display:block;margin:0 auto">
+            <small style="display:block;font-size:11px;line-height:1.3;margin:4px 0">${esc(it.caption)} <span class="w">${it.w}&times;${it.h} &middot; ${it.colors} colours</span></small>
+            ${s.status === "pending" ? `<input type="checkbox" data-keep="${esc(s.id)}" value="${i}" checked>` : `<span class="chip">${esc(it.status)}</span>`}</label>`).join("")}</div>
+          ${s.status === "pending" ? `<div class="act"><input placeholder="note to them (shown on their page)" data-cnote="${esc(s.id)}" maxlength="300">
+            <button class="btn small" type="button" data-rev="${esc(s.id)}" style="--c:var(--green)">Accept the ticked ones</button>
+            <button class="btn small" type="button" data-rev="${esc(s.id)}" data-none="1" style="--c:var(--bad)">Decline all</button>
+            <button class="btn small ghost" type="button" data-open="${esc(s.user)}">Open @${esc(s.user)}</button></div>` : (s.note ? `<p class="w">Note: ${esc(s.note)}</p>` : "")}</div></div>`).join("")
+        : `<div class="empty">No ${status === "all" ? "" : status} sets.</div>`;
+      $("#art-list").querySelectorAll("img[data-auth]").forEach(async im => {
+        const res = await fetch(im.src, { headers: { authorization: "Bearer " + Session.current().session } });
+        if (res.ok) im.src = URL.createObjectURL(await res.blob()); else im.replaceWith("gone");
+      });
+      $("#art-list").querySelectorAll("[data-rev]").forEach(b => b.onclick = async () => {
+        const sid = b.dataset.rev;
+        const accept = b.dataset.none ? [] : [...document.querySelectorAll(`[data-keep="${sid}"]:checked`)].map(x => +x.value);
+        const r2 = await api(`/api/console/contributions/${sid}`, { json: { accept, note: $(`[data-cnote="${sid}"]`)?.value || "" } });
+        if (!r2.ok) return toast(Session.detail(r2.data || {}));
+        toast(accept.length ? `Accepted ${accept.length}` : "Declined"); loadArt(status);
+      });
+      $("#art-list").querySelectorAll("[data-open]").forEach(b => b.onclick = () => {
         document.querySelector('.tabs button[data-t="users"]').click(); $("#q").value = b.dataset.open; loadUsers().then(() => open(b.dataset.open));
       });
     }
@@ -506,7 +542,8 @@
       if (!r.ok) return toast(Session.detail(r.data || {}));
       const what = e => ({ plan: `plan ${e.old} → ${e.new}`, suspend: `suspended ${e.days} day(s)`, ban: "banned", restore: "restored",
                            purge: `deleted ${e.posts} posts${e.picture ? " + picture" : ""}`, delete_post: `deleted post "${e.prompt}"`,
-                           model_off: "switched the model off", model_on: "switched the model back on" }[e.action] || e.action);
+                           model_off: "switched the model off", model_on: "switched the model back on",
+                           contribution_review: `reviewed art: kept ${e.accepted} of ${e.of}` }[e.action] || e.action);
       $("#audit-list").innerHTML = r.data.entries.length ? r.data.entries.map(e =>
         `<div><span class="w">${new Date(e.at * 1000).toLocaleString([], { dateStyle: "short", timeStyle: "short" })}</span><span>@${esc(e.target)}</span>
           <span>${esc(what(e))}${e.reason ? ` <span class="w">&middot; ${esc(e.reason)}</span>` : ""} <span class="w">&middot; by @${esc(e.by)}</span></span></div>`).join("")

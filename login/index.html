@@ -376,7 +376,7 @@ if (new URLSearchParams(location.search).get("appeal") === "1") addEventListener
 (() => {
   // where to go after signing in: the studio, unless ?next=portal|home|status says otherwise
   const NEXT = { home: "../", portal: "../portal/", status: "../status/", claim: "../claim-my-ticket/", forum: "../forum/", settings: "../settings/",
-                 studio: "../studio/" }[new URLSearchParams(location.search).get("next")] || "../studio/";
+                 contribute: "../contribute/", studio: "../studio/" }[new URLSearchParams(location.search).get("next")] || "../studio/";
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const $ = s => document.querySelector(s), rand = (a, b) => a + Math.random() * (b - a);
   const ACCENT = { autumn: "#e8913a", beach: "#3c9cfc", sunset: "#f87858", snow: "#9cc4fc" };

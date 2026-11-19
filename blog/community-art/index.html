@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Teach Mosaic with your art · Mosaic</title>
+<meta name="description" content="Mosaic only learns from art we made or art people chose to give us. Now pixel artists can give their own sprites, with consent, help train the next models, and earn free Artisan weeks.">
+<meta property="og:title" content="Teach Mosaic with your art"><meta property="og:description" content="Mosaic only learns from art we made or art people chose to give us. Now pixel artists can give their own sprites, with consent, help train the next models, and earn free Artisan weeks."><meta property="og:image" content="https://ml-mosaic.github.io/blog/community-art/cover.png"><meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/svg+xml" sizes="any" href="../../assets/favicon.svg?v=2">
+<link rel="icon" type="image/png" sizes="64x64" href="../../assets/favicon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tiny5&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/kit.css?v=20261116a">
+<script src="../../config.js"></script>
+<script src="../../assets/i18n.js?v=20261116a"></script>
+<script src="../../assets/session.js"></script>
+<script src="../../assets/kit.js?v=20261119c" data-root="../../"></script>
+<script src="../../assets/prices.js?v=20261026g"></script>
+<script src="../../assets/subscribe.js?v=20261101a"></script>
+<style>
+  :root { --acc: #6ee07a; }
+  .progress { position: fixed; left: 0; top: 0; height: 4px; background: var(--acc); z-index: 40; width: 0; }
+  .hero { padding: 64px 0 0; text-align: center; }
+  .hero .meta { display: inline-flex; gap: 12px; align-items: center; font-size: 13px; letter-spacing: 2px; color: var(--dim); flex-wrap: wrap; justify-content: center; }
+  .hero .meta .t { background: var(--acc); color: #000; padding: 3px 9px; }
+  .hero h1 { font-weight: normal; font-size: clamp(50px, 10vw, 128px); line-height: .92; margin: 26px 0 22px; }
+  .hero .dek { font-size: clamp(18px, 2.2vw, 22px); line-height: 1.5; color: #d8d2c4; max-width: 740px; margin: 0 auto 30px; }
+  .hero-shot { max-width: 1100px; margin: 44px auto 0; padding: 0 24px; }
+  .hero-shot img { width: 100%; height: auto; display: block; image-rendering: pixelated; box-shadow: 0 0 0 4px #000, 0 0 0 8px var(--acc); }
+  .reel-l { text-align: center; color: #6f6b62; font-size: 13px; margin: 18px 0 0; }
+  .doc { display: grid; grid-template-columns: 220px minmax(0, 760px); gap: 64px; justify-content: center; padding: 80px 24px 60px; }
+  .toc { position: sticky; top: 92px; align-self: start; font-size: 14px; }
+  .toc p { color: var(--dim); font-size: 12px; letter-spacing: 2px; margin: 0 0 14px; }
+  .toc ol { list-style: none; margin: 0; padding: 0; counter-reset: t; }
+  .toc li { counter-increment: t; margin: 0 0 4px; }
+  .toc a { display: flex; gap: 10px; padding: 7px 10px; text-decoration: none; color: var(--dim); }
+  .toc a::before { content: counter(t, decimal-leading-zero); color: #4a4740; }
+  .toc a:hover { color: var(--fg); } .toc a.on { color: #000; background: var(--acc); } .toc a.on::before { color: #000; }
+  article { font-size: 18px; line-height: 1.7; color: #d8d2c4; min-width: 0; }
+  article h2 { font-weight: normal; font-size: clamp(30px, 4vw, 42px); color: #fff; margin: 84px 0 18px; line-height: 1.1; scroll-margin-top: 90px; }
+  article h2:first-child { margin-top: 0; }
+  article h2 .n { color: var(--acc); font-size: .55em; vertical-align: .45em; margin-right: 10px; }
+  article h3 { font-weight: normal; font-size: 22px; color: #fff; margin: 34px 0 10px; }
+  article p { margin: 0 0 20px; } article b { color: #fff; font-weight: normal; } article a { color: var(--acc); }
+  ul.kinds, ol.steps { padding-left: 0; list-style: none; margin: 0 0 22px; }
+  ul.kinds li { padding: 6px 0 6px 24px; position: relative; }
+  ul.kinds li::before { content: ""; position: absolute; left: 0; top: 17px; width: 10px; height: 10px; background: var(--acc); }
+  ol.steps { counter-reset: s; } ol.steps li { counter-increment: s; display: flex; gap: 14px; margin-bottom: 14px; }
+  ol.steps li::before { content: counter(s); flex: none; width: 30px; height: 30px; display: grid; place-items: center; background: var(--acc); color: #000; font-size: 15px; margin-top: 2px; }
+  .pull { font-size: clamp(24px, 3vw, 30px); line-height: 1.35; color: #fff; margin: 40px 0; padding-left: 22px; box-shadow: inset 6px 0 0 var(--acc); }
+  .callout { background: #0b1a12; padding: 20px 22px; margin: 30px var(--u); --c: var(--green); font-size: 16px; line-height: 1.6; }
+  .callout b { color: var(--green); }
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin: 34px 0; }
+  .stats div { background: var(--panel); padding: 16px; margin: var(--u); }
+  .stats b { display: block; font-size: 26px; color: #fff; } .stats span { color: var(--dim); font-size: 13px; line-height: 1.3; display: block; margin-top: 4px; }
+  .sprites { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin: 30px 0 10px; }
+  .sprites figure { margin: var(--u); background: var(--panel); padding: 10px; }
+  .sprites .two { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .sprites img { width: 100%; aspect-ratio: 1; image-rendering: pixelated; display: block; background: #1a1622; }
+  .sprites figcaption, .clips figcaption { color: var(--dim); font-size: 13px; line-height: 1.4; margin: 10px 2px 2px; }
+  .clips { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin: 30px 0 10px; }
+  .clips figure { margin: var(--u); background: var(--panel); padding: 10px; }
+  .clips img { width: 100%; aspect-ratio: 16 / 9; image-rendering: pixelated; display: block; }
+  .shot { margin: 34px 0 10px; } .shot img { width: 100%; height: auto; display: block; image-rendering: pixelated; box-shadow: 0 0 0 4px #000, 0 0 0 8px #2a2925; }
+  figcaption { color: #8a867b; font-size: 14px; line-height: 1.5; margin-top: 12px; }
+  .share { display: flex; gap: 10px; margin-top: 40px; flex-wrap: wrap; }
+  .tiers2 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 30px 0; }
+  .tiers2 div { background: var(--panel); padding: 16px; margin: var(--u); --c: #2e2838; font-size: 14px; line-height: 1.5; color: var(--dim); }
+  .tiers2 .artisan { --c: #6b3a1c; } .tiers2 .atelier { --c: #2c3c74; }
+  .tiers2 b { display: block; font-size: 20px; margin-bottom: 6px; color: #fff; } .tiers2 .artisan b { color: #e8913a; } .tiers2 .atelier b { color: #fce060; }
+  /* the formal posts: plain, numbered, no jokes */
+  body.formal article { font-size: 17px; }
+  body.formal article h2 { font-size: clamp(26px, 3.2vw, 34px); margin-top: 64px; }
+  body.formal .clause { margin: 0 0 16px; padding-left: 44px; position: relative; }
+  body.formal .clause .no { position: absolute; left: 0; top: 0; color: var(--acc); font-size: 15px; }
+  body.formal .notice { background: #0f1418; padding: 18px 22px; margin: 26px var(--u); --c: var(--acc); font-size: 16px; line-height: 1.6; color: #e2e6ea; }
+  body.formal .notice b { color: var(--acc); }
+  body.formal .sig { color: var(--dim); font-size: 15px; margin-top: 40px; }
+  @media (max-width: 980px) { .doc { grid-template-columns: minmax(0, 1fr); gap: 0; padding-top: 50px; } .toc { display: none; }
+    .stats { grid-template-columns: repeat(2, 1fr); } .sprites { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 640px) { .tiers2, .clips { grid-template-columns: 1fr; } }
+  .update { background: #1d1826; padding: 16px 20px; margin: 0 var(--u) 36px; --c: #e8913a; font-size: 16px; line-height: 1.6; color: #d8d2c4; }
+  .update b { color: #e8913a; font-weight: normal; letter-spacing: 1px; } .update a { color: #fff; }
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+<nav class="topbar" style="--c:var(--acc)"></nav>
+
+<header class="hero">
+  <div class="wrap">
+    <span class="meta"><span class="t">COMMUNITY</span><span>NOVEMBER 19, 2026</span></span>
+    <h1>Teach Mosaic.</h1>
+    <p class="dek">Mosaic has only ever learned from art we drew ourselves. Starting today, pixel artists can give us their own sprites
+      too, with consent, credit and rewards.</p>
+  </div>
+  <div class="hero-shot"><img src="cover.png" alt="a fox, a cat, an owl, a dog, a rabbit and a raccoon gathered at dusk around an easel with a pink heart painted on it" width="1200" height="500"></div>
+  <p class="reel-l">Everyone's welcome at the easel.</p>
+</header>
+
+<div class="doc">
+  <aside class="toc"><p>CONTENTS</p><ol id="toc"><li><a href="#new">What's new</a></li><li><a href="#why">Why</a></li><li><a href="#how">How it works</a></li><li><a href="#what">What we're looking for</a></li><li><a href="#get">What you get</a></li><li><a href="#yours">Your art stays yours</a></li></ol></aside>
+  <article>
+<h2 id="new"><span class="n">01</span>What's new</h2>
+<p>Mosaic has a <b>data programme</b>. If you draw pixel art, you can now send us your own sprites to help train the next
+  Mosaic models. A person on our team looks at every set, accepted sprites go into the next training run, and you get
+  rewarded for it.</p>
+<div class="callout"><b>The short version:</b> send sprites you drew yourself, tick the consent boxes, and get a free week of
+  Artisan for every 25 we accept. Start on the <a href="../../contribute/" style="color:#fff">data programme page</a>.</div>
+
+<h2 id="why"><span class="n">02</span>Why</h2>
+<p>Here's a rule we've kept since m1: <b>Mosaic only learns from art we made, or art people chose to give us.</b> We don't crawl
+  the web for pictures, and we don't download datasets, not even open-source ones. Every sprite, scene and animation our
+  models have ever seen, we drew.</p>
+<p>That rule is the reason you can use what Mosaic makes without wondering whose work it was built on. We're keeping it.</p>
+<p class="pull">But we're a small team, and there are only so many sleeping foxes we can draw.</p>
+<p>The more art a model sees, the more it can do: more poses, more characters, more ideas, more ways to draw a wizard's hat.
+  You've been asking for exactly that. So instead of bending the rule, we're widening the circle: art made by us, and now art
+  given by you, on purpose.</p>
+
+<h2 id="how"><span class="n">03</span>How it works</h2>
+<ol class="steps">
+  <li><span><b>Send a set.</b> Sign in, open the <a href="../../contribute/">data programme page</a>, drop in up to 24 sprites, and
+    write a few words for each one (&ldquo;a white fox curled up asleep&rdquo;).</span></li>
+  <li><span><b>We review it.</b> A real person looks at every sprite. Nothing is used until it's accepted, and you'll see which
+    ones were and any note from the reviewer.</span></li>
+  <li><span><b>It helps train the next models.</b> Accepted sprites go into the next training run, and your page shows which
+    run used them.</span></li>
+</ol>
+
+<h2 id="what"><span class="n">04</span>What we're looking for</h2>
+<h3>Yes, please</h3>
+<ul class="kinds">
+  <li><b>Your own pixel art</b>, from 8 to 256 pixels a side, at actual size (not scaled up). PNG, ideally on a transparent background.</li>
+  <li><b>Animals doing things</b>: sleeping, sitting, curled up, running, eating, stretching.</li>
+  <li><b>Characters</b>: wizards, knights, villagers, adventurers, in all sorts of outfits.</li>
+  <li><b>Things</b>: items, food, plants, furniture, little buildings.</li>
+  <li><b>Any style.</b> The chunky, cozy look fits Mosaic best, but we'd love to see yours.</li>
+</ul>
+<h3>Please don't send</h3>
+<ul class="kinds">
+  <li><b>Anything made or edited with AI</b>, including Mosaic. We only want art made by people.</li>
+  <li><b>Art you traced, copied, or don't own.</b></li>
+  <li><b>Other people's characters, logos or brands</b>, even as fan art.</li>
+  <li><b>Anything sexual, hateful or illegal.</b></li>
+</ul>
+
+<h2 id="get"><span class="n">05</span>What you get</h2>
+<div class="stats" style="grid-template-columns:repeat(3,1fr)">
+  <div style="--c:var(--acc)"><b>25</b><span>accepted sprites earn a free week of Artisan</span></div>
+  <div><b>No cap</b><span>100 accepted sprites is 4 free weeks</span></div>
+  <div><b>Credit</b><span>your name in the release notes, if you want it</span></div>
+</div>
+<p>Your page keeps count, so you can always see how close you are to the next free week. Rewards you've earned are yours to keep.</p>
+
+<h2 id="yours"><span class="n">06</span>Your art stays yours</h2>
+<ul class="kinds">
+  <li><b>You keep the copyright.</b> You give Mosaic permission to use your sprites to train and test its models. That's all.</li>
+  <li><b>We never sell, publish or show your sprites.</b> Only you and our reviewers can see them.</li>
+  <li><b>Change your mind any time.</b> Withdraw a set and it's left out of every training run from then on. A model that already
+    learned from it can't un-learn it, but no future one will. Deleting your account withdraws everything.</li>
+</ul>
+<p>The full wording is in section 11 of the <a href="../../terms/#s11">Terms and Conditions</a>. Questions? Ask us on the
+  <a href="../../forum/">forum</a>.</p>
+<p>Thanks for helping Mosaic learn. We can't wait to see what you draw.</p>
+<div class="share"><a class="btn" href="../../contribute/" style="--c:var(--acc);color:#000">Send your first set</a><a class="btn ghost" href="../../studio/">Open the Studio</a></div>
+  </article>
+</div>
+
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  Kit.nav("Blog");
+  addEventListener("scroll", () => {
+    const h = document.documentElement, p = h.scrollTop / Math.max(1, h.scrollHeight - h.clientHeight);
+    $("#progress").style.width = p * 100 + "%";
+  }, { passive: true });
+  // the contents list follows the reading: the section whose heading last passed a line near the top of the screen
+  // (the first one before any has; the last one once the page can't scroll further)
+  const links = [...document.querySelectorAll("#toc a")];
+  const heads = links.map(a => document.getElementById(a.getAttribute("href").slice(1))).filter(Boolean);
+  let current = null, locked = 0;
+  const mark = id => { if (id === current) return; current = id; links.forEach(a => a.classList.toggle("on", a.getAttribute("href") === "#" + id)); };
+  const spy = () => {
+    if (!heads.length || Date.now() < locked) return;
+    const h = document.documentElement, line = Math.min(160, innerHeight * 0.25);
+    if (h.scrollTop + innerHeight >= h.scrollHeight - 4) return mark(heads[heads.length - 1].id);
+    let id = heads[0].id;
+    for (const el of heads) if (el.getBoundingClientRect().top - line <= 0) id = el.id;
+    mark(id);
+  };
+  links.forEach(a => a.addEventListener("click", () => {                 // a click shows its section at once
+    mark(a.getAttribute("href").slice(1)); locked = Date.now() + 900; setTimeout(spy, 950);
+  }));
+  addEventListener("scroll", spy, { passive: true });
+  addEventListener("resize", spy);
+  spy();
+
+})();
+</script>
+</body>
+</html>

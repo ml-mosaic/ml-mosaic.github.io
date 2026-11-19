@@ -13,7 +13,7 @@
 <script src="config.js"></script>
 <script src="assets/i18n.js?v=20261116a"></script>
 <script src="assets/session.js"></script>
-<script src="assets/kit.js?v=20261119b" data-root=""></script>
+<script src="assets/kit.js?v=20261119c" data-root=""></script>
 <script src="assets/prices.js?v=20261026g"></script>
 <script src="assets/subscribe.js?v=20261101a"></script>
 <style>
@@ -126,7 +126,7 @@
 
   /* ---------------------------------------------------------------- HUD */
   .hud { background: #0b0910; padding: 22px 0; box-shadow: 0 -4px 0 0 #000, 0 4px 0 0 #000; }
-  .hud .wrap { display: grid; grid-template-columns: 2.2fr repeat(4, 1fr); gap: 22px; align-items: center; }
+  .hud .wrap { display: grid; grid-template-columns: 2.2fr repeat(5, 1fr); gap: 22px; align-items: center; }
   .hud .stat { font-size: 13px; color: #8f86a0; letter-spacing: 1px; }
   .hud .stat b { display: block; font-weight: normal; color: #fff; font-size: 26px; letter-spacing: 0; margin-top: 4px; }
   .hud .xp { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
@@ -172,7 +172,24 @@
   @media (max-width: 520px) { .next-row { grid-template-columns: 1fr; } }
 
   /* ---------------------------------------------------------------- plans */
+  #trained { background: #120e18; }
+  .trained { display: grid; grid-template-columns: 1.1fr 1fr; gap: 26px; align-items: start; }
+  .promise { background: #19141f; margin: var(--u); padding: 22px 24px; --c: #2e2838; }
+  .promise ul { list-style: none; margin: 0; padding: 0; }
+  .promise li { padding: 9px 0 9px 26px; position: relative; color: #d8d2c4; font-size: 16px; line-height: 1.5; }
+  .promise li::before { content: ""; position: absolute; left: 0; top: 16px; width: 10px; height: 10px; background: var(--green); }
+  .promise li.x::before { background: #f87898; }
+  .promise b { color: #fff; font-weight: normal; }
+  .give { background: #16201a; margin: var(--u); padding: 22px 24px; --c: #2a5a36; }
+  .give h3 { font-weight: normal; font-size: 24px; margin: 0 0 8px; color: var(--green); }
+  .give p { color: #c8d8c8; margin: 0 0 16px; line-height: 1.55; }
   #plans { background: #0f0c15; }
+  .bigs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin: 0 0 10px; }
+  .big-n { background: #19141f; margin: var(--u); padding: 18px 20px; --c: #2e2838; }
+  .big-n b { display: block; font-weight: normal; font-size: clamp(30px, 4vw, 44px); color: var(--t, #fff); line-height: 1; }
+  .big-n span { color: #b9b4a8; font-size: 15px; line-height: 1.4; display: block; margin-top: 8px; }
+  .tier .month { color: var(--t); font-size: 14px; margin-top: -8px; }
+  @media (max-width: 800px) { .trained, .bigs { grid-template-columns: 1fr; } }
   .tiers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; align-items: stretch; margin-top: 70px; }
   .tiers > * { min-width: 0; }
   .tier { background: #120f17; margin: var(--u); padding: 0 22px 24px; display: flex; flex-direction: column; gap: 14px; --c: #2e2838; position: relative; }
@@ -304,6 +321,7 @@
       <a href="studio/">Studio</a>
       <a class="opt" href="forum/">Forum</a>
       <a class="opt" href="blog/">Blog</a>
+      <a class="opt" href="contribute/">Contribute</a>
       <a class="opt" href="portal/">Dev portal</a>
       <a class="opt" href="status/">Status</a>
       <a id="nav-me" href="login/">Sign in</a>
@@ -348,6 +366,7 @@
     <div class="stat">MODELS<b>m1 + v1</b></div>
     <div class="stat">SPRITES<b>64&times;64</b></div>
     <div class="stat">SCENES<b>16:9 &middot; 12 fps</b></div>
+    <div class="stat">TRAINED ON<b>our own art</b></div>
     <div class="stat">FREE PER DAY<b>15</b></div>
   </div>
 </div>
@@ -397,28 +416,56 @@
   </div>
 </section>
 
+<section id="trained">
+  <div class="wrap">
+    <span class="tag" style="--c:var(--green)">HOW IT LEARNED</span>
+    <h2>Trained on art we made. Nothing taken.</h2>
+    <p class="lede">Every Mosaic model learns only from art we drew ourselves or art our community chose to give us.
+      So everything you make with it is built on art that was ours to use.</p>
+    <div class="trained">
+      <div class="promise notch"><ul>
+        <li><b>Our own art.</b> We draw the training sprites, scenes and animations ourselves, in-house.</li>
+        <li><b>Community art, with consent.</b> Artists give us their own sprites, can see what we used, and can take them back.</li>
+        <li class="x"><b>No scraped artwork.</b> We don't crawl the web for pictures.</li>
+        <li class="x"><b>No downloaded datasets.</b> Not even open-source ones.</li>
+      </ul></div>
+      <div class="give notch">
+        <h3>Draw pixel art?</h3>
+        <p>Give us your own sprites and help train the next models. Every 25 sprites we accept earns you a free week of
+          Artisan, and your art stays yours.</p>
+        <a class="btn small" href="contribute/" style="--c:var(--green)">Join the data programme</a>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section id="plans">
   <div class="wrap">
     <span class="tag" style="--c:#e8913a">PLANS</span>
-    <h2>Free to start. More when you need it.</h2>
-    <p class="lede">Everyone gets m1 and 15 generations a day. The plans add more of everything, a Creator Studio,
-      and the right to sell what you make.</p>
+    <h2>Seriously generous.</h2>
+    <p class="lede">No credits, no tokens, no top-ups. You get a daily allowance that refills every single day, and
+      free accounts never expire.</p>
+    <div class="bigs">
+      <div class="big-n notch" style="--t:#b9b0c8"><b>450</b><span>sprites a month on Free. Yes, free, forever.</span></div>
+      <div class="big-n notch" style="--t:#e8913a"><b>7,500</b><span>sprites a month on Artisan, with commercial use and a free trial.</span></div>
+      <div class="big-n notch" style="--t:#fce060"><b>15,000</b><span>sprites plus 1,500 animated clips a month on Atelier.</span></div>
+    </div>
     <div class="tiers">
       <div class="tier notch free"><div class="stage" id="stage-free"></div>
-        <div class="nm">Free</div><div class="price"><span data-price="free">S$0</span></div><div class="per">15 <small>generations a day</small></div>
+        <div class="nm">Free</div><div class="price"><span data-price="free">S$0</span></div><div class="per">15 <small>generations a day</small></div><div class="month">about 450 a month</div>
         <ul><li>m1 sprites</li><li>The Studio and the API</li><li>Personal use</li>
           <li class="no">Creator Studio</li><li class="no">v1 animated scenes</li></ul>
         <div class="go"><a class="btn small" href="login/#signup" id="tier-free" data-cta="free" style="--c:#b9b0c8">Start free</a></div>
       </div>
       <div class="tier notch artisan"><div class="stage" id="stage-artisan"></div>
         <div class="nm">Artisan</div><div class="price"><span data-price="artisan">S$5</span> <small>/ month</small></div><div class="trial">Free trial available</div>
-        <div class="per">250 <small>generations a day</small></div>
+        <div class="per">250 <small>generations a day</small></div><div class="month">about 7,500 a month</div>
         <ul><li>Everything in Free</li><li>Creator Studio workspace: exact creativity, fixed seeds</li><li>Batches of 4 sprites at once</li>
           <li>Commercial use: sell what you make</li><li>Priority in the queue</li><li>Express: 5 super-fast goes a day</li><li>Gift a friend a week</li></ul>
         <div class="go"><a class="btn small" href="join/?tier=artisan" data-cta="artisan" data-subscribe="artisan" data-mode="join" style="--c:var(--t)">Start free trial</a></div>
       </div>
       <div class="tier notch atelier"><span class="ribbon">INCLUDES v1</span><div class="stage" id="stage-atelier"></div>
-        <div class="nm">Atelier</div><div class="price"><span data-price="atelier">S$15</span> <small>/ month</small></div><div class="per">500 <small>sprites + 50 clips a day</small></div>
+        <div class="nm">Atelier</div><div class="price"><span data-price="atelier">S$15</span> <small>/ month</small></div><div class="per">500 <small>sprites + 50 clips a day</small></div><div class="month">about 15,000 sprites + 1,500 clips a month</div>
         <ul><li>Everything in Artisan</li><li>50 v1 clips a day: 16:9 animated scenes</li><li>Batches of 8 sprites and 4 clips</li><li>Line up 10 prompts at once</li><li>Top priority in the queue</li><li>Express: 15 super-fast goes a day</li>
           <li>Commercial use: sell what you make</li><li>New models first</li></ul>
         <div class="go"><a class="btn small" href="join/?tier=atelier" data-cta="atelier" data-subscribe="atelier" data-mode="join" style="--c:var(--t)">Join Atelier</a></div>
@@ -510,7 +557,7 @@ curl <span id="code-url"></span>/api/generate \
 
 <footer id="footer">
   <div class="wrap"><span>&copy; Mosaic &middot; <span id="foot-step"></span><small class="disclaimer">Mosaic is not affiliated with MosaicML, which is a Databricks company.</small></span>
-    <span><a href="studio/">studio</a> &middot; <a href="blog/">blog</a> &middot; <a href="portal/">dev portal</a> &middot; <a href="status/">status</a> &middot; <a href="login/">sign in</a> &middot; <a href="#top">back to top &uarr;</a></span></div>
+    <span><a href="studio/">studio</a> &middot; <a href="blog/">blog</a> &middot; <a href="portal/">dev portal</a> &middot; <a href="status/">status</a> &middot; <a href="contribute/">contribute art</a> &middot; <a href="login/">sign in</a> &middot; <a href="#top">back to top &uarr;</a></span></div>
 </footer>
 
 <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Sprite">

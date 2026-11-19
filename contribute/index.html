@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mosaic · Teach Mosaic with your art</title>
+<meta name="description" content="Mosaic only learns from art we made or art people chose to give us. Give your own pixel art, with consent, and earn free Artisan weeks.">
+<link rel="icon" type="image/svg+xml" sizes="any" href="../assets/favicon.svg?v=2">
+<link rel="icon" type="image/png" sizes="64x64" href="../assets/favicon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tiny5&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/kit.css?v=20261116a">
+<script src="../config.js"></script>
+<script src="../assets/i18n.js?v=20261116a"></script>
+<script src="../assets/session.js"></script>
+<script src="../assets/kit.js?v=20261119c" data-root="../"></script>
+<style>
+  main { padding: 50px 0 90px; max-width: 900px; }
+  .kicker { color: var(--green); letter-spacing: 3px; font-size: 13px; margin: 0 0 10px; }
+  h1 { font-weight: normal; font-size: clamp(34px, 5vw, 52px); margin: 0 0 14px; line-height: 1.05; }
+  .dek { color: #b9b4a8; font-size: 18px; line-height: 1.55; margin: 0 0 30px; max-width: 720px; }
+  h2 { font-weight: normal; font-size: 26px; margin: 46px 0 12px; }
+  p, li { color: #d8d2c4; line-height: 1.65; font-size: 16px; }
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 10px 0; }
+  .step { background: var(--panel); padding: 18px; margin: var(--u); }
+  .step b { display: block; color: var(--green); font-size: 13px; letter-spacing: 2px; margin-bottom: 6px; }
+  .step p { margin: 0; font-size: 15px; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .box { background: var(--panel); padding: 18px 20px; margin: var(--u); }
+  .box h3 { font-weight: normal; font-size: 19px; margin: 0 0 8px; }
+  .box ul { margin: 0; padding-left: 18px; }
+  .box.yes h3 { color: var(--green); } .box.no h3 { color: #f87898; }
+  .reward { --c: var(--yellow); background: #2a2616; padding: 18px 20px; margin: var(--u); }
+  .reward b { color: var(--yellow); }
+  /* the uploader */
+  #gate { background: var(--panel); padding: 22px; margin: var(--u); text-align: center; }
+  #form { display: none; }
+  .drop { border: 3px dashed #5a5470; padding: 30px 16px; text-align: center; color: var(--dim); cursor: pointer; }
+  .drop.over { border-color: var(--green); color: #fff; }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; margin: 14px 0; }
+  .tile { background: var(--panel); padding: 10px; position: relative; }
+  .tile .pic { height: 120px; display: flex; align-items: center; justify-content: center;
+               background: repeating-conic-gradient(#2e2a3c 0% 25%, #26232f 0% 50%) 50% / 16px 16px; }
+  .tile img { image-rendering: pixelated; max-width: 100%; max-height: 112px; }
+  .tile .sz { color: var(--dim); font-size: 12px; margin: 6px 0 4px; }
+  .tile input { width: 100%; box-sizing: border-box; }
+  .tile .x { position: absolute; top: 6px; right: 8px; background: none; border: 0; color: #f87898; font: inherit; cursor: pointer; font-size: 18px; }
+  .tile.bad { outline: 3px solid #f87898; }
+  .tile .err { color: #f87898; font-size: 12px; margin-top: 4px; }
+  .consent { background: var(--panel); padding: 16px 18px; margin: var(--u); }
+  .consent label { display: flex; gap: 10px; align-items: flex-start; margin: 8px 0; color: #d8d2c4; line-height: 1.5; cursor: pointer; }
+  .consent input { margin-top: 5px; }
+  .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-top: 14px; }
+  .row .count { color: var(--dim); font-size: 14px; }
+  /* my sets */
+  .meter { background: var(--panel); padding: 14px 18px; margin: var(--u); }
+  .meter .track { height: 12px; background: #1d1b25; margin-top: 8px; }
+  .meter .fill { height: 100%; background: var(--yellow); width: 0; }
+  .set { background: var(--panel); padding: 14px 16px; margin: 14px var(--u); }
+  .set .top { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; align-items: baseline; }
+  .set .st { font-size: 13px; letter-spacing: 1px; }
+  .st.pending { color: var(--yellow); } .st.accepted { color: var(--green); } .st.declined { color: #f87898; } .st.withdrawn { color: var(--dim); }
+  .set .thumbs { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0 6px; }
+  .set .thumbs figure { margin: 0; width: 64px; text-align: center; }
+  .set .thumbs img { width: 64px; height: 64px; object-fit: contain; image-rendering: pixelated; background: #1d1b25; }
+  .set .thumbs figcaption { font-size: 10px; letter-spacing: 1px; margin-top: 2px; }
+  .set .note { color: var(--dim); font-size: 14px; margin: 4px 0 0; }
+  .small { color: var(--dim); font-size: 13px; margin-top: 40px; }
+  @media (max-width: 760px) { .steps, .two { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<nav class="topbar" style="--c:var(--green)"></nav>
+<main class="wrap">
+  <p class="kicker">DATA PROGRAMME</p>
+  <h1>Teach Mosaic with your art</h1>
+  <p class="dek">Mosaic's models only learn from art we made ourselves or art people chose to give us. No scraped
+    artwork, no downloaded datasets, nobody's work taken without asking. If you draw pixel art, you can help the next
+    models get better, and get rewarded for it.</p>
+
+  <div class="steps">
+    <div class="step notch"><b>1 &middot; SEND</b><p>Upload sprites you drew yourself, each with a few words saying what it is.</p></div>
+    <div class="step notch"><b>2 &middot; REVIEW</b><p>A person on our team looks at every set. Nothing is used until it's accepted.</p></div>
+    <div class="step notch"><b>3 &middot; TRAIN</b><p>Accepted sprites go into the next training run. Your page shows which run used them.</p></div>
+  </div>
+
+  <h2>What we're looking for</h2>
+  <div class="two">
+    <div class="box notch yes"><h3>Yes, please</h3>
+      <ul><li>Your own pixel art: sprites from 8 to 256 pixels a side, at actual size (not scaled up)</li>
+        <li>PNG, ideally on a transparent background</li>
+        <li>Animals in all sorts of poses: sleeping, sitting, running, curled up</li>
+        <li>Characters (wizards, knights, villagers), items, plants, food, furniture</li>
+        <li>Any style. The chunky, cozy look fits Mosaic best</li></ul></div>
+    <div class="box notch no"><h3>Please don't send</h3>
+      <ul><li>Anything made with AI, including Mosaic</li>
+        <li>Art you traced, copied, or don't own</li>
+        <li>Other people's characters, logos or brands (fan art)</li>
+        <li>Anything sexual, hateful or illegal</li></ul></div>
+  </div>
+
+  <h2>What you get</h2>
+  <div class="reward notch">
+    <p style="margin:0"><b>A free week of Artisan for every 25 sprites we accept.</b> No cap. Plus, if you want, your name in
+      the release notes of the models your art helped train.</p>
+  </div>
+
+  <h2>Your art stays yours</h2>
+  <ul>
+    <li><b>You keep the copyright.</b> You give Mosaic permission to use your sprites to train and test its models. That's all.</li>
+    <li><b>We never sell, publish or show your sprites.</b> Only you and our reviewers can see them.</li>
+    <li><b>Change your mind any time.</b> Withdraw a set and it's left out of every training run from then on. (A model that
+      already learned from it can't un-learn it, but no future one will.) Deleting your account withdraws everything.</li>
+  </ul>
+
+  <h2 id="send">Send a set</h2>
+  <div id="gate" class="notch"><p style="margin:0 0 12px">Sign in to send sprites and see your sets.</p>
+    <a class="btn small" href="../login/?next=contribute" style="--c:var(--green)">Sign in</a>
+    <a class="btn small ghost" href="../login/#signup">Make a free account</a></div>
+
+  <div id="form">
+    <div class="drop" id="drop" tabindex="0" role="button" aria-label="Add sprites">Drop PNG sprites here, or click to pick files<br>
+      <small>up to 24 at a time &middot; 150 KB each</small></div>
+    <input type="file" id="files" accept="image/png,image/webp,image/gif" multiple hidden>
+    <div class="tiles" id="tiles"></div>
+    <div class="consent notch">
+      <label><input type="checkbox" id="c-own"> I drew every one of these sprites myself, and they're mine to give.</label>
+      <label><input type="checkbox" id="c-ai"> None of them were made or edited with AI.</label>
+      <label><input type="checkbox" id="c-lic"> Mosaic may use them to train and test its models. I keep my copyright and can withdraw them any time.</label>
+      <label><input type="checkbox" id="c-credit"> Credit me by name in the release notes (optional).</label>
+    </div>
+    <div class="row"><button class="btn" id="send-btn" type="button" style="--c:var(--green)">Send for review</button><span class="count" id="count"></span></div>
+
+    <h2>Your sets</h2>
+    <div class="meter notch" id="meter"></div>
+    <div id="sets"></div>
+  </div>
+
+  <p class="small">Last updated 19 November 2026. This page is a friendly summary: the binding text is in the
+    <a href="../terms/">Terms and Conditions</a>. Questions? Ask on the <a href="../forum/">forum</a>.</p>
+</main>
+<script>
+Kit.nav("");
+(() => {
+  const $ = id => document.getElementById(id);
+  const MAX = 24, MAX_BYTES = 150000;
+  let items = [];                                   // {data, w, h, caption, err}
+
+  function readFile(f) {
+    return new Promise(res => {
+      if (f.size > MAX_BYTES) return res({ err: "over 150 KB", name: f.name });
+      const r = new FileReader();
+      r.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+          const w = img.naturalWidth, h = img.naturalHeight;
+          const err = Math.min(w, h) < 8 || Math.max(w, h) > 256 ? `${w}x${h}: needs 8 to 256 px a side, at 1x` : "";
+          const guess = f.name.replace(/\.[a-z0-9]+$/i, "").replace(/[_-]+/g, " ").replace(/\d+/g, "").trim();
+          res({ data: r.result, w, h, caption: guess.length > 2 ? guess : "", err });
+        };
+        img.onerror = () => res({ err: "not a picture", name: f.name });
+        img.src = r.result;
+      };
+      r.readAsDataURL(f);
+    });
+  }
+
+  async function add(files) {
+    const list = [...files].slice(0, MAX - items.length);
+    if (files.length > list.length) Kit.toast(`Up to ${MAX} sprites at a time`);
+    for (const f of list) {
+      const it = await readFile(f);
+      if (!it.data) { Kit.toast(`${it.name}: ${it.err}`); continue; }
+      items.push(it);
+    }
+    paint();
+  }
+
+  function paint() {
+    const box = $("tiles");
+    box.innerHTML = "";
+    items.forEach((it, i) => {
+      const t = document.createElement("div");
+      t.className = "tile notch" + (it.err ? " bad" : "");
+      t.innerHTML = `<button class="x" type="button" aria-label="Remove">&times;</button><div class="pic"><img alt=""></div>
+        <div class="sz">${it.w}&times;${it.h}</div><input type="text" maxlength="200" placeholder="What is it? e.g. a fox sleeping">
+        ${it.err ? `<div class="err">${Kit.esc(it.err)}</div>` : ""}`;
+      const img = t.querySelector("img");
+      img.src = it.data;
+      const k = Math.max(1, Math.floor(112 / Math.max(it.w, it.h)));
+      img.style.width = it.w * k + "px";
+      const inp = t.querySelector("input");
+      inp.value = it.caption;
+      inp.oninput = () => { it.caption = inp.value; };
+      t.querySelector(".x").onclick = () => { items.splice(i, 1); paint(); };
+      box.appendChild(t);
+    });
+    $("count").textContent = items.length ? `${items.length} sprite${items.length > 1 ? "s" : ""}` : "";
+  }
+
+  const drop = $("drop"), files = $("files");
+  drop.onclick = () => files.click();
+  drop.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); files.click(); } };
+  files.onchange = () => { add(files.files); files.value = ""; };
+  drop.ondragover = e => { e.preventDefault(); drop.classList.add("over"); };
+  drop.ondragleave = () => drop.classList.remove("over");
+  drop.ondrop = e => { e.preventDefault(); drop.classList.remove("over"); add(e.dataTransfer.files); };
+
+  $("send-btn").onclick = async () => {
+    if (!items.length) return Kit.toast("Add some sprites first");
+    if (items.some(it => it.err)) return Kit.toast("Remove the sprites marked in pink first");
+    const blank = items.findIndex(it => (it.caption || "").trim().length < 3);
+    if (blank >= 0) return Kit.toast(`Sprite ${blank + 1} needs a short description`);
+    if (!$("c-own").checked || !$("c-ai").checked || !$("c-lic").checked) return Kit.toast("Please tick the three consent boxes");
+    const btn = $("send-btn");
+    btn.disabled = true; btn.textContent = "Sending...";
+    const r = await Session.api("/api/contribute", { json: {
+      items: items.map(it => ({ image: it.data, caption: it.caption.trim() })),
+      consent: { own_work: true, no_ai: true, license: true, public_credit: $("c-credit").checked } } });
+    btn.disabled = false; btn.textContent = "Send for review";
+    if (!r.ok) return Kit.alert(r.data?.detail || "something went wrong", { title: "Not sent" });
+    items = []; paint();
+    ["c-own", "c-ai", "c-lic", "c-credit"].forEach(id => $(id).checked = false);
+    Kit.confetti();
+    Kit.toast("Sent! We'll review it soon.");
+    loadSets();
+  };
+
+  // thumbnails need the sign-in header, so they're fetched as blobs
+  async function thumb(img, sid, i) {
+    const s = JSON.parse(localStorage.getItem("mosaic-session") || sessionStorage.getItem("mosaic-session") || "null");
+    try {
+      const res = await fetch(`${MOSAIC.backend}/api/contribute/images/${sid}/${i}.png`, { headers: s ? { authorization: "Bearer " + s.session } : {} });
+      if (res.ok) img.src = URL.createObjectURL(await res.blob());
+    } catch (_) {}
+  }
+
+  async function loadSets() {
+    const r = await Session.api("/api/contribute/mine");
+    if (!r.ok) return;
+    const d = r.data, have = d.accepted % d.reward_every;
+    $("meter").innerHTML = `<div><b>${d.accepted}</b> sprite${d.accepted === 1 ? "" : "s"} accepted &middot;
+      ${d.next_reward_in} more for your next free Artisan week</div><div class="track"><div class="fill" style="width:${100 * have / d.reward_every}%"></div></div>`;
+    const box = $("sets");
+    box.innerHTML = d.submissions.length ? "" : `<p style="color:var(--dim)">Nothing sent yet.</p>`;
+    for (const s of d.submissions) {
+      const el = document.createElement("div");
+      el.className = "set notch";
+      const ok = s.items.filter(i => i.status === "accepted").length;
+      const label = s.status === "accepted" ? `ACCEPTED &middot; ${ok} of ${s.items.length}` : s.status.toUpperCase();
+      el.innerHTML = `<div class="top"><span>${s.items.length} sprite${s.items.length > 1 ? "s" : ""} &middot; sent ${Kit.ago(s.at)}</span>
+        <span class="st ${s.status}">${label}</span></div><div class="thumbs"></div>
+        ${s.note ? `<p class="note">From the reviewer: ${Kit.esc(s.note)}</p>` : ""}
+        ${s.used_in.length ? `<p class="note">Used in: ${s.used_in.map(Kit.esc).join(", ")}</p>` : ""}
+        ${s.status !== "withdrawn" ? `<div class="row"><button class="btn small ghost" type="button">Withdraw</button></div>` : ""}`;
+      const th = el.querySelector(".thumbs");
+      s.items.forEach((it, i) => {
+        const f = document.createElement("figure");
+        f.innerHTML = `<img alt=""><figcaption class="st ${it.status}">${it.status === "pending" ? "" : it.status.toUpperCase()}</figcaption>`;
+        f.title = it.caption;
+        thumb(f.querySelector("img"), s.id, i);
+        th.appendChild(f);
+      });
+      const w = el.querySelector(".row button");
+      if (w) w.onclick = async () => {
+        if (!await Kit.confirm("It will be left out of every training run from now on.", { title: "Withdraw this set?", ok: "Withdraw", danger: true })) return;
+        const x = await Session.api(`/api/contribute/${s.id}/withdraw`, { method: "POST" });
+        if (x.ok) { Kit.toast("Withdrawn"); loadSets(); } else Kit.toast(x.data?.detail || "couldn't withdraw");
+      };
+      box.appendChild(el);
+    }
+  }
+
+  Kit.whoami().then(u => {
+    if (!u) return;
+    $("gate").style.display = "none";
+    $("form").style.display = "block";
+    loadSets();
+  });
+})();
+</script>
+</body>
+</html>
