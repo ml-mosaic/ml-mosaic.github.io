@@ -95,6 +95,25 @@
   .box textarea::placeholder { color: #57506a; }
   .controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
   .controls .spacer { flex: 1; }
+  /* exact controls (v, c and s series): settings + a reference picture, drawn from the model's "controls" */
+  .ctl { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px 10px; }
+  .ctl.classic { margin-top: 12px; padding-top: 12px; border-top: 2px solid #221d2c; }
+  .ctl .crow { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: #8f86a0; }
+  .ctl select { background: #1d1826; color: #e8e4f0; border: 0; padding: 7px 8px; font: inherit; font-size: 13px; box-shadow: inset 0 0 0 2px #2e2838; }
+  .ctl select:focus-visible { outline: 2px solid var(--yellow); }
+  .ctl .refrow { grid-column: 1 / -1; display: grid; grid-template-columns: 88px 1fr; gap: 6px 10px; align-items: center; }
+  .ctl .refrow .clbl { grid-column: 1 / -1; font-size: 12px; color: #8f86a0; }
+  .ctl .refdrop { width: 88px; height: 88px; display: grid; place-items: center; text-align: center; cursor: pointer; font-size: 11px; color: #8f86a0;
+                  background: repeating-conic-gradient(#1d1826 0 25%, #241e2e 0 50%) 0 0 / 12px 12px; box-shadow: inset 0 0 0 2px #3a3446; padding: 4px; }
+  .ctl .refdrop.over, .ctl .refdrop:hover { box-shadow: inset 0 0 0 2px var(--yellow); color: #fff; }
+  .ctl .refdrop img { max-width: 100%; max-height: 100%; image-rendering: pixelated; }
+  .ctl .refbtns { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; font-size: 12px; color: #6f6880; }
+  .ctl .refbtns button { background: #1d1826; border: 0; color: #d8d0e8; padding: 6px 10px; font: inherit; font-size: 12px; cursor: pointer; }
+  .ctl .refbtns button:hover { background: #2a2433; }
+  .minepick .mgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: 6px; max-height: 50vh; overflow-y: auto; margin: 12px 0; }
+  .minepick .mgrid button { background: #1d1826; border: 0; padding: 4px; cursor: pointer; aspect-ratio: 1; }
+  .minepick .mgrid button:hover, .minepick .mgrid button:focus-visible { box-shadow: inset 0 0 0 2px var(--yellow); outline: none; }
+  .minepick .mgrid img { width: 100%; height: 100%; image-rendering: pixelated; object-fit: contain; }
   .seg { display: flex; gap: 4px; }
   .kinds button { display: flex; align-items: center; gap: 7px; }
   .kinds button small { font-size: 9px; letter-spacing: 1.5px; padding: 1px 5px; background: #24212b; color: #8f86a0; }
@@ -421,6 +440,7 @@
           <span class="left" id="left" title="Generations left today (resets at 00:00 UTC)"></span>
           <button class="btn" id="create" type="button" style="--c:var(--pink)">Create</button>
         </div>
+        <div class="ctl classic" id="ctl" hidden></div>
       </div>
       <div class="signin-cta" id="signin-cta" hidden><span>Sign in to make your own sprites, like, and follow people.</span>
         <a class="btn" href="../login/?next=studio" style="--c:var(--pink)">Sign in</a></div>
@@ -449,6 +469,7 @@
         <div class="plist" id="ws-prompts"></div>
         <button class="padd" id="ws-add" type="button">+ another prompt</button>
         <p class="pnote" id="ws-pnote"></p></section>
+      <section class="ws-sec" id="ws-ctl-sec" hidden><h3>CONTROLS <em id="ws-ctl-model"></em></h3><div class="ctl" id="ws-ctl"></div></section>
       <section class="ws-sec"><h3>SETTINGS</h3>
         <div class="srow"><span title="0 = follow your words closely, 1 = loosest">Creativity</span><b id="ws-cr-out">0.50</b></div>
         <input type="range" id="ws-cr" min="0" max="100" value="50" aria-label="Creativity">
@@ -781,6 +802,7 @@
     paintKinds();
     $("#prompt").placeholder = placeholders[md] || placeholders.image;
     showQuota();                                  // clips and sprites have separate allowances
+    paintControls();
     if (me) expressForModel();
   }
   // the menu's sections (Creator Studio): the best of each kind on top; the rest of this generation ("Models") and the first
@@ -893,6 +915,84 @@
     }
     await slowWarning();
   }
+  // ---------------------------------------------------------------- exact controls (v, c and s series)
+  // The server says what each model can be told (/api/models "controls"): settings (motion, camera, weather, shape...)
+  // and a reference picture (a sprite to animate, a character to star). Kept per model while the page is open.
+  var ctlState = {};
+  const ctlOf = id => (ctlState[id] ||= { settings: {}, ref: null });
+  function paintControls() {
+    const m = models[model], list = m?.controls || [], box = pro ? $("#ws-ctl") : $("#ctl"), sec = pro ? $("#ws-ctl-sec") : box;
+    if (!box) return;
+    sec.hidden = !list.length;
+    if (!list.length) { box.innerHTML = ""; return; }
+    if (pro) $("#ws-ctl-model").textContent = m.name;
+    const st = ctlOf(model);
+    box.innerHTML = list.map(c => c.type === "image"
+      ? `<div class="refrow"><span class="clbl">${esc(c.label)}${c.hint ? ` &middot; <span style="color:#6f6880">${esc(c.hint)}</span>` : ""}</span>
+          <div class="refdrop" tabindex="0" role="button" aria-label="${esc(c.label)}: choose a picture">${st.ref ? `<img src="${st.ref}" alt="your picture">` : "Drop, paste or click"}</div>
+          <div class="refbtns"><button type="button" data-ref="mine">Use one of my sprites</button>${st.ref ? `<button type="button" data-ref="clear">Remove picture</button>` : `<span>optional</span>`}</div>
+          <input type="file" accept="image/png,image/jpeg,image/webp" hidden></div>`
+      : `<label class="crow"><span>${esc(c.label)}</span><select data-c="${esc(c.id)}">${c.options.map(([v, l]) =>
+          `<option value="${esc(v)}"${(st.settings[c.id] || "") === v ? " selected" : ""}>${esc(l)}</option>`).join("")}</select></label>`).join("");
+    box.querySelectorAll("select[data-c]").forEach(sel => sel.onchange = () => { st.settings[sel.dataset.c] = sel.value; });
+    const drop = box.querySelector(".refdrop"), file = box.querySelector("input[type=file]");
+    if (!drop) return;
+    drop.onclick = () => file.click();
+    drop.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); file.click(); } };
+    file.onchange = () => { if (file.files[0]) takeRef(file.files[0]); };
+    drop.ondragover = e => { e.preventDefault(); drop.classList.add("over"); };
+    drop.ondragleave = () => drop.classList.remove("over");
+    drop.ondrop = e => { e.preventDefault(); drop.classList.remove("over"); const f = e.dataTransfer.files[0]; if (f) takeRef(f); };
+    box.querySelector('[data-ref="clear"]')?.addEventListener("click", () => { st.ref = null; paintControls(); });
+    box.querySelector('[data-ref="mine"]').onclick = pickMine;
+  }
+  const takesRef = () => (models[model]?.controls || []).some(c => c.type === "image");
+  addEventListener("paste", e => {                           // paste a picture anywhere on the page
+    if (!takesRef()) return;
+    const f = [...(e.clipboardData?.files || [])].find(x => x.type.startsWith("image/"));
+    if (f) { e.preventDefault(); takeRef(f); }
+  });
+  // any picture -> at most 256 px a side, shrunk with square pixels (never smoothed), as a PNG
+  async function takeRef(src) {
+    const url = typeof src === "string" ? src : URL.createObjectURL(src), im = new Image();
+    im.crossOrigin = "anonymous";
+    try { await new Promise((ok, bad) => { im.onload = ok; im.onerror = bad; im.src = url; }); }
+    catch (_) { return toast("That picture didn't open: try a PNG, JPEG or WebP"); }
+    const k = Math.max(1, Math.max(im.naturalWidth, im.naturalHeight) / 256), c = document.createElement("canvas");
+    c.width = Math.max(1, Math.round(im.naturalWidth / k)); c.height = Math.max(1, Math.round(im.naturalHeight / k));
+    const g = c.getContext("2d"); g.imageSmoothingEnabled = false; g.drawImage(im, 0, 0, c.width, c.height);
+    let data;
+    try { data = c.toDataURL("image/png"); } catch (_) { return toast("Couldn't read that picture"); }
+    if (data.length > 540000) return toast("That picture is too detailed: try a smaller one");
+    ctlOf(model).ref = data; paintControls();
+  }
+  async function pickMine() {
+    const r = await api("/api/studio/mine");
+    if (!r.ok) return toast(Session.detail(r.data || {}));
+    const list = (r.data.posts || []).filter(p => p.kind === "image").slice(0, 80);
+    if (!list.length) return toast("Make a sprite first, then you can use it here");
+    const d = document.createElement("div");
+    d.className = "kit-dlg"; d.setAttribute("role", "dialog"); d.setAttribute("aria-modal", "true"); d.setAttribute("aria-label", "Pick one of your sprites");
+    d.innerHTML = `<div class="card notch minepick" style="width:min(560px,100%)"><h3>Pick one of your sprites</h3>
+      <div class="mgrid">${list.map(p => `<button type="button" data-src="${esc(img(p.image))}" title="${esc(p.prompt)}"><img src="${esc(img(p.image))}" alt="${esc(p.prompt)}" loading="lazy"></button>`).join("")}</div>
+      <div class="row"><button class="btn ghost" type="button" data-x>Cancel</button></div></div>`;
+    document.body.appendChild(d);
+    const close = () => { d.remove(); removeEventListener("keydown", key, true); };
+    const key = e => { if (e.key === "Escape") close(); };
+    addEventListener("keydown", key, true);
+    d.addEventListener("click", e => {
+      const b = e.target.closest("[data-src]");
+      if (b) { close(); takeRef(b.dataset.src); } else if (e.target === d || e.target.closest("[data-x]")) close();
+    });
+    d.querySelector("[data-src]")?.focus();
+  }
+  const ctlBody = () => {                                    // what create / jobs send for the controls
+    const st = ctlState[model], list = models[model]?.controls || [];
+    if (!st || !list.length) return {};
+    const settings = Object.fromEntries(Object.entries(st.settings).filter(([, v]) => v));
+    return { ...(Object.keys(settings).length ? { settings } : {}), ...(st.ref && takesRef() ? { ref: st.ref } : {}) };
+  };
+
   // c1 and s1 are Express models: without Express on (and goes left), a sleepy cat warns it'll be really slow first
   async function expressGate() {
     if (!isExpressModel() || fast()) return true;
@@ -1014,12 +1114,14 @@
       model = c.dataset.id;
       modelCards().forEach(x => x.setAttribute("aria-pressed", x === c));
       showQuota();
+      paintControls();
       expressForModel();
       fly?.classList.remove("open");
       document.querySelectorAll("#ws-prompts textarea").forEach(t => t.placeholder = ROW_HINT[kindOf()]);
       setPer(perPrompt);
     });
     setPer(1);
+    paintControls();
   }
   function setPer(n) {
     const clip = kindOf() === "video", max = clip ? pro.clip_batch_max : pro.batch_max;
@@ -1095,7 +1197,7 @@
     }
     if (!(await expressGate())) return;
     $("#ws-create").disabled = true;
-    const body = { model, creativity: "classic", creativity_value: +$("#ws-cr").value / 100 };
+    const body = { model, creativity: "classic", creativity_value: +$("#ws-cr").value / 100, ...ctlBody() };
     if ($("#ws-seed").value) body.seed = +$("#ws-seed").value % 2 ** 31;
     if (perPrompt > 1) body.count = perPrompt;
     let sent = 0;
@@ -1228,7 +1330,7 @@
       el.querySelector(".used").style.width = `${Math.min(100, 100 * q.used / q.limit)}%`;
       el.querySelector(".held").style.width = `${Math.min(100, 100 * (q.used + h) / q.limit)}%`;
     };
-    m("#wm-img", quota, held.image); m("#wm-vid", quota.video, held.video);
+    m("#wm-img", quota, held?.image || 0); m("#wm-vid", quota.video, held?.video || 0);
     const fl = quota.flagship || {}, fel = $("#wm-flag"), on = Object.values(fl).some(q => q.limit);
     fel.hidden = !on;
     if (on) fel.querySelector("b").textContent = [...FLAGSHIP].filter(k => fl[k]?.limit).map(k => `${modelName(k)} ${Math.max(0, fl[k].remaining - (held[k] || 0))}/${fl[k].limit}`).join(" · ");
@@ -1257,7 +1359,7 @@
     $("#grid").querySelector(".empty")?.remove();
     const pends = Array.from({ length: n }, () => pendingTile(prompt, models[model].kind === "video"));
     pends.slice().reverse().forEach(p => $("#grid").prepend(p.el));
-    const body = { prompt, model, creativity };
+    const body = { prompt, model, creativity, ...ctlBody() };
     const r = await api("/api/studio/create", { json: body });
     pends.forEach(p => p.stop()); busy = false; $("#create").disabled = false;
     const drop = () => pends.forEach(p => p.el.remove());
