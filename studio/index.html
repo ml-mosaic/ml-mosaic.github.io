@@ -13,7 +13,7 @@
 <script src="../config.js"></script>
 <script src="../assets/i18n.js?v=20261116a"></script>
 <script src="../assets/session.js"></script>
-<script src="../assets/kit.js?v=20261116a" data-root="../"></script>
+<script src="../assets/kit.js?v=20261119a" data-root="../"></script>
 <style>
   body { padding-bottom: 210px; }
 
@@ -838,6 +838,17 @@
     };
     paintExpress();
   }
+  // c1 and s1 are Express models: without Express on (and goes left), a sleepy cat warns it'll be really slow first
+  async function expressGate() {
+    if (!Kit.EXPRESS_MODELS?.has(model) || (xp?.on && xp.remaining)) return true;
+    const v = await Kit.slowLane({ model, name: modelName(model), express: xp });
+    if (v === "express") {
+      const r = await api("/api/express", { json: { on: true } });
+      if (r.ok) { xp = r.data; paintExpress(); toast("Express on: this one goes on the big GPU", 2400); }
+      return true;
+    }
+    return v === "slow";
+  }
   function paintExpress() {
     if (!xp) return;
     const sw = pro ? $("#ws-xp-sw") : $("#xpc-sw");
@@ -1029,6 +1040,7 @@
                             : `Today's ${kind === "video" ? "clips are" : "sprites are"} all used or already in your queue.\nThey refill at ${back} (midnight UTC).`,
                        { title: room ? "Not quite enough left" : "That's today's lot", ok: "Okay!" });
     }
+    if (!(await expressGate())) return;
     $("#ws-create").disabled = true;
     const body = { model, creativity: "classic", creativity_value: +$("#ws-cr").value / 100 };
     if ($("#ws-seed").value) body.seed = +$("#ws-seed").value % 2 ** 31;
@@ -1180,6 +1192,7 @@
     const prompt = $("#prompt").value.trim();
     if (!prompt) { $("#prompt").focus(); return toast(models[model].kind === "video" ? "Describe a scene first" : "Describe a sprite first"); }
     if (busy) return;
+    if (!(await expressGate())) return;
     const n = 1;
     if (quota && allowance().remaining < cost() * n) return outOfSprites(n);
     busy = true; $("#create").disabled = true;

@@ -411,6 +411,34 @@ window.Kit = (() => {
   }
 
   // ---------------------------------------------------------------- report something (the cat keeps you company)
+  // ---------------------------------------------------------------- the slow lane: c1 and s1 are Express models
+  // (user, 2026-11-19). Without Express they still run on the regular CPU workers, but a sleepy cat warns you first.
+  // Resolves "express" (switch it on), "slow" (go ahead in the regular line) or null (closed). Remembered per session.
+  const EXPRESS_MODELS = new Set(["c1", "s1"]);
+  function slowLane({ model = "c1", name = model, express = null } = {}) {
+    const key = `mosaic-slow-ok-${model}`;
+    try { if (sessionStorage.getItem(key)) return Promise.resolve("slow"); } catch (_) {}
+    return new Promise(resolve => {
+      const { body, stage, close, back } = sheet({ w: 520, b: "#2c2440", c: "#fce060", sky: "linear-gradient(#141026 0 30%, #1c1634 30% 60%, #262044 60%)",
+                                                  floor: "linear-gradient(#4a3a62 0 4px, #362a4a 4px 8px, #241c34 8px)" });
+      actor(stage, "cat", ["*yaaawn*", "zzz...", "...still loading...", "go get a snack.", "maybe two snacks."], { P: 4, left: "32%" });
+      const can = express && express.allowed, left = can ? express.remaining : 0;
+      body.innerHTML = `<span class="kx-tag">SLOW LANE</span><h2>It's going to be REEEAAALLLL slow.</h2>
+        <p>${esc(name)} is an Express model. It's big, and it's built for a big GPU. Without Express it runs on our regular
+          workers, a couple of very patient little computers. It works, it just takes <b>a long time</b>: think minutes, not seconds.</p>
+        <div class="kx-row">${can ? (left ? `<button class="kx-btn" type="button" id="kx-xp">Turn on Express (${left} left today)</button>`
+                                         : `<button class="kx-btn" type="button" disabled>Express goes used up today</button>`)
+                                  : `<a class="kx-btn" href="${root}pricing/">Get Express</a>`}
+          <button class="kx-btn ghost" type="button" id="kx-slow">I'll wait, use the slow lane</button></div>
+        <p class="kx-note">Artisan gets 5 Express goes a day, Atelier 15. They refresh at midnight UTC.</p>`;
+      let done = false;
+      const finish = v => { if (done) return; done = true; resolve(v); close(); };
+      body.querySelector("#kx-xp")?.addEventListener("click", () => finish("express"));
+      body.querySelector("#kx-slow").onclick = () => { try { sessionStorage.setItem(key, "1"); } catch (_) {} finish("slow"); };
+      back.addEventListener("closed", () => { if (!done) { done = true; resolve(null); } });
+    });
+  }
+
   const REASONS = [["sexual", "Sexual content"], ["minors", "Involves a minor"], ["violence", "Graphic violence or gore"], ["hate", "Hate or harassment"],
                    ["illegal", "Something illegal"], ["copyright", "Copies someone else's work"], ["spam", "Spam or scams"], ["other", "Something else"]];
   function report({ kind, target, what = "this" }) {
@@ -530,5 +558,5 @@ window.Kit = (() => {
   else disclaimer();
 
   return { root, reduce, rand, pick, nav, avatar, pfp, tags, whoami, critter, talk, hop, burst, toast, esc, ago, json,
-           dialog, confirm: confirmBox, alert: alertBox, profileMenu, gift, report, confetti, celebrate, PLAN };
+           dialog, confirm: confirmBox, alert: alertBox, profileMenu, gift, report, confetti, celebrate, PLAN, slowLane, EXPRESS_MODELS };
 })();
