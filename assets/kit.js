@@ -13,8 +13,8 @@ window.Kit = (() => {
     if (!el) return;
     const me = Session.current();
     const links = [["Home", "", "opt"], ["Studio", "studio/", ""], ["Pricing", "pricing/", ""], ["Forum", "forum/", "opt"], ["Blog", "blog/", "opt"],
-                   ["Dev portal", "portal/", "opt"], ["Status", "status/", "opt"]];
-    if (me) links.splice(6, 0, ["Keys", "portal/keys/", "opt"]);
+                   ["Contribute", "contribute/", "opt"], ["Dev portal", "portal/", "opt"], ["Status", "status/", "opt"]];
+    if (me) links.splice(7, 0, ["Keys", "portal/keys/", "opt"]);
     el.innerHTML = `<div class="wrap">
       <a class="brand" href="${root}" aria-label="Mosaic home"><img src="${root}assets/logo-wordmark.png" alt="Mosaic"></a>
       <div class="links">${links.map(([t, h, c]) => `<a class="${c}" href="${root}${h}"${t === active ? ' aria-current="page"' : ""}>${t}</a>`).join("")}</div>

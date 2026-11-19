@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Mosaic · Teach Mosaic with your art</title>
-<meta name="description" content="Mosaic only learns from art we made or art people chose to give us. Give your own pixel art, with consent, and earn free Artisan weeks.">
+<meta name="description" content="Mosaic only learns from art we made or art people chose to give us. Give your own pixel art, with consent, and earn free weeks of Artisan and Atelier.">
 <link rel="icon" type="image/svg+xml" sizes="any" href="../assets/favicon.svg?v=2">
 <link rel="icon" type="image/png" sizes="64x64" href="../assets/favicon.png?v=2">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,7 +14,7 @@
 <script src="../config.js"></script>
 <script src="../assets/i18n.js?v=20261116a"></script>
 <script src="../assets/session.js"></script>
-<script src="../assets/kit.js?v=20261119c" data-root="../"></script>
+<script src="../assets/kit.js?v=20261119d" data-root="../"></script>
 <style>
   main { padding: 50px 0 90px; max-width: 900px; }
   .kicker { color: var(--green); letter-spacing: 3px; font-size: 13px; margin: 0 0 10px; }
@@ -31,8 +31,13 @@
   .box h3 { font-weight: normal; font-size: 19px; margin: 0 0 8px; }
   .box ul { margin: 0; padding-left: 18px; }
   .box.yes h3 { color: var(--green); } .box.no h3 { color: #f87898; }
-  .reward { --c: var(--yellow); background: #2a2616; padding: 18px 20px; margin: var(--u); }
-  .reward b { color: var(--yellow); }
+  .ladder { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 10px 0 6px; }
+  .rung { background: var(--panel); padding: 16px 18px; margin: var(--u); --c: #3a3445; }
+  .rung b { display: block; font-weight: normal; font-size: 36px; color: var(--t); line-height: 1; }
+  .rung span { display: block; color: var(--dim); font-size: 13px; margin: 6px 0 8px; }
+  .rung em { font-style: normal; color: #fff; font-size: 15px; }
+  .guide { background: var(--panel); padding: 14px 18px; margin: var(--u) var(--u) 16px; font-size: 15px; color: #d8d2c4; line-height: 1.6; }
+  .guide b { color: var(--green); font-weight: normal; }
   /* the uploader */
   #gate { background: var(--panel); padding: 22px; margin: var(--u); text-align: center; }
   #form { display: none; }
@@ -67,7 +72,7 @@
   .set .thumbs figcaption { font-size: 10px; letter-spacing: 1px; margin-top: 2px; }
   .set .note { color: var(--dim); font-size: 14px; margin: 4px 0 0; }
   .small { color: var(--dim); font-size: 13px; margin-top: 40px; }
-  @media (max-width: 760px) { .steps, .two { grid-template-columns: 1fr; } }
+  @media (max-width: 760px) { .steps, .two, .ladder { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
@@ -80,7 +85,7 @@
     models get better, and get rewarded for it.</p>
 
   <div class="steps">
-    <div class="step notch"><b>1 &middot; SEND</b><p>Upload sprites you drew yourself, each with a few words saying what it is.</p></div>
+    <div class="step notch"><b>1 &middot; SEND</b><p>Upload sprites you drew yourself, and describe each one: what it is and what it's doing.</p></div>
     <div class="step notch"><b>2 &middot; REVIEW</b><p>A person on our team looks at every set. Nothing is used until it's accepted.</p></div>
     <div class="step notch"><b>3 &middot; TRAIN</b><p>Accepted sprites go into the next training run. Your page shows which run used them.</p></div>
   </div>
@@ -101,10 +106,13 @@
   </div>
 
   <h2>What you get</h2>
-  <div class="reward notch">
-    <p style="margin:0"><b>A free week of Artisan for every 25 sprites we accept.</b> No cap. Plus, if you want, your name in
-      the release notes of the models your art helped train.</p>
+  <div class="ladder">
+    <div class="rung notch" style="--t:#e8913a"><b>25</b><span>accepted sprites</span><em>a free week of Artisan</em></div>
+    <div class="rung notch" style="--t:#fce060"><b>+50</b><span>more (75 in all)</span><em>a free week of Atelier</em></div>
+    <div class="rung notch" style="--t:#e8913a"><b>+100</b><span>more, again and again</span><em>another week of Artisan, each time</em></div>
   </div>
+  <p>Keep contributing and you keep Artisan. Weeks you earn line up one after another, start automatically, and are yours to
+    keep. Plus, if you want, your name in the release notes of the models your art helped train.</p>
 
   <h2>Your art stays yours</h2>
   <ul>
@@ -120,6 +128,9 @@
     <a class="btn small ghost" href="../login/#signup">Make a free account</a></div>
 
   <div id="form">
+    <div class="guide notch"><b>Describe every sprite.</b> The description teaches the model what it's looking at, so say what it
+      is, what it's doing and anything special about it. &ldquo;fox&rdquo; isn't enough; &ldquo;a white fox curled up asleep,
+      tail over its nose&rdquo; is perfect. At least three words each.</div>
     <div class="drop" id="drop" tabindex="0" role="button" aria-label="Add sprites">Drop PNG sprites here, or click to pick files<br>
       <small>up to 24 at a time &middot; 150 KB each</small></div>
     <input type="file" id="files" accept="image/png,image/webp,image/gif" multiple hidden>
@@ -141,7 +152,7 @@
     <a href="../terms/">Terms and Conditions</a>. Questions? Ask on the <a href="../forum/">forum</a>.</p>
 </main>
 <script>
-Kit.nav("");
+Kit.nav("Contribute");
 (() => {
   const $ = id => document.getElementById(id);
   const MAX = 24, MAX_BYTES = 150000;
@@ -156,8 +167,7 @@ Kit.nav("");
         img.onload = () => {
           const w = img.naturalWidth, h = img.naturalHeight;
           const err = Math.min(w, h) < 8 || Math.max(w, h) > 256 ? `${w}x${h}: needs 8 to 256 px a side, at 1x` : "";
-          const guess = f.name.replace(/\.[a-z0-9]+$/i, "").replace(/[_-]+/g, " ").replace(/\d+/g, "").trim();
-          res({ data: r.result, w, h, caption: guess.length > 2 ? guess : "", err });
+          res({ data: r.result, w, h, caption: "", err });
         };
         img.onerror = () => res({ err: "not a picture", name: f.name });
         img.src = r.result;
@@ -184,7 +194,7 @@ Kit.nav("");
       const t = document.createElement("div");
       t.className = "tile notch" + (it.err ? " bad" : "");
       t.innerHTML = `<button class="x" type="button" aria-label="Remove">&times;</button><div class="pic"><img alt=""></div>
-        <div class="sz">${it.w}&times;${it.h}</div><input type="text" maxlength="200" placeholder="What is it? e.g. a fox sleeping">
+        <div class="sz">${it.w}&times;${it.h}</div><input type="text" maxlength="200" placeholder="e.g. a white fox curled up asleep">
         ${it.err ? `<div class="err">${Kit.esc(it.err)}</div>` : ""}`;
       const img = t.querySelector("img");
       img.src = it.data;
@@ -210,8 +220,8 @@ Kit.nav("");
   $("send-btn").onclick = async () => {
     if (!items.length) return Kit.toast("Add some sprites first");
     if (items.some(it => it.err)) return Kit.toast("Remove the sprites marked in pink first");
-    const blank = items.findIndex(it => (it.caption || "").trim().length < 3);
-    if (blank >= 0) return Kit.toast(`Sprite ${blank + 1} needs a short description`);
+    const blank = items.findIndex(it => (it.caption || "").trim().split(/\s+/).length < 3 || it.caption.trim().length < 8);
+    if (blank >= 0) return Kit.toast(`Describe sprite ${blank + 1} in a few words: what it is and what it's doing`);
     if (!$("c-own").checked || !$("c-ai").checked || !$("c-lic").checked) return Kit.toast("Please tick the three consent boxes");
     const btn = $("send-btn");
     btn.disabled = true; btn.textContent = "Sending...";
@@ -239,9 +249,12 @@ Kit.nav("");
   async function loadSets() {
     const r = await Session.api("/api/contribute/mine");
     if (!r.ok) return;
-    const d = r.data, have = d.accepted % d.reward_every;
+    const d = r.data, n = d.next, span = Math.max(1, n.at - n.from), have = Math.max(0, d.accepted - n.from);
+    const live = d.rewards.find(x => x.active), queued = d.rewards.filter(x => x.start * 1000 > Date.now()).length;
+    const P = p => p === "atelier" ? "Atelier" : "Artisan";
     $("meter").innerHTML = `<div><b>${d.accepted}</b> sprite${d.accepted === 1 ? "" : "s"} accepted &middot;
-      ${d.next_reward_in} more for your next free Artisan week</div><div class="track"><div class="fill" style="width:${100 * have / d.reward_every}%"></div></div>`;
+      ${n.in} more for a free week of ${P(n.plan)}</div><div class="track"><div class="fill" style="width:${Math.min(100, 100 * have / span)}%"></div></div>
+      ${live ? `<div style="margin-top:8px;color:var(--green)">Your free week of ${P(live.plan)} is on until ${new Date(live.end * 1000).toLocaleDateString()}${queued ? ` &middot; ${queued} more week${queued > 1 ? "s" : ""} lined up` : ""}</div>` : ""}`;
     const box = $("sets");
     box.innerHTML = d.submissions.length ? "" : `<p style="color:var(--dim)">Nothing sent yet.</p>`;
     for (const s of d.submissions) {
