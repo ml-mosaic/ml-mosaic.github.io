@@ -56,10 +56,20 @@ window.Kit = (() => {
   }
   // the signed-in user (profile + today's allowance), fetched once per page
   let mePromise = null;
+  // The server is a long way from most people (every call costs about a second), so the last answer is kept per account
+  // and pages can paint with it straight away (whoamiCached), then catch up when the fresh one arrives.
+  const meKey = () => `mosaic-me:${Session.current()?.username || ""}`;
   function whoami(refresh = false) {
     if (!Session.current()) return Promise.resolve(null);
-    if (!mePromise || refresh) mePromise = Session.api("/api/me").then(r => r.ok ? r.data : null);
+    if (!mePromise || refresh) mePromise = Session.api("/api/me").then(r => {
+      if (r.ok) { try { localStorage.setItem(meKey(), JSON.stringify(r.data)); } catch (_) {} }
+      return r.ok ? r.data : null;
+    });
     return mePromise;
+  }
+  function whoamiCached() {
+    if (!Session.current()) return null;
+    try { return JSON.parse(localStorage.getItem(meKey()) || "null"); } catch (_) { return null; }
   }
   // tags next to a person's name: staff ("Developer") and paid plans ("Artisan", "Atelier"), each in its own colours
   const tags = person => (person?.badges || []).map(b => `<span class="utag utag-${esc(b.toLowerCase().replace(/[^a-z0-9]/g, ""))}">${esc(b)}</span>`).join("");
@@ -558,6 +568,6 @@ window.Kit = (() => {
   if (document.readyState === "loading") addEventListener("DOMContentLoaded", disclaimer);
   else disclaimer();
 
-  return { root, reduce, rand, pick, nav, avatar, pfp, tags, whoami, critter, talk, hop, burst, toast, esc, ago, json,
+  return { root, reduce, rand, pick, nav, avatar, pfp, tags, whoami, whoamiCached, critter, talk, hop, burst, toast, esc, ago, json,
            dialog, confirm: confirmBox, alert: alertBox, profileMenu, gift, report, confetti, celebrate, PLAN, slowLane, EXPRESS_MODELS };
 })();

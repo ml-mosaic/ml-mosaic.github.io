@@ -437,6 +437,7 @@
       <div class="ws-meters">
         <div class="wm" id="wm-img"><span>SPRITES TODAY</span><b>-</b><div class="mbar"><i class="held"></i><i class="used"></i></div></div>
         <div class="wm" id="wm-vid" hidden><span>CLIPS TODAY</span><b>-</b><div class="mbar"><i class="held"></i><i class="used"></i></div></div>
+        <div class="wm" id="wm-flag" hidden><span>FLAGSHIP TODAY</span><b>-</b></div>
         <div class="wm q" id="wm-q"><span>QUEUE</span><i class="dot"></i><b>idle</b></div>
       </div>
     </div>
@@ -813,27 +814,49 @@
   // sprites and clips have separate daily allowances; this shows the one for the model that's picked
   let quota = null;
   const isClip = () => models[model]?.kind === "video";
-  const allowance = () => quota && (isClip() ? quota.video || { used: 0, limit: 0, remaining: 0 } : quota);
+  // c1 and s1 are Flagship models: each has its own daily count ("Flagship usage"), not the sprites' or clips'
+  const FLAGSHIP = new Set(["c1", "s1"]);
+  const bucketOf = () => FLAGSHIP.has(model) ? model : (models[model]?.kind || "image");
+  const NONE = { used: 0, limit: 0, remaining: 0 };
+  const allowance = () => quota && (FLAGSHIP.has(model) ? quota.flagship?.[model] || NONE : isClip() ? quota.video || NONE : quota);
   function showQuota(q) {
     if (q) quota = q;
     if (!quota) return;
-    const a = allowance(), label = isClip() ? "clips left today" : "left today", el = $("#left");
+    const a = allowance(), label = FLAGSHIP.has(model) ? `${modelName(model)} left today` : isClip() ? "clips left today" : "left today", el = $("#left");
     el.classList.toggle("out", a.remaining === 0);
     el.innerHTML = a.limit > 30 ? `${a.remaining.toLocaleString()} / ${a.limit.toLocaleString()} ${label}`   // big allowances: no pips
       : `<span class="pips">${Array.from({ length: a.limit }, (_, i) => `<i class="${i < a.used ? "used" : ""}"></i>`).join("")}</span>${a.remaining} / ${a.limit} ${label}`;
   }
-  if (me) Kit.whoami().then(u => { if (u) { showQuota(u.quota); setupPro(u); setupExpress(u.express); } xpReady = true; expressForModel(); });
+  // paint at once with the account as it was last time (the server is slow to reach), then catch up with the fresh one;
+  // if the plan or Studio settings changed meanwhile, reload so the page is built for the new ones
+  if (me) Promise.resolve().then(() => {                   // after the whole script has run (setupPro needs all of it)
+    const cached = Kit.whoamiCached?.();
+    if (cached) { showQuota(cached.quota); setupPro(cached); setupExpress(cached.express); xpReady = true; }
+    Kit.whoami().then(u => {
+      if (u && cached) {
+        const shape = x => JSON.stringify([x.plan, x.profile?.studio, x.features, !!x.express?.allowed]);
+        if (shape(u) !== shape(cached)) return location.reload();
+        showQuota(u.quota);
+        if (xp && u.express && !xpBusy) { xp = u.express; paintExpress(); }
+      } else if (u) { showQuota(u.quota); setupPro(u); setupExpress(u.express); }
+      xpReady = true; expressForModel();
+    });
+  });
 
   // ---------------------------------------------------------------- Express: the fast lane (Artisan 5 a day, Atelier 15)
-  var xp = null, xpReady = false;                           // xpReady: the account's Express state has loaded
+  var xp = null, xpReady = false, xpBusy = false;                           // xpReady: the account's Express state has loaded
   function setupExpress(x) {
     if (!x || !x.allowed) return;
     xp = x;
     const box = pro ? $("#ws-xp") : $("#xpc"), sw = pro ? $("#ws-xp-sw") : $("#xpc-sw");
     box.hidden = false;
     sw.onclick = async () => {
-      const r = await api("/api/express", { json: { on: !xp.on } });
-      if (!r.ok) return toast(Session.detail(r.data));
+      // flips at once (the server takes a second to answer); put back if the server says no
+      const was = xp, want = !xp.on;
+      xp = { ...xp, on: want }; paintExpress(); xpBusy = true;
+      const r = await api("/api/express", { json: { on: want } });
+      xpBusy = false;
+      if (!r.ok) { xp = was; paintExpress(); return toast(Session.detail(r.data)); }
       xp = r.data; paintExpress();
       if (!xp.on && isExpressModel()) return slowWarning(true);     // switched off on c1 / s1: the cat says so right away
       toast(xp.on ? (xp.remaining ? `Express on: your next ${xp.remaining} go${xp.remaining > 1 ? "es" : ""} today skip the line` : "Express is on, but today's goes are used up") : "Express off: back to the regular line", 2600);
@@ -843,8 +866,12 @@
   const isExpressModel = () => !!Kit.EXPRESS_MODELS?.has(model);
   const fast = () => !!(xp?.on && xp.remaining);
   async function setExpress(on) {
+    const was = xp;
+    if (xp) { xp = { ...xp, on }; paintExpress(); }               // shown at once, confirmed by the server after
+    xpBusy = true;
     const r = await api("/api/express", { json: { on } });
-    if (r.ok) { xp = r.data; paintExpress(); }
+    xpBusy = false;
+    if (r.ok) { xp = r.data; paintExpress(); } else if (was) { xp = was; paintExpress(); }
     return r.ok;
   }
   // the slow-lane cat; "Turn on Express" switches it on
@@ -893,7 +920,8 @@
   const HI = { artisan: "workshop", atelier: "atelier", dev: "test bench" };
   const kindOf = () => models[model]?.kind || "image";
   const ROW_HINT = { image: "a sleepy fox curled up in leaves", video: "snow falling on a pine forest" };
-  const left = kind => { const q = kind === "video" ? quota?.video : quota; return q ? Math.max(0, q.remaining - (held[kind] || 0)) : Infinity; };
+  const left = kind => { const q = kind === "video" ? quota?.video : kind === "image" ? quota : quota?.flagship?.[kind] || NONE;
+                         return quota ? Math.max(0, q.remaining - (held[kind] || 0)) : Infinity; };
 
   function setupPro(u) {
     if (!u.features?.pro_studio) return;
@@ -985,6 +1013,7 @@
       if (m && m.status === "unavailable") return stillTraining(m);
       model = c.dataset.id;
       modelCards().forEach(x => x.setAttribute("aria-pressed", x === c));
+      showQuota();
       expressForModel();
       fly?.classList.remove("open");
       document.querySelectorAll("#ws-prompts textarea").forEach(t => t.placeholder = ROW_HINT[kindOf()]);
@@ -1042,7 +1071,7 @@
 
   function summary() {
     if (!pro) return;
-    const n = filled().length, kind = kindOf(), each = perPrompt * (models[model]?.cost || 1), total = n * each, room = left(kind);
+    const n = filled().length, kind = kindOf(), each = perPrompt * (models[model]?.cost || 1), total = n * each, room = left(bucketOf());
     const noun = kind === "video" ? ["clip", "clips"] : ["sprite", "sprites"], slots = pro.queue_max - activeJobs;
     const el = $("#ws-sum");
     el.classList.toggle("over", total > room || (n > slots && n > 0));
@@ -1057,7 +1086,7 @@
   async function wsCreate() {
     const rows = filled(), kind = kindOf();
     if (!rows.length) { $("#ws-prompts textarea")?.focus(); return toast(kind === "video" ? "Describe a scene first" : "Describe a sprite first"); }
-    const need = rows.length * perPrompt * (models[model]?.cost || 1), room = left(kind);
+    const need = rows.length * perPrompt * (models[model]?.cost || 1), room = left(bucketOf());
     if (need > room) {
       const back = quota ? new Date(quota.resets_at * 1000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "midnight";
       return Kit.alert(room ? `That's ${need} ${kind === "video" ? "clips" : "sprites"} and you have ${room} left today (counting what's already in your queue).\nTry fewer, or come back after ${back} (midnight UTC).`
@@ -1200,6 +1229,9 @@
       el.querySelector(".held").style.width = `${Math.min(100, 100 * (q.used + h) / q.limit)}%`;
     };
     m("#wm-img", quota, held.image); m("#wm-vid", quota.video, held.video);
+    const fl = quota.flagship || {}, fel = $("#wm-flag"), on = Object.values(fl).some(q => q.limit);
+    fel.hidden = !on;
+    if (on) fel.querySelector("b").textContent = [...FLAGSHIP].filter(k => fl[k]?.limit).map(k => `${modelName(k)} ${Math.max(0, fl[k].remaining - (held[k] || 0))}/${fl[k].limit}`).join(" · ");
     const drawing = list.reduce((a, j) => a + j.items.filter(it => it.state === "drawing").length, 0),
           waiting = list.reduce((a, j) => a + j.items.filter(it => it.state === "waiting").length, 0);
     $("#wm-q").classList.toggle("busy", drawing + waiting > 0);
