@@ -155,6 +155,8 @@
   .sw[aria-checked="true"]::after { left: 30px; background: var(--green); }
   .sw:focus-visible { outline: 2px solid var(--yellow); outline-offset: 2px; }
   .offnote { position: relative; z-index: 1; margin: 6px 0 0 46px; font-size: 12px; color: #f0a0b0; }
+  .devrow { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 6px 0 14px 46px; font-size: 12px; }
+  @media (max-width: 700px) { .devrow { margin-left: 0; } }
   .confirm { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; background: #1a0e12; padding: 10px 12px; margin-top: 4px;
              box-shadow: inset 3px 0 0 var(--bad); animation: rise .14s steps(3); }
   .confirm input { flex: 1; min-width: 180px; background: #000; border: 0; color: var(--fg); padding: 9px 11px; font: inherit; font-size: 14px; }
@@ -398,6 +400,11 @@
             : "Patreon: not linked"}${u.plan !== "free" ? ` &middot; plan set ${u.plan_source === "patreon" ? "by Patreon" : "by hand (Patreon won't lower it)"}` : ""}</p>
           <div class="seg" id="plan">${PLANS.map(([id, label, what]) =>
           `<button type="button" data-p="${id}" aria-pressed="${u.plan === id}">${label}<small>${what}</small></button>`).join("")}</div></div>
+        <div class="sec"><h3>LIMIT RESETS</h3>
+          <p class="sub" style="margin:0 0 10px">${u.resets ? `${u.resets} unused` : "None unused"}. Each one refills a day's allowance to full; they use them from Settings.</p>
+          <div class="act"><input class="days" id="rs-n" type="number" min="1" max="50" value="1" aria-label="How many"><span class="sub" style="margin:0">reset(s)</span>
+            <input id="rs-why" placeholder="Why (for the audit log), e.g. sorry for the outage" maxlength="200">
+            <button class="btn small" id="rs-give" type="button" style="--c:var(--green)">Give</button></div></div>
         <div class="sec"><h3>STANDING</h3>
           <div class="standing ${s ? s.status : "ok"}">${!s ? "Good standing." : s.status === "banned"
             ? `Banned${s.reason ? `: ${esc(s.reason)}` : ""}. Their email can't sign up again; their posts and profile are hidden.`
@@ -414,6 +421,12 @@
           <div class="act"><button class="btn small ghost" id="purge" type="button">Delete all posts and their picture</button></div>
           <div class="posts" id="posts">${u.post_list.length ? "" : `<div class="empty">No posts.</div>`}</div></div>`;
       const reason = () => ($("#reason")?.value || "").trim();
+      $("#rs-give").onclick = async () => {
+        const count = Math.max(1, Math.min(50, parseInt($("#rs-n").value, 10) || 1));
+        const r = await api(`/api/console/users/${encodeURIComponent(name)}/resets`, { json: { count, reason: $("#rs-why").value.trim() } });
+        if (!r.ok) return toast(Session.detail(r.data || {}));
+        toast(`Gave @${name} ${count} limit reset${count > 1 ? "s" : ""}`); open(name);
+      };
       $("#plan").querySelectorAll("button").forEach(b => b.onclick = async () => {
         if (b.dataset.p === u.plan) return;
         const r = await api(`/api/console/users/${encodeURIComponent(name)}/plan`, { json: { plan: b.dataset.p } });
@@ -492,9 +505,9 @@
     // ---- Models: switch any model off at once (UNAVAILABLE everywhere; every request for it, queued ones too, refused)
     const GROUPS = [["featured", "TOP MODELS"], ["models", "MODELS"], ["legacy", "LEGACY"]];
     const stateTag = m => m.off ? `<span class="ptag off">SWITCHED OFF</span>` : m.status === "unavailable" ? `<span class="ptag unavailable">UNAVAILABLE</span>`
-      : m.status === "preview" ? `<span class="ptag preview">PREVIEW</span>` : `<span class="ptag live">LIVE</span>`;
+      : m.status === "preview" ? `<span class="ptag preview">PREVIEW</span>` : m.dev_only ? `<span class="ptag preview">DEV ONLY</span>` : `<span class="ptag live">LIVE</span>`;
     const stateText = m => m.off ? "switched off: nobody can use it" : m.why === "training" ? "still training: no worker has it yet"
-      : m.status === "preview" ? (m.finished ? "usable, training finished" : "usable, still training") : m.serving ? "live" : "live (no worker up right now)";
+      : m.status === "preview" ? (m.finished ? "usable, training finished" : "usable, still training") : m.dev_only ? "Dev only: unavailable to the public" : m.serving ? "live" : "live (no worker up right now)";
     let confirming = null;
     function renderModels(list) {
       const off = list.filter(m => m.off).length;
@@ -506,6 +519,9 @@
           ${stateTag(m)}
           <button class="sw" type="button" role="switch" aria-checked="${!m.off}" aria-label="${esc(m.name)} on" data-sw="${esc(m.id)}"></button>
           ${[0, 1, 2, 3, 4].map(i => `<i class="fall" style="right:${14 + i * 15}%;animation-delay:${i * .32}s"></i>`).join("")}</div>
+        ${m.released ? `<div class="devrow"><button class="btn small ${m.dev_only ? "" : "ghost"}" type="button" data-dev="${esc(m.id)}" style="--c:var(--yellow)">${m.dev_only ? "Dev only: make it public again" : "Make it Dev only"}</button>
+          <span class="w">${m.dev_only ? `Unavailable to the public since ${esc(when(m.dev_only.at))} &middot; by @${esc(m.dev_only.by)}${m.dev_only.reason ? ` &middot; ${esc(m.dev_only.reason)}` : ""}. Developer accounts can still use it.`
+            : "Public. Dev only = UNAVAILABLE for everyone else, still usable by Developer accounts."}</span></div>` : ""}
         ${m.off ? `<div class="offnote">Off since ${esc(when(m.off.at))} &middot; by @${esc(m.off.by)}${m.off.reason ? ` &middot; ${esc(m.off.reason)}` : ""}</div>` : ""}
         ${confirming === m.id ? `<div class="confirm"><span class="w">Switch ${esc(m.name)} off? It shows UNAVAILABLE everywhere straight away, and every request for it is refused, queued ones too.</span>
           <input id="off-why" maxlength="300" placeholder="Why (for the audit log), e.g. security issue in prompt handling">
@@ -519,6 +535,17 @@
         const m = list.find(x => x.id === b.dataset.sw);
         if (!m.off) { confirming = confirming === m.id ? null : m.id; renderModels(list); $("#off-why")?.focus(); return; }
         switchModel(m, true, "");
+      });
+      $("#mdl").querySelectorAll("[data-dev]").forEach(b => b.onclick = async () => {
+        const m = list.find(x => x.id === b.dataset.dev), dev_only = !m.dev_only;
+        let reason = "";
+        if (dev_only) {
+          if (!await Kit.confirm(`${m.name} shows UNAVAILABLE to everyone except Developer accounts, straight away.`, { title: `Make ${m.name} Dev only?`, ok: "Dev only" })) return;
+          reason = (prompt("Why? (for the audit log, optional)") || "").trim();
+        }
+        const r = await api(`/api/console/models/${m.id}/dev`, { json: { dev_only, reason } });
+        if (!r.ok) return toast(Session.detail(r.data || {}));
+        renderModels(r.data.models); toast(dev_only ? `${m.name} is Dev only` : `${m.name} is public again`);
       });
       $("#mdl").querySelector("[data-offgo]")?.addEventListener("click", e => switchModel(list.find(x => x.id === e.target.dataset.offgo), false, $("#off-why").value));
       $("#off-why")?.addEventListener("keydown", e => { if (e.key === "Enter") $("#mdl [data-offgo]").click(); if (e.key === "Escape") $("#mdl [data-offno]").click(); });
@@ -543,7 +570,9 @@
       const what = e => ({ plan: `plan ${e.old} → ${e.new}`, suspend: `suspended ${e.days} day(s)`, ban: "banned", restore: "restored",
                            purge: `deleted ${e.posts} posts${e.picture ? " + picture" : ""}`, delete_post: `deleted post "${e.prompt}"`,
                            model_off: "switched the model off", model_on: "switched the model back on",
-                           contribution_review: `reviewed art: kept ${e.accepted} of ${e.of}` }[e.action] || e.action);
+                           contribution_review: `reviewed art: kept ${e.accepted} of ${e.of}${e.rewards?.length ? ` (earned: ${e.rewards.join(", ")})` : ""}`,
+                           model_dev_only: "made the model Dev only", model_public: "made the model public again",
+                           resets: `gave ${e.count} limit reset${e.count > 1 ? "s" : ""}` }[e.action] || e.action);
       $("#audit-list").innerHTML = r.data.entries.length ? r.data.entries.map(e =>
         `<div><span class="w">${new Date(e.at * 1000).toLocaleString([], { dateStyle: "short", timeStyle: "short" })}</span><span>@${esc(e.target)}</span>
           <span>${esc(what(e))}${e.reason ? ` <span class="w">&middot; ${esc(e.reason)}</span>` : ""} <span class="w">&middot; by @${esc(e.by)}</span></span></div>`).join("")

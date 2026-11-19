@@ -163,6 +163,13 @@
         <select id="lang" data-noi18n style="width:100%"></select>
       </section>
 
+      <section class="card notch tf" id="resets" hidden>
+        <h2>Limit resets<span class="state" id="rs-state">0</span></h2>
+        <p class="hint" id="rs-hint"></p>
+        <div class="row"><button class="btn" type="button" id="rs-use" style="--c:var(--green)">Use a reset</button>
+          <a class="btn ghost" href="../contribute/">Contribute art</a></div>
+      </section>
+
       <section class="card notch tf" id="express" hidden>
         <h2>Express<span class="state" id="xp-state">OFF</span></h2>
         <p class="hint" id="xp-hint">Super-fast generations on a big GPU, a few a day.</p>
@@ -229,7 +236,7 @@
     $("#a-user").textContent = "@" + u.username; $("#a-email").textContent = u.email || "(none)";
     $("#a-plan").textContent = { artisan: "Artisan · 250 sprites a day, Creator Studio, priority, commercial use", atelier: "Atelier · 500 sprites + 50 v1 clips a day, Creator Studio, top priority, commercial use" }[u.plan]
                                || "Free · 15 generations a day, personal use";
-    showQuota(u.quota); showPic(p); preview(); counts(); dirty(); showTwoFactor(u.two_factor); showStudio(u); showBadges(u); showPatreon(u); showExpress(u.express);
+    showQuota(u.quota); showPic(p); preview(); counts(); dirty(); showTwoFactor(u.two_factor); showStudio(u); showBadges(u); showPatreon(u); showExpress(u.express); showResets(u);
   }
   // Patreon: link it once and the plan follows the membership (rechecked every few hours)
   const PLAN = { free: "Free", artisan: "Artisan", atelier: "Atelier" };
@@ -317,6 +324,26 @@
   })();
 
   // Express: Artisan 5 a day, Atelier 15 (the switch is the same one as in the Studio)
+  // limit resets, earned in the data programme by people who already have a plan: today's allowance back to full
+  function showResets(u) {
+    let n = u.resets || 0;
+    if (!n && u.plan === "free") return;
+    $("#resets").hidden = false;
+    const paint = () => {
+      $("#rs-state").textContent = n; $("#rs-state").classList.toggle("on", n > 0);
+      $("#rs-hint").textContent = n
+        ? `You have ${n} limit reset${n > 1 ? "s" : ""}. Each one refills today's allowance to full, every kind at once. Save them for a big day.`
+        : "Earn limit resets by contributing your own pixel art: on a plan, each reward milestone gives you one. Each refills today's allowance to full.";
+      $("#rs-use").disabled = !n; $("#rs-use").classList.toggle("ghost", !n);
+    };
+    $("#rs-use").onclick = async () => {
+      if (!await Kit.confirm("Today's sprites, clips and everything else go back to full. The reset is used up.", { title: "Use a limit reset?", ok: "Use it" })) return;
+      const r = await Session.api("/api/contribute/reset", { method: "POST" });
+      if (!r.ok) return toast(Session.detail(r.data || {}));
+      n = r.data.resets; paint(); showQuota(r.data.quota); Kit.confetti(); toast("Today's allowance is full again!");
+    };
+    paint();
+  }
   function showExpress(x) {
     if (!x || !x.allowed) return;
     $("#express").hidden = false;

@@ -815,6 +815,7 @@
   const modelName = id => models[id]?.name || { m1p: "m1+", v1p: "v1+" }[id] || id;     // "m1+" rather than its id "m1p"
   function stillTraining(m) {
     Kit.toast(m.why === "off" ? `${m.name} is switched off for now: it'll be back soon.`
+              : m.why === "dev" ? `${m.name} isn't available right now: it'll be back soon.`
                               : `${m.name} is still training: it switches on here by itself when it's ready.`);
   }
   // a model's tag: UNAVAILABLE (still training, or switched off) or PREVIEW (usable); m1 / v1 show their plan tag

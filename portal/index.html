@@ -708,7 +708,7 @@
   Session.api("/api/models").then(r => {
     pgModels = (r.ok && Array.isArray(r.data) && r.data.length ? r.data : PG_FALLBACK).slice().sort((a, b) => (a.status === "unavailable") - (b.status === "unavailable"));
     $("#pgm").innerHTML = pgModels.map(m => {
-      const off = m.status === "unavailable", note = off ? (m.why === "off" ? "SWITCHED OFF" : "IN SCHOOL") : m.status === "preview" ? "PREVIEW" : (m.kind === "video" ? "CLIPS" : "SPRITES");
+      const off = m.status === "unavailable", note = off ? (m.why === "off" ? "SWITCHED OFF" : m.why === "dev" ? "UNAVAILABLE" : "IN SCHOOL") : m.status === "preview" ? "PREVIEW" : (m.kind === "video" ? "CLIPS" : "SPRITES");
       return `<button type="button" data-id="${esc(m.id)}" aria-pressed="false" ${off ? "disabled" : ""} title="${esc(m.tagline || "")}"
         style="--np:url(../assets/scenes/nameplate-${esc(m.nameplate || "autumn")}.png);--mcol:${PCOL[m.nameplate] || "#e8913a"}"><b>${esc(m.name)}</b><small>${note}</small></button>`;
     }).join("");

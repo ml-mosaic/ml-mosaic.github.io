@@ -109,10 +109,13 @@
   <div class="ladder">
     <div class="rung notch" style="--t:#e8913a"><b>25</b><span>accepted sprites</span><em>a free week of Artisan</em></div>
     <div class="rung notch" style="--t:#fce060"><b>+50</b><span>more (75 in all)</span><em>a free week of Atelier</em></div>
-    <div class="rung notch" style="--t:#e8913a"><b>+100</b><span>more, again and again</span><em>another week of Artisan, each time</em></div>
+    <div class="rung notch" style="--t:#e8913a"><b>+25</b><span>more, again and again</span><em>another week of Artisan, each time</em></div>
   </div>
   <p>Keep contributing and you keep Artisan. Weeks you earn line up one after another, start automatically, and are yours to
-    keep. Plus, if you want, your name in the release notes of the models your art helped train.</p>
+    keep. <b style="color:#fff;font-weight:normal">Already on a plan?</b> Then a milestone for a plan you already have gives you a
+    <b style="color:var(--green);font-weight:normal">limit reset</b> instead: today's allowance back to full, whenever you
+    choose, from <a href="../settings/" style="color:inherit">Settings</a>. Plus, if you want, your name in the release notes of
+    the models your art helped train.</p>
 
   <h2>Your art stays yours</h2>
   <ul>
@@ -250,11 +253,12 @@ Kit.nav("Contribute");
     const r = await Session.api("/api/contribute/mine");
     if (!r.ok) return;
     const d = r.data, n = d.next, span = Math.max(1, n.at - n.from), have = Math.max(0, d.accepted - n.from);
-    const live = d.rewards.find(x => x.active), queued = d.rewards.filter(x => x.start * 1000 > Date.now()).length;
+    const live = d.rewards.find(x => x.active), queued = d.rewards.filter(x => x.kind === "week" && x.start * 1000 > Date.now()).length;
     const P = p => p === "atelier" ? "Atelier" : "Artisan";
+    const rs = d.resets ? `<div style="margin-top:8px;color:var(--green)">${d.resets} limit reset${d.resets > 1 ? "s" : ""} waiting: use ${d.resets > 1 ? "them" : "it"} in <a href="../settings/" style="color:inherit">Settings</a></div>` : "";
     $("meter").innerHTML = `<div><b>${d.accepted}</b> sprite${d.accepted === 1 ? "" : "s"} accepted &middot;
-      ${n.in} more for a free week of ${P(n.plan)}</div><div class="track"><div class="fill" style="width:${Math.min(100, 100 * have / span)}%"></div></div>
-      ${live ? `<div style="margin-top:8px;color:var(--green)">Your free week of ${P(live.plan)} is on until ${new Date(live.end * 1000).toLocaleDateString()}${queued ? ` &middot; ${queued} more week${queued > 1 ? "s" : ""} lined up` : ""}</div>` : ""}`;
+      ${n.in} more for your next reward (a week of ${P(n.plan)}, or a limit reset if you already have it)</div><div class="track"><div class="fill" style="width:${Math.min(100, 100 * have / span)}%"></div></div>
+      ${live ? `<div style="margin-top:8px;color:var(--green)">Your free week of ${P(live.plan)} is on until ${new Date(live.end * 1000).toLocaleDateString()}${queued ? ` &middot; ${queued} more week${queued > 1 ? "s" : ""} lined up` : ""}</div>` : ""}${rs}`;
     const box = $("sets");
     box.innerHTML = d.submissions.length ? "" : `<p style="color:var(--dim)">Nothing sent yet.</p>`;
     for (const s of d.submissions) {
