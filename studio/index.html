@@ -13,7 +13,7 @@
 <script src="../config.js"></script>
 <script src="../assets/i18n.js?v=20261116a"></script>
 <script src="../assets/session.js"></script>
-<script src="../assets/kit.js?v=20261119a" data-root="../"></script>
+<script src="../assets/kit.js?v=20261119b" data-root="../"></script>
 <style>
   body { padding-bottom: 210px; }
 
@@ -780,6 +780,7 @@
     paintKinds();
     $("#prompt").placeholder = placeholders[md] || placeholders.image;
     showQuota();                                  // clips and sprites have separate allowances
+    if (me) expressForModel();
   }
   // the menu's sections (Creator Studio): the best of each kind on top; the rest of this generation ("Models") and the first
   // one ("Legacy") under "Other models". Accounts that see no top-tier model just get their models.
@@ -821,10 +822,10 @@
     el.innerHTML = a.limit > 30 ? `${a.remaining.toLocaleString()} / ${a.limit.toLocaleString()} ${label}`   // big allowances: no pips
       : `<span class="pips">${Array.from({ length: a.limit }, (_, i) => `<i class="${i < a.used ? "used" : ""}"></i>`).join("")}</span>${a.remaining} / ${a.limit} ${label}`;
   }
-  if (me) Kit.whoami().then(u => { if (u) { showQuota(u.quota); setupPro(u); setupExpress(u.express); } });
+  if (me) Kit.whoami().then(u => { if (u) { showQuota(u.quota); setupPro(u); setupExpress(u.express); } xpReady = true; expressForModel(); });
 
   // ---------------------------------------------------------------- Express: the fast lane (Artisan 5 a day, Atelier 15)
-  let xp = null;
+  var xp = null, xpReady = false;                           // xpReady: the account's Express state has loaded
   function setupExpress(x) {
     if (!x || !x.allowed) return;
     xp = x;
@@ -834,20 +835,42 @@
       const r = await api("/api/express", { json: { on: !xp.on } });
       if (!r.ok) return toast(Session.detail(r.data));
       xp = r.data; paintExpress();
+      if (!xp.on && isExpressModel()) return slowWarning(true);     // switched off on c1 / s1: the cat says so right away
       toast(xp.on ? (xp.remaining ? `Express on: your next ${xp.remaining} go${xp.remaining > 1 ? "es" : ""} today skip the line` : "Express is on, but today's goes are used up") : "Express off: back to the regular line", 2600);
     };
     paintExpress();
   }
+  const isExpressModel = () => !!Kit.EXPRESS_MODELS?.has(model);
+  const fast = () => !!(xp?.on && xp.remaining);
+  async function setExpress(on) {
+    const r = await api("/api/express", { json: { on } });
+    if (r.ok) { xp = r.data; paintExpress(); }
+    return r.ok;
+  }
+  // the slow-lane cat; "Turn on Express" switches it on
+  async function slowWarning(force = false) {
+    const v = await Kit.slowLane({ model, name: modelName(model), express: xp, force });
+    if (v === "express" && await setExpress(true)) toast(`Express on: ${modelName(model)} runs on the big GPU`, 2400);
+    return v;
+  }
+  // picking c1 / s1 switches Express on by default; if it can't be (no goes left, or no Express on this plan), the cat
+  // warns about the slow lane straight away
+  var lastXpModel = null;
+  async function expressForModel() {
+    if (!xpReady) return;                                     // runs again once the account has loaded
+    if (!isExpressModel() || model === lastXpModel) { if (!isExpressModel()) lastXpModel = null; return; }
+    lastXpModel = model;
+    if (fast()) return;
+    if (xp?.allowed && xp.remaining && !xp.on) {
+      if (await setExpress(true)) return toast(`Express on: ${modelName(model)} is built for the big GPU`, 2600);
+    }
+    await slowWarning();
+  }
   // c1 and s1 are Express models: without Express on (and goes left), a sleepy cat warns it'll be really slow first
   async function expressGate() {
-    if (!Kit.EXPRESS_MODELS?.has(model) || (xp?.on && xp.remaining)) return true;
-    const v = await Kit.slowLane({ model, name: modelName(model), express: xp });
-    if (v === "express") {
-      const r = await api("/api/express", { json: { on: true } });
-      if (r.ok) { xp = r.data; paintExpress(); toast("Express on: this one goes on the big GPU", 2400); }
-      return true;
-    }
-    return v === "slow";
+    if (!isExpressModel() || fast()) return true;
+    const v = await slowWarning();
+    return v === "express" || v === "slow";
   }
   function paintExpress() {
     if (!xp) return;
@@ -962,6 +985,7 @@
       if (m && m.status === "unavailable") return stillTraining(m);
       model = c.dataset.id;
       modelCards().forEach(x => x.setAttribute("aria-pressed", x === c));
+      expressForModel();
       fly?.classList.remove("open");
       document.querySelectorAll("#ws-prompts textarea").forEach(t => t.placeholder = ROW_HINT[kindOf()]);
       setPer(perPrompt);

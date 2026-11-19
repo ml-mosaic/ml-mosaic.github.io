@@ -413,11 +413,12 @@ window.Kit = (() => {
   // ---------------------------------------------------------------- report something (the cat keeps you company)
   // ---------------------------------------------------------------- the slow lane: c1 and s1 are Express models
   // (user, 2026-11-19). Without Express they still run on the regular CPU workers, but a sleepy cat warns you first.
-  // Resolves "express" (switch it on), "slow" (go ahead in the regular line) or null (closed). Remembered per session.
+  // Resolves "express" (switch it on), "slow" (go ahead in the regular line) or null (closed). Choosing the slow lane is
+  // remembered for the session (force: ask anyway, e.g. right after Express was switched off).
   const EXPRESS_MODELS = new Set(["c1", "s1"]);
-  function slowLane({ model = "c1", name = model, express = null } = {}) {
+  function slowLane({ model = "c1", name = model, express = null, force = false } = {}) {
     const key = `mosaic-slow-ok-${model}`;
-    try { if (sessionStorage.getItem(key)) return Promise.resolve("slow"); } catch (_) {}
+    try { if (!force && sessionStorage.getItem(key)) return Promise.resolve("slow"); } catch (_) {}
     return new Promise(resolve => {
       const { body, stage, close, back } = sheet({ w: 520, b: "#2c2440", c: "#fce060", sky: "linear-gradient(#141026 0 30%, #1c1634 30% 60%, #262044 60%)",
                                                   floor: "linear-gradient(#4a3a62 0 4px, #362a4a 4px 8px, #241c34 8px)" });
