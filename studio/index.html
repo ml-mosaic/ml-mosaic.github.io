@@ -13,7 +13,7 @@
 <script src="../config.js"></script>
 <script src="../assets/i18n.js?v=20261116a"></script>
 <script src="../assets/session.js"></script>
-<script src="../assets/kit.js?v=20261119d" data-root="../"></script>
+<script src="../assets/kit.js?v=20261120a" data-root="../"></script>
 <style>
   body { padding-bottom: 210px; }
 
@@ -101,6 +101,10 @@
   .ctl .crow { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: #8f86a0; }
   .ctl select { background: #1d1826; color: #e8e4f0; border: 0; padding: 7px 8px; font: inherit; font-size: 13px; box-shadow: inset 0 0 0 2px #2e2838; }
   .ctl select:focus-visible { outline: 2px solid var(--yellow); }
+  .ctl .crow.wide { grid-column: 1 / -1; }
+  .ctl .crow[hidden] { display: none; }
+  .ctl input[type=text] { background: #1d1826; color: #e8e4f0; border: 0; padding: 7px 10px; font: inherit; font-size: 13px; box-shadow: inset 0 0 0 2px #2e2838; min-width: 0; }
+  .ctl input[type=text]:focus-visible { outline: none; box-shadow: inset 0 0 0 2px var(--yellow); }
   .ctl .refrow { grid-column: 1 / -1; display: grid; grid-template-columns: 88px 1fr; gap: 6px 10px; align-items: center; }
   .ctl .refrow .clbl { grid-column: 1 / -1; font-size: 12px; color: #8f86a0; }
   .ctl .refdrop { width: 88px; height: 88px; display: grid; place-items: center; text-align: center; cursor: pointer; font-size: 11px; color: #8f86a0;
@@ -933,9 +937,17 @@
           <div class="refdrop" tabindex="0" role="button" aria-label="${esc(c.label)}: choose a picture">${st.ref ? `<img src="${st.ref}" alt="your picture">` : "Drop, paste or click"}</div>
           <div class="refbtns"><button type="button" data-ref="mine">Use one of my sprites</button>${st.ref ? `<button type="button" data-ref="clear">Remove picture</button>` : `<span>optional</span>`}</div>
           <input type="file" accept="image/png,image/jpeg,image/webp" hidden></div>`
-      : `<label class="crow"><span>${esc(c.label)}</span><select data-c="${esc(c.id)}">${c.options.map(([v, l]) =>
+      : c.type === "text"
+      ? `<label class="crow wide" data-row="${esc(c.id)}"><span>${esc(c.label)}</span><input type="text" data-c="${esc(c.id)}" maxlength="${+c.max || 200}"
+          placeholder="${esc(c.hint || "")}" value="${esc(st.settings[c.id] || "")}" autocomplete="off"></label>`
+      : `<label class="crow" data-row="${esc(c.id)}"><span>${esc(c.label)}</span><select data-c="${esc(c.id)}">${c.options.map(([v, l]) =>
           `<option value="${esc(v)}"${(st.settings[c.id] || "") === v ? " selected" : ""}>${esc(l)}</option>`).join("")}</select></label>`).join("");
-    box.querySelectorAll("select[data-c]").forEach(sel => sel.onchange = () => { st.settings[sel.dataset.c] = sel.value; });
+    // some controls only matter after another is set (c1: "Then" and "Transition" once the look has two parts)
+    const shown = c => !c.show_if || Object.entries(c.show_if).every(([k, vals]) => vals.includes(st.settings[k] || ""));
+    const showHide = () => list.forEach(c => { const row = box.querySelector(`[data-row="${c.id}"]`); if (row) row.hidden = !shown(c); });
+    box.querySelectorAll("select[data-c]").forEach(sel => sel.onchange = () => { st.settings[sel.dataset.c] = sel.value; showHide(); });
+    box.querySelectorAll("input[data-c]").forEach(inp => inp.oninput = () => { st.settings[inp.dataset.c] = inp.value; });
+    showHide();
     const drop = box.querySelector(".refdrop"), file = box.querySelector("input[type=file]");
     if (!drop) return;
     drop.onclick = () => file.click();
@@ -990,7 +1002,9 @@
   const ctlBody = () => {                                    // what create / jobs send for the controls
     const st = ctlState[model], list = models[model]?.controls || [];
     if (!st || !list.length) return {};
-    const settings = Object.fromEntries(Object.entries(st.settings).filter(([, v]) => v));
+    const byId = Object.fromEntries(list.map(c => [c.id, c]));
+    const shown = c => !c?.show_if || Object.entries(c.show_if).every(([k, vals]) => vals.includes(st.settings[k] || ""));
+    const settings = Object.fromEntries(Object.entries(st.settings).filter(([k, v]) => v && String(v).trim() && byId[k] && shown(byId[k])));
     return { ...(Object.keys(settings).length ? { settings } : {}), ...(st.ref && takesRef() ? { ref: st.ref } : {}) };
   };
 

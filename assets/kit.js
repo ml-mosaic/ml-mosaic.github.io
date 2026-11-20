@@ -568,6 +568,185 @@ window.Kit = (() => {
   if (document.readyState === "loading") addEventListener("DOMContentLoaded", disclaimer);
   else disclaimer();
 
-  return { root, reduce, rand, pick, nav, avatar, pfp, tags, whoami, whoamiCached, critter, talk, hop, burst, toast, esc, ago, json,
+  // ================================================================ custom dropdowns (2026-11-20): every <select> on the
+  // site is drawn as a pixel-styled button + list. The real <select> stays in the page (hidden), so code that reads
+  // .value, sets .value / .innerHTML or listens for "change" keeps working; new selects are picked up as they appear.
+  const DD_CSS = `
+  select.kdd-native { position: absolute !important; opacity: 0 !important; pointer-events: none !important; width: 1px !important; height: 1px !important; }
+  .kdd { position: relative; display: block; min-width: 0; font-family: inherit; }
+  .kdd-btn { display: flex; align-items: center; gap: 8px; width: 100%; background: #1d1826; color: #e8e4f0; border: 0; padding: 7px 10px; font: inherit;
+             font-size: 13px; cursor: pointer; text-align: left; box-shadow: inset 0 0 0 2px #2e2838; }
+  .kdd-btn:hover { box-shadow: inset 0 0 0 2px #4a4058; }
+  .kdd-btn:focus-visible, .kdd.open .kdd-btn { outline: none; box-shadow: inset 0 0 0 2px var(--yellow, #fce060); }
+  .kdd-btn span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .kdd-btn i { flex: none; width: 10px; height: 6px; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 5 3' shape-rendering='crispEdges'%3E%3Cpath fill='%23b9b0c8' d='M0 0h5v1h-1v1h-1v1h-1v-1h-1v-1h-1z'/%3E%3C/svg%3E") 0 0 / 100% 100%; image-rendering: pixelated; }
+  .kdd.open .kdd-btn i { transform: scaleY(-1); }
+  .kdd-btn:disabled { opacity: .5; cursor: not-allowed; }
+  .kdd-list { position: absolute; left: 0; right: 0; top: calc(100% + 6px); z-index: 90; max-height: 260px; overflow-y: auto; background: #120f17; padding: 4px;
+              box-shadow: 0 -3px 0 0 #2e2838, 0 3px 0 0 #2e2838, -3px 0 0 0 #2e2838, 3px 0 0 0 #2e2838, 0 10px 0 0 rgba(0,0,0,.35); display: none; min-width: 140px; }
+  .kdd.up .kdd-list { top: auto; bottom: calc(100% + 6px); }
+  .kdd.open .kdd-list { display: block; animation: kpop .12s steps(3); }
+  .kdd-list [role=option] { display: flex; align-items: center; gap: 8px; padding: 7px 8px; color: #d8d0e8; font-size: 13px; cursor: pointer; }
+  .kdd-list [role=option]::before { content: ""; width: 4px; height: 4px; flex: none; }
+  .kdd-list [role=option][aria-selected="true"] { color: #fff; }
+  .kdd-list [role=option][aria-selected="true"]::before { background: var(--yellow, #fce060); }
+  .kdd-list [role=option].act { background: #2a2236; color: #fff; }
+  .kdd-list [role=option][aria-disabled="true"] { opacity: .45; cursor: not-allowed; }
+  .kdd-list .kdd-grp { padding: 8px 8px 3px; font-size: 11px; color: #6f6880; letter-spacing: .06em; }`;
+  document.head.appendChild(Object.assign(document.createElement("style"), { textContent: DD_CSS }));
+  let ddN = 0;
+  const VALUE = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, "value");
+  const INDEX = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, "selectedIndex");
+  function dropdown(sel) {
+    if (sel.kdd || sel.multiple || sel.size > 1 || sel.dataset.native !== undefined) return sel.kdd;
+    const id = `kdd${++ddN}`, box = document.createElement("div"), btn = document.createElement("button"), list = document.createElement("div");
+    box.className = "kdd";
+    btn.className = "kdd-btn";
+    list.className = "kdd-list";
+    if (sel.style.width) box.style.width = sel.style.width;
+    btn.type = "button";
+    btn.setAttribute("aria-haspopup", "listbox");
+    btn.setAttribute("aria-expanded", "false");
+    btn.setAttribute("aria-controls", id);
+    btn.innerHTML = "<span></span><i></i>";
+    list.id = id;
+    list.setAttribute("role", "listbox");
+    list.tabIndex = -1;
+    box.append(btn, list);
+    sel.after(box);
+    sel.classList.add("kdd-native");
+    sel.tabIndex = -1;
+    sel.setAttribute("aria-hidden", "true");
+    if (sel.id) {                                  // a <label for=...> now names (and clicks) the button
+      document.querySelectorAll(`label[for="${window.CSS.escape(sel.id)}"]`).forEach(l => {
+        l.id ||= `${sel.id}-lbl`;
+        btn.setAttribute("aria-labelledby", `${l.id} ${id}-val`);
+        l.addEventListener("click", e => { e.preventDefault(); btn.focus(); });
+      });
+    } else if (sel.closest("label")) {
+      const l = sel.closest("label");
+      btn.setAttribute("aria-label", (l.textContent || "").trim());
+      l.addEventListener("click", e => { if (!box.contains(e.target)) { e.preventDefault(); btn.focus(); } });
+    }
+    btn.firstChild.id = `${id}-val`;
+    const opts = () => [...sel.options];
+    let act = -1;
+    const sync = () => {
+      const o = sel.options[INDEX.get.call(sel)];
+      btn.firstChild.textContent = o ? o.textContent : "";
+      btn.disabled = sel.disabled;
+      list.querySelectorAll("[role=option]").forEach(el => el.setAttribute("aria-selected", String(+el.dataset.i === INDEX.get.call(sel))));
+    };
+    const build = () => {
+      list.innerHTML = "";
+      let lastGroup = null;
+      opts().forEach((o, i) => {
+        if (o.hidden) return;
+        const g = o.parentElement.tagName === "OPTGROUP" ? o.parentElement : null;
+        if (g && g !== lastGroup) list.append(Object.assign(document.createElement("div"), { className: "kdd-grp", textContent: g.label }));
+        lastGroup = g;
+        const el = document.createElement("div");
+        el.setAttribute("role", "option");
+        el.id = `${id}-o${i}`;
+        el.dataset.i = i;
+        el.textContent = o.textContent;
+        if (o.disabled) el.setAttribute("aria-disabled", "true");
+        list.append(el);
+      });
+      sync();
+    };
+    const items = () => [...list.querySelectorAll("[role=option]:not([aria-disabled=true])")];
+    const highlight = i => {
+      const its = items();
+      if (!its.length) return;
+      act = (i + its.length) % its.length;
+      its.forEach((el, k) => el.classList.toggle("act", k === act));
+      btn.setAttribute("aria-activedescendant", its[act].id);
+      its[act].scrollIntoView({ block: "nearest" });
+    };
+    const open = () => {
+      if (sel.disabled || box.classList.contains("open")) return;
+      document.querySelectorAll(".kdd.open").forEach(b => b !== box && b.kddClose?.());
+      const r = btn.getBoundingClientRect();
+      box.classList.toggle("up", innerHeight - r.bottom < 270 && r.top > innerHeight - r.bottom);
+      box.classList.add("open");
+      btn.setAttribute("aria-expanded", "true");
+      highlight(Math.max(0, items().findIndex(el => +el.dataset.i === INDEX.get.call(sel))));
+    };
+    const close = () => {
+      box.classList.remove("open");
+      btn.setAttribute("aria-expanded", "false");
+      btn.removeAttribute("aria-activedescendant");
+    };
+    box.kddClose = close;
+    const choose = el => {
+      if (!el || el.getAttribute("aria-disabled") === "true") return;
+      const i = +el.dataset.i, changed = i !== INDEX.get.call(sel);
+      INDEX.set.call(sel, i);
+      sync();
+      close();
+      btn.focus();
+      if (changed) {
+        sel.dispatchEvent(new Event("input", { bubbles: true }));
+        sel.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+    };
+    btn.addEventListener("click", () => box.classList.contains("open") ? close() : open());
+    list.addEventListener("mousedown", e => e.preventDefault());
+    list.addEventListener("click", e => choose(e.target.closest("[role=option]")));
+    list.addEventListener("mousemove", e => {
+      const el = e.target.closest("[role=option]:not([aria-disabled=true])");
+      if (el) highlight(items().indexOf(el));
+    });
+    let typed = "", typedAt = 0;
+    btn.addEventListener("keydown", e => {
+      const isOpen = box.classList.contains("open");
+      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+        e.preventDefault();
+        if (!isOpen) return open();
+        highlight(act + (e.key === "ArrowDown" ? 1 : -1));
+      } else if (e.key === "Home" || e.key === "End") {
+        if (!isOpen) return;
+        e.preventDefault();
+        highlight(e.key === "Home" ? 0 : items().length - 1);
+      } else if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        if (isOpen && act >= 0) choose(items()[act]);
+        else open();
+      } else if (e.key === "Escape" || e.key === "Tab") {
+        if (isOpen) { if (e.key === "Escape") e.preventDefault(); close(); }
+      } else if (e.key.length === 1 && /\S/.test(e.key)) {    // type to jump
+        const now = performance.now();
+        typed = (now - typedAt > 700 ? "" : typed) + e.key.toLowerCase();
+        typedAt = now;
+        const its = items(), k = its.findIndex(el => el.textContent.trim().toLowerCase().startsWith(typed));
+        if (k >= 0) isOpen ? highlight(k) : choose(its[k]);
+      }
+    });
+    btn.addEventListener("blur", () => setTimeout(() => { if (!box.contains(document.activeElement)) close(); }, 0));
+    // keep in step with the real select: options rebuilt, value set from code, disabled toggled
+    new MutationObserver(build).observe(sel, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ["disabled", "label", "hidden"] });
+    sel.addEventListener("change", sync);
+    Object.defineProperty(sel, "value", { configurable: true, get() { return VALUE.get.call(this); }, set(v) { VALUE.set.call(this, v); sync(); } });
+    Object.defineProperty(sel, "selectedIndex", { configurable: true, get() { return INDEX.get.call(this); }, set(v) { INDEX.set.call(this, v); sync(); } });
+    sel.form?.addEventListener("reset", () => setTimeout(sync, 0));
+    sel.kdd = box;
+    build();
+    return box;
+  }
+  function dropdowns(rootEl = document) {
+    (rootEl.matches?.("select") ? [rootEl] : [...rootEl.querySelectorAll("select")]).forEach(dropdown);
+  }
+  document.addEventListener("click", e => {
+    if (!e.target.closest(".kdd")) document.querySelectorAll(".kdd.open").forEach(b => b.kddClose?.());
+  });
+  const ddWatch = () => {
+    dropdowns();
+    new MutationObserver(ms => ms.forEach(m => m.addedNodes.forEach(n => n.nodeType === 1 && dropdowns(n)))).observe(document.body, { childList: true, subtree: true });
+  };
+  if (document.readyState === "loading") addEventListener("DOMContentLoaded", ddWatch);
+  else ddWatch();
+
+  return { root, reduce, rand, pick, nav, dropdown, dropdowns, avatar, pfp, tags, whoami, whoamiCached, critter, talk, hop, burst, toast, esc, ago, json,
            dialog, confirm: confirmBox, alert: alertBox, profileMenu, gift, report, confetti, celebrate, PLAN, slowLane, EXPRESS_MODELS };
 })();
