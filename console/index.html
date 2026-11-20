@@ -14,7 +14,7 @@
 <script src="../config.js"></script>
 <script src="../assets/i18n.js?v=20261116a"></script>
 <script src="../assets/session.js"></script>
-<script src="../assets/kit.js?v=20261120a" data-root="../"></script>
+<script src="../assets/kit.js?v=20261120b" data-root="../"></script>
 <style>
   /* Owner console. Hidden: not linked anywhere, not indexed, and for anyone but the owner the API answers 404 and
      this page shows "not found". The real protection is server-side (every /api/console call is checked). */
@@ -54,6 +54,10 @@
   .facts span { color: var(--dim); font-size: 11px; letter-spacing: 1px; }
   .sec { border-top: 2px solid #1d1a24; padding-top: 14px; margin-top: 14px; }
   .sec h3 { font-weight: normal; font-size: 13px; letter-spacing: 2px; color: var(--dim); margin: 0 0 10px; }
+  .busybox { margin: 0 0 18px; padding: 14px; background: #0b0a0e; display: grid; gap: 10px; }
+  .busybox.on { box-shadow: inset 0 0 0 2px var(--yellow); }
+  .busybox h3 { margin: 0; font-size: 14px; letter-spacing: 1px; }
+  .busybox textarea { width: 100%; min-height: 54px; background: #15121b; color: #e8e4f0; border: 0; padding: 8px; font: inherit; font-size: 13px; }
   .seg { display: flex; gap: 4px; }
   .seg button { flex: 1; background: #0b0a0e; border: 0; color: #b9b0c8; padding: 10px; cursor: pointer; font: inherit; font-size: 14px; }
   .seg button small { display: block; color: var(--dim); font-size: 11px; }
@@ -197,7 +201,7 @@
         <section class="card notch"><div class="search"><input id="q" placeholder="Search username or email" autocomplete="off"></div>
           <div class="list" id="list"></div></section>
         <section class="card notch detail" id="detail"><div class="empty">Pick an account.</div></section></div>
-      <section id="models" class="card notch" hidden><div id="mdl"></div></section>
+      <section id="models" class="card notch" hidden><div id="busy" class="busybox"></div><div id="mdl"></div></section>
       <section id="patreon" class="card notch" hidden><div id="pt"></div></section>
       <section id="reports" class="card notch" hidden><div class="filter" id="rep-f"></div><div id="rep-list"></div></section>
       <section id="appeals" class="card notch" hidden><div class="filter" id="app-f"></div><div id="app-list"></div></section>
@@ -557,7 +561,37 @@
       confirming = null; renderModels(r.data.models);
       toast(active ? `${m.name} is back on` : `${m.name} is switched off`);
     }
+    // busy mode (Terms 3.5): every plan's allowance lowered for a while, a notice on the Studio and pricing pages
+    let busyPick = 0.5;
+    function renderBusy(b) {
+      const box = $("#busy");
+      box.classList.toggle("on", !!b.on);
+      if (b.on) busyPick = b.factor;
+      box.innerHTML = `<h3>BUSY MODE ${b.on ? `&middot; <span style="color:var(--yellow)">ON at ${Math.round(b.factor * 100)}%</span>` : "&middot; off"}</h3>
+        <p class="sub" style="margin:0">For when too many people are drawing at once. Every plan's daily allowance drops to the share you pick
+          (Developer accounts aren't affected), and the Studio, pricing, settings and portal pages show the message below.
+          ${b.on ? `On since ${esc(when(b.at))} &middot; by @${esc(b.by)}.` : ""}</p>
+        <div class="seg" id="busy-k">${[[0.75, "75%"], [0.5, "50%"], [0.25, "25%"]].map(([k, l]) =>
+          `<button type="button" data-k="${k}" aria-pressed="${busyPick === k}">${l}<small>of each allowance</small></button>`).join("")}</div>
+        <textarea id="busy-msg" maxlength="300" placeholder="${esc(b.default_message || "")}">${esc(b.on ? b.message || "" : "")}</textarea>
+        <div class="act"><button class="btn small" id="busy-go" type="button" style="--c:var(--yellow)">${b.on ? "Update" : "Switch busy mode on"}</button>
+          ${b.on ? `<button class="btn small ghost" id="busy-off" type="button">Back to normal</button>` : ""}</div>`;
+      box.querySelectorAll("[data-k]").forEach(x => x.onclick = () => { busyPick = +x.dataset.k;
+        box.querySelectorAll("[data-k]").forEach(y => y.setAttribute("aria-pressed", String(y === x))); });
+      $("#busy-go").onclick = async () => {
+        const r = await api("/api/console/busy", { json: { on: true, factor: busyPick, message: $("#busy-msg").value } });
+        if (!r.ok) return toast(Session.detail(r.data || {}));
+        renderBusy(r.data); toast(`Busy mode on: allowances at ${Math.round(busyPick * 100)}%`);
+      };
+      const off = $("#busy-off");
+      if (off) off.onclick = async () => {
+        const r = await api("/api/console/busy", { json: { on: false, factor: 1 } });
+        if (!r.ok) return toast(Session.detail(r.data || {}));
+        renderBusy(r.data); toast("Back to normal allowances");
+      };
+    }
     async function loadModels() {
+      api("/api/console/busy").then(r => { if (r.ok) renderBusy(r.data); });
       const r = await api("/api/console/models");
       if (!r.ok) return toast(Session.detail(r.data || {}));
       renderModels(r.data.models);
@@ -572,6 +606,7 @@
                            model_off: "switched the model off", model_on: "switched the model back on",
                            contribution_review: `reviewed art: kept ${e.accepted} of ${e.of}${e.rewards?.length ? ` (earned: ${e.rewards.join(", ")})` : ""}`,
                            model_dev_only: "made the model Dev only", model_public: "made the model public again",
+                           busy_on: `busy mode on: allowances at ${Math.round((e.factor || 1) * 100)}%`, busy_off: "busy mode off",
                            resets: `gave ${e.count} limit reset${e.count > 1 ? "s" : ""}` }[e.action] || e.action);
       $("#audit-list").innerHTML = r.data.entries.length ? r.data.entries.map(e =>
         `<div><span class="w">${new Date(e.at * 1000).toLocaleString([], { dateStyle: "short", timeStyle: "short" })}</span><span>@${esc(e.target)}</span>

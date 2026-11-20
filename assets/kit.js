@@ -568,6 +568,32 @@ window.Kit = (() => {
   if (document.readyState === "loading") addEventListener("DOMContentLoaded", disclaimer);
   else disclaimer();
 
+  // ================================================================ busy notice (2026-11-20, Terms 3.5): when the console
+  // switches busy mode on, every plan's allowance is lowered for a while; these pages say so at the top.
+  const BUSY_PAGES = /\/(studio|pricing|settings|portal)\//;
+  function busyNotice() {
+    if (!BUSY_PAGES.test(location.pathname) || !window.Session?.api || document.querySelector(".kit-busy")) return;
+    Session.api("/api/busy", { auth: false }).then(r => {
+      if (!r.ok || !r.data?.on) return;
+      const pct = Math.round((r.data.factor || 1) * 100);
+      const bar = document.createElement("div");
+      bar.className = "kit-busy";
+      bar.setAttribute("role", "status");
+      bar.innerHTML = `<b>BUSY</b><span>${esc(r.data.message)}${pct < 100 ? ` Allowances are at ${pct}% for now.` : ""}
+        <a href="${root}pricing/#allowances-change">Why?</a></span>`;
+      const nav = document.querySelector("nav, .kit-nav, header");
+      (nav && nav.parentNode === document.body ? nav : document.body.firstElementChild)?.after(bar) || document.body.prepend(bar);
+    }).catch(() => {});
+  }
+  document.head.appendChild(Object.assign(document.createElement("style"), { textContent: `
+  .kit-busy { display: flex; gap: 12px; align-items: baseline; justify-content: center; flex-wrap: wrap; padding: 10px 16px; background: #fce060;
+              color: #1a1622; font-size: 14px; line-height: 1.4; position: relative; z-index: 5; }
+  .kit-busy b { font-family: "Tiny5", ui-monospace, monospace; letter-spacing: .08em; font-weight: normal; }
+  .kit-busy span { max-width: 820px; }
+  .kit-busy a { color: #1a1622; text-decoration: underline; }` }));
+  if (document.readyState === "loading") addEventListener("DOMContentLoaded", busyNotice);
+  else busyNotice();
+
   // ================================================================ custom dropdowns (2026-11-20): every <select> on the
   // site is drawn as a pixel-styled button + list. The real <select> stays in the page (hidden), so code that reads
   // .value, sets .value / .innerHTML or listens for "change" keeps working; new selects are picked up as they appear.
